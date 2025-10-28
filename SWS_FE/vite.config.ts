@@ -12,9 +12,10 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    strictPort: true, // Fail if port 3000 is in use instead of trying another port
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       }
     }
