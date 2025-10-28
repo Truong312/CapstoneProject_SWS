@@ -399,3 +399,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+HotelManagementSystem_BE/.DS_Store
+HotelManagementSystem_BE/.gitattributes
+
+SWS_BE/.idea/*
+SWS_BE/SWS.Services/.DS_Store
+SWS_BE/.DS_Store
