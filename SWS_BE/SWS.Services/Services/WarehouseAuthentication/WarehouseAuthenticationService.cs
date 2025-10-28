@@ -3,13 +3,14 @@ using SWS.Repositories.UnitOfWork;
 using SWS.Services.ApiModels;
 using SWS.Services.ApiModels.WarehouseUserModel;
 using SWS.Services.Helpers;
-using SWS.Services.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using AutoMapper;
+using SWS.BusinessObjects.Dtos;
 
 namespace SWS.Services.Services.WarehouseAuthentication
 {
@@ -18,15 +19,18 @@ namespace SWS.Services.Services.WarehouseAuthentication
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IGoogleLoginService _googleLoginService;
+        private readonly IMapper _mapper;
 
         public WarehouseAuthenticationService(
             IUnitOfWork unitOfWork, 
             IConfiguration configuration,
-            IGoogleLoginService googleLoginService)
+            IGoogleLoginService googleLoginService,
+            IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _googleLoginService = googleLoginService;
+            _mapper = mapper;
         }
 
         public async Task<ResultModel> RegisterAsync(RegisterWarehouseRequest request)
@@ -323,7 +327,8 @@ namespace SWS.Services.Services.WarehouseAuthentication
             }
         }
 
-        public async Task<ResultModel> LoginWithGoogleAsync(string code)
+        
+        public async Task<ResultModel<GoogleLoginResponseDto>> LoginWithGoogleAsync(string code)
         {
             try
             {
@@ -332,7 +337,7 @@ namespace SWS.Services.Services.WarehouseAuthentication
                 
                 if (googleUserInfo == null || string.IsNullOrEmpty(googleUserInfo.Email))
                 {
-                    return new ResultModel
+                    return new ResultModel<GoogleLoginResponseDto>
                     {
                         IsSuccess = false,
                         Message = "Không thể lấy thông tin từ Google",
@@ -369,32 +374,22 @@ namespace SWS.Services.Services.WarehouseAuthentication
                 // Generate JWT token
                 var token = GenerateJwtToken(user);
 
-                var userResponse = new UserResponseDto
-                {
-                    UserId = user.UserId,
-                    FullName = user.FullName,
-                    Email = user.Email,
-                    Phone = user.Phone,
-                    Address = user.Address,
-                    Role = user.Role
-                };
+                // Map User entity to GoogleLoginResponseDto using AutoMapper
+                var response = _mapper.Map<GoogleLoginResponseDto>(user);
+                response.Token = token;
+                response.IsNewUser = isNewUser;
 
-                return new ResultModel
+                return new ResultModel<GoogleLoginResponseDto>
                 {
                     IsSuccess = true,
                     Message = isNewUser ? "Đăng ký và đăng nhập bằng Google thành công" : "Đăng nhập bằng Google thành công",
-                    Data = new
-                    {
-                        User = userResponse,
-                        Token = token,
-                        IsNewUser = isNewUser
-                    },
+                    Data = response,
                     StatusCode = StatusCodes.Status200OK
                 };
             }
             catch (Exception ex)
             {
-                return new ResultModel
+                return new ResultModel<GoogleLoginResponseDto>
                 {
                     IsSuccess = false,
                     Message = $"Lỗi khi đăng nhập bằng Google: {ex.Message}",

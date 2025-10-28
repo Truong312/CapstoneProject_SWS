@@ -7,6 +7,9 @@ import Inventory from '@/pages/Inventory'
 import Orders from '@/pages/Orders'
 import Settings from '@/pages/Settings'
 import Login from '@/pages/Login'
+import UIShowcase from '@/pages/UIShowcase'
+import UIComponents from '@/pages/UIComponents'
+import UIResourcesLanding from '@/pages/UIResourcesLanding'
 
 function App() {
   return (
@@ -19,6 +22,9 @@ function App() {
           <Route path="inventory" element={<Inventory />} />
           <Route path="orders" element={<Orders />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="ui-resources" element={<UIResourcesLanding />} />
+          <Route path="ui-showcase" element={<UIShowcase />} />
+          <Route path="ui-components" element={<UIComponents />} />
         </Route>
       </Routes>
       <Toaster />

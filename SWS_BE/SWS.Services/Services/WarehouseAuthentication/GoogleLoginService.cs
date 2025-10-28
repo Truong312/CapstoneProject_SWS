@@ -1,35 +1,41 @@
-using SWS.Repositories.UnitOfWork;
 using Microsoft.Extensions.Options;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
 using SWS.BusinessObjects.AppSettings;
+using SWS.BusinessObjects.Dtos;
 using SWS.Services.ApiModels;
-using SWS.Services.Helpers;
+using AutoMapper;
 
-namespace SWS.Services.Authentication
+namespace SWS.Services.Services.WarehouseAuthentication
 {
     public class GoogleLoginService : IGoogleLoginService
     {
         private readonly GoogleAuthSettings _settings;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly CacheHelper _cacheHelper;
         private readonly HttpClient _httpClient;
+        private readonly IMapper _mapper;
 
-        public GoogleLoginService(IUnitOfWork unitOfWork, CacheHelper cacheHelper, IOptions<GoogleAuthSettings> options)
+        public GoogleLoginService(
+            IOptions<GoogleAuthSettings> options,
+            IMapper mapper)
         {
-            _unitOfWork = unitOfWork;
-            _cacheHelper = cacheHelper;
             _settings = options.Value;
             _httpClient = new HttpClient();
+            _mapper = mapper;
         }
 
-        public string GetGoogleLoginUrl()
+        public GoogleAuthUrlDto GetGoogleLoginUrl()
         {
-            return $"https://accounts.google.com/o/oauth2/v2/auth?client_id={_settings.ClientId}&redirect_uri={_settings.RedirectUri}&response_type=code&scope=openid%20email%20profile";
+            var authUrl = $"https://accounts.google.com/o/oauth2/v2/auth" +
+                $"?client_id={_settings.ClientId}" +
+                $"&redirect_uri={_settings.RedirectUri}" +
+                $"&response_type=code" +
+                $"&scope=openid%20email%20profile" +
+                $"&access_type=offline" +
+                $"&prompt=consent";
+
+            return new GoogleAuthUrlDto { AuthUrl = authUrl };
         }
 
-        public async Task<GoogleUserInfo> GetUserInfoFromCodeAsync(string code)
+        public async Task<GoogleUserInfoDto> GetUserInfoFromCodeAsync(string code)
         {
             // Exchange code for access token
             var tokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token")
@@ -43,24 +49,27 @@ namespace SWS.Services.Authentication
                     new KeyValuePair<string, string>("grant_type", "authorization_code")
                 })
             };
+            
             var tokenResponse = await _httpClient.SendAsync(tokenRequest);
             if (!tokenResponse.IsSuccessStatusCode)
             {
                 var errorContent = await tokenResponse.Content.ReadAsStringAsync();
                 throw new HttpRequestException($"Google token request failed: {tokenResponse.StatusCode} - {errorContent}");
             }
+            
             var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
             using var tokenDoc = JsonDocument.Parse(tokenJson);
             var accessToken = tokenDoc.RootElement.GetProperty("access_token").GetString();
 
-            // Get user info
+            // Get user info from Google API
             var userInfoResponse = await _httpClient.GetAsync($"https://www.googleapis.com/oauth2/v2/userinfo?access_token={accessToken}");
             userInfoResponse.EnsureSuccessStatusCode();
+            
             var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
-            // Log nội dung JSON trả về để debug
-            Console.WriteLine($"Google user info JSON: {userInfoJson}");
-            var userInfo = JsonSerializer.Deserialize<GoogleUserInfo>(userInfoJson);
-            return userInfo ?? new GoogleUserInfo();
+            var googleUserInfo = JsonSerializer.Deserialize<GoogleUserInfo>(userInfoJson);
+            
+            // Map từ ApiModel sang DTO
+            return _mapper.Map<GoogleUserInfoDto>(googleUserInfo) ?? new GoogleUserInfoDto();
         }
     }
 }

@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
-using SWS.Services.ApiModels;
+using SWS.BusinessObjects.Dtos;
 
-namespace SWS.Services.Authentication
+namespace SWS.Services.Services.WarehouseAuthentication
 {
     public interface IGoogleLoginService
     {
-        string GetGoogleLoginUrl();
-        Task<GoogleUserInfo> GetUserInfoFromCodeAsync(string code);
+        GoogleAuthUrlDto GetGoogleLoginUrl();
+        Task<GoogleUserInfoDto> GetUserInfoFromCodeAsync(string code);
     }
 }

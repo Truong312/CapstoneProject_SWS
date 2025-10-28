@@ -1,0 +1,101 @@
+### ========================================
+### Google Authentication API Tests
+### ========================================
+
+### Variables
+@baseUrl = http://localhost:8080/api/warehouse/auth
+@frontendUrl = http://localhost:3000
+
+### 1. Lấy URL đăng nhập Google
+GET {{baseUrl}}/google-url
+Accept: application/json
+
+### Expected Response:
+# {
+#   "isSuccess": true,
+#   "message": "Lấy URL đăng nhập Google thành công",
+#   "data": {
+#     "authUrl": "https://accounts.google.com/o/oauth2/v2/auth?client_id=166370023031-5fb6unqprsf9f020f1n0cvhk333kdbj4.apps.googleusercontent.com&redirect_uri=http://localhost:8080/api/warehouse/auth/google-callback&response_type=code&scope=openid%20email%20profile&access_type=offline&prompt=consent"
+#   }
+# }
+
+### ========================================
+
+### 2. TEST: Callback từ Google (simulate redirect)
+### Bạn có thể copy URL này vào browser sau khi có code từ Google
+GET {{baseUrl}}/google-callback?code=4/0Ab32j92is57Tvu3A84b8iqHKPo5rxJK3Ju9xNAwkrUXJY0097GIZI1kCMAOX4bLpGFiQ3w
+
+### Response: Sẽ redirect về frontend
+# http://localhost:3000/auth/callback?token=eyJhbG...&isNewUser=true
+
+### ========================================
+
+### 3. Đăng nhập bằng Google (API trực tiếp - dùng cho mobile/SPA)
+POST {{baseUrl}}/google-login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "code": "4/0Ab32j92is57Tvu3A84b8iqHKPo5rxJK3Ju9xNAwkrUXJY0097GIZI1kCMAOX4bLpGFiQ3w"
+}
+
+### Expected Response (User mới):
+# {
+#   "isSuccess": true,
+#   "message": "Đăng ký và đăng nhập bằng Google thành công",
+#   "data": {
+#     "userId": 1,
+#     "fullName": "Nguyen Van A",
+#     "email": "nguyenvana@gmail.com",
+#     "phone": null,
+#     "address": null,
+#     "role": 0,
+#     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+#     "isNewUser": true
+#   },
+#   "statusCode": 200
+# }
+
+### ========================================
+
+### 4. Test Callback với Error
+GET {{baseUrl}}/google-callback?error=access_denied
+
+### Response: Redirect về frontend với error
+# http://localhost:3000/auth/callback?error=access_denied
+
+### ========================================
+### FLOW HOÀN CHỈNH
+### ========================================
+
+### Bước 1: Frontend gọi API lấy Google URL
+GET {{baseUrl}}/google-url
+
+### Bước 2: User click vào authUrl từ response
+### Browser sẽ redirect tới Google OAuth
+
+### Bước 3: User đăng nhập Google và đồng ý
+### Google redirect về: http://localhost:8080/api/warehouse/auth/google-callback?code=...
+
+### Bước 4: Backend nhận code, login, và redirect về frontend
+### Frontend nhận được: http://localhost:3000/auth/callback?token=...&isNewUser=true
+
+### Bước 5: Frontend lưu token và user info vào localStorage
+
+### ========================================
+### IMPORTANT: Cấu hình Google Console
+### ========================================
+### Bạn CẦN cập nhật Authorized redirect URIs trong Google Console:
+### 
+### 1. Vào https://console.cloud.google.com/
+### 2. Chọn project của bạn
+### 3. Credentials > OAuth 2.0 Client IDs > Edit
+### 4. Thêm vào "Authorized redirect URIs":
+###    - http://localhost:8080/api/warehouse/auth/google-callback
+###
+### 5. Authorized JavaScript origins:
+###    - http://localhost:8080
+###    - http://localhost:3000
+###
+### 6. Save
+### ========================================

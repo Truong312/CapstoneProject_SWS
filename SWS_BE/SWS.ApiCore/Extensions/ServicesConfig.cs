@@ -6,7 +6,6 @@ using SWS.Services.Helpers;
 using SWS.Services.RateLimiting;
 using SWS.Services.Services.Email;
 using SWS.Services.Services.WarehouseAuthentication;
-using SWS.Services.Authentication;
 
 namespace SWS.ApiCore.Extensions;
 
