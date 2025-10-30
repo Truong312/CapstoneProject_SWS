@@ -1,4 +1,5 @@
 using SWS.Repositories.Repositories.AccountRepo;
+using SWS.Repositories.Repositories.ProductRepo;
 using SWS.Repositories.Repositories.UserRepo;
 
 namespace SWS.Repositories.UnitOfWork
@@ -7,6 +8,7 @@ namespace SWS.Repositories.UnitOfWork
     {
         IAccountRepository Accounts { get; }
         IUserRepository Users { get; }
+        IProductRepository Products { get; }
         Task<int> SaveChangesAsync();
     }
 }

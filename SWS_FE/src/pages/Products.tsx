@@ -1,27 +1,60 @@
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Plus } from 'lucide-react'
+"use client";
+
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus } from "lucide-react";
+import ProductService from "@/services/productService"; // <-- Import service
 
 interface Product {
-  id: string
+  productId: number
+  serialNumber: string
   name: string
-  sku: string
-  price: number
-  category: string
-  stock: number
+  expiredDate: string // DateOnly trong .NET → string ISO "YYYY-MM-DD"
+  unit?: string
+  unitPrice?: number
+  receivedDate: string // DateOnly → string
+  purchasedPrice?: number
+  reorderPoint?: number
+  image?: string
+  description?: string
 }
 
 const Products = () => {
-  // Mock data - sẽ thay bằng API khi backend có endpoint Products
-  const [products] = useState<Product[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
+  const [products, setProducts] = useState<Product[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.sku.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // ✅ Gọi API khi trang load
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await ProductService.getProducts();
+        setProducts(data);
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.serialNumber.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Loading products...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -56,23 +89,25 @@ const Products = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="px-4 py-2 text-left font-medium">SKU</th>
+                  <th className="px-4 py-2 text-left font-medium">SerialNumber</th>
                   <th className="px-4 py-2 text-left font-medium">Name</th>
-                  <th className="px-4 py-2 text-left font-medium">Category</th>
-                  <th className="px-4 py-2 text-left font-medium">Price</th>
-                  <th className="px-4 py-2 text-left font-medium">Stock</th>
+                  <th className="px-4 py-2 text-left font-medium">ExpiredDate</th>
+                  <th className="px-4 py-2 text-left font-medium">Unit</th>
+                  <th className="px-4 py-2 text-left font-medium">UnitPrice</th>
                   <th className="px-4 py-2 text-left font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
-                    <tr key={product.id} className="border-b">
-                      <td className="px-4 py-2">{product.sku}</td>
+                    <tr key={product.productId} className="border-b">
+                      <td className="px-4 py-2">{product.serialNumber}</td>
                       <td className="px-4 py-2">{product.name}</td>
-                      <td className="px-4 py-2">{product.category}</td>
-                      <td className="px-4 py-2">${product.price}</td>
-                      <td className="px-4 py-2">{product.stock}</td>
+                      <td className="px-4 py-2">{product.expiredDate}</td>
+                      <td className="px-4 py-2">{product.unit ?? "-"}</td>
+                      <td className="px-4 py-2">
+                        {product.unitPrice ? `$${product.unitPrice}` : "-"}
+                      </td>
                       <td className="px-4 py-2">
                         <Button variant="ghost" size="sm">
                           Edit
@@ -82,7 +117,10 @@ const Products = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                    <td
+                      colSpan={6}
+                      className="px-4 py-8 text-center text-muted-foreground"
+                    >
                       No products found
                     </td>
                   </tr>
@@ -93,7 +131,7 @@ const Products = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default Products
+export default Products;
