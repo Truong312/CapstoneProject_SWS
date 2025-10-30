@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <Folder Include="Constants\" />
+    <Folder Include="Dtos\Return\" />
   </ItemGroup>
 
 </Project>
