@@ -1,15 +1,17 @@
 import apiClient from '@/lib/api'
 
 export interface Product {
-  id: string
+   productId: number
+  serialNumber: string
   name: string
-  sku: string
-  price: number
-  category: string
-  stock: number
+  expiredDate: string // DateOnly trong .NET → string ISO "YYYY-MM-DD"
+  unit?: string
+  unitPrice?: number
+  receivedDate: string // DateOnly → string
+  purchasedPrice?: number
+  reorderPoint?: number
+  image?: string
   description?: string
-  createdAt?: string
-  updatedAt?: string
 }
 
 export interface CreateProductRequest {

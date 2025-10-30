@@ -24,7 +24,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         // GET: api/product/{id}
