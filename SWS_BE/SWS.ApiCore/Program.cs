@@ -1,6 +1,9 @@
 using SWS.ApiCore.Extensions;
 using AppBackend.Extensions;
 using SWS.BusinessObjects.AppSettings;
+using SWS.Repositories.Repositories.ReturnRepo;
+using SWS.Services.ReturnLookups;
+using SWS.Services.ReturnOrders;
 using SWS.Services.Services.ProductServices;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +26,7 @@ builder.Services.AddMemoryCache();
 
 // All Application Services (includes Booking, Queue, Cache, etc.)
 builder.Services.AddServicesConfig();
-builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IWarehouseProductService, WarehouseProductService>();
 
 builder.Services.AddControllers()   
     .AddJsonOptions(options =>
@@ -32,7 +35,12 @@ builder.Services.AddControllers()
     });
 
 builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection("GoogleAuthSettings"));
+builder.Services.AddScoped<IReturnReasonRepository, ReturnReasonRepository>();
+builder.Services.AddScoped<IReturnStatusRepository, ReturnStatusRepository>();
+builder.Services.AddScoped<IReturnOrderQueryRepository, ReturnOrderQueryRepository>();
 
+builder.Services.AddScoped<IReturnLookupService, ReturnLookupService>();
+builder.Services.AddScoped<IReturnOrderQueryService, ReturnOrderQueryService>();
 var app = builder.Build();
 
 // Middleware

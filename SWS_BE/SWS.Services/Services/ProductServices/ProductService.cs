@@ -1,97 +1,243 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using SWS.BusinessObjects.Dtos.Product;
+﻿using Microsoft.AspNetCore.Http;
 using SWS.BusinessObjects.Models;
 using SWS.Repositories.UnitOfWork;
+using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.ProductModel;
 
 namespace SWS.Services.Services.ProductServices
 {
-    public class ProductService : IProductService
+    public class WarehouseProductService : IWarehouseProductService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public ProductService(IUnitOfWork unitOfWork)
+
+        public WarehouseProductService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        private bool ValidateProduct(Product product)
+        /// <summary>
+        /// Lấy danh sách tất cả sản phẩm
+        /// </summary>
+        public async Task<ResultModel<IEnumerable<ProductResponseDto>>> GetAllProductsAsync()
         {
-            if (product.ExpiredDate <= product.ReceivedDate || product.UnitPrice < product.PurchasedPrice)
+            try
             {
-                return false;
+                var products = await _unitOfWork.Products.GetAllAsync();
+
+                var productDtos = products.Select(p => new ProductResponseDto
+                {
+                    ProductId = p.ProductId,
+                    SerialNumber = p.SerialNumber,
+                    Name = p.Name,
+                    ExpiredDate = p.ExpiredDate,
+                    Unit = p.Unit,
+                    UnitPrice = p.UnitPrice,
+                    ReceivedDate = p.ReceivedDate,
+                    PurchasedPrice = p.PurchasedPrice,
+                    ReorderPoint = p.ReorderPoint,
+                    Image = p.Image,
+                    Description = p.Description
+                });
+
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = true,
+                    Message = "Lấy danh sách sản phẩm thành công",
+                    Data = productDtos,
+                    StatusCode = StatusCodes.Status200OK
+                };
             }
-            return true;
+            catch (Exception ex)
+            {
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi lấy danh sách sản phẩm: {ex.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
         }
-        public async Task<Product?> CreateProductAsync(CreateProductDto createProductDto)
+
+        /// <summary>
+        /// Lấy chi tiết sản phẩm theo Id
+        /// </summary>
+        public async Task<ResultModel<ProductResponseDto>> GetProductByIdAsync(int productId)
+        {
+            try
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(productId);
+                if (product == null)
+                {
+                    return new ResultModel<ProductResponseDto>
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy sản phẩm",
+                        StatusCode = StatusCodes.Status404NotFound
+                    };
+                }
+
+                var productDto = new ProductResponseDto
+                {
+                    ProductId = product.ProductId,
+                    SerialNumber = product.SerialNumber,
+                    Name = product.Name,
+                    ExpiredDate = product.ExpiredDate,
+                    Unit = product.Unit,
+                    UnitPrice = product.UnitPrice,
+                    ReceivedDate = product.ReceivedDate,
+                    PurchasedPrice = product.PurchasedPrice,
+                    ReorderPoint = product.ReorderPoint,
+                    Image = product.Image,
+                    Description = product.Description
+                };
+
+                return new ResultModel<ProductResponseDto>
+                {
+                    IsSuccess = true,
+                    Message = "Lấy chi tiết sản phẩm thành công",
+                    Data = productDto,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultModel<ProductResponseDto>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi lấy sản phẩm: {ex.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        /// <summary>
+        /// Thêm mới sản phẩm
+        /// </summary>
+        public async Task<ResultModel> AddProductAsync(CreateProductRequest request)
         {
             try
             {
                 var product = new Product
                 {
-                    SerialNumber = createProductDto.SerialNumber,
-                    Name = createProductDto.Name,
-                    ExpiredDate = createProductDto.ExpiredDate,
-                    Unit = createProductDto.Unit,
-                    UnitPrice = createProductDto.UnitPrice,
-                    ReceivedDate = createProductDto.ReceivedDate,
-                    PurchasedPrice = createProductDto.PurchasedPrice,
-                    ReorderPoint = createProductDto.ReorderPoint,
-                    Image = createProductDto.Image,
-                    Description = createProductDto.Description
+                    SerialNumber = request.SerialNumber,
+                    Name = request.Name,
+                    ExpiredDate = request.ExpiredDate,
+                    Unit = request.Unit,
+                    UnitPrice = request.UnitPrice,
+                    ReceivedDate = request.ReceivedDate,
+                    PurchasedPrice = request.PurchasedPrice,
+                    ReorderPoint = request.ReorderPoint,
+                    Image = request.Image,
+                    Description = request.Description
                 };
-                if (!ValidateProduct(product))
-                {
-                    throw new Exception("ExpiredDate should be later than ReceivedDate.");
-                }
+
                 await _unitOfWork.Products.AddAsync(product);
                 await _unitOfWork.SaveChangesAsync();
-                return product;
+
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Message = "Thêm sản phẩm thành công",
+                    StatusCode = StatusCodes.Status201Created
+                };
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return null;
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi thêm sản phẩm: {ex.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
             }
         }
 
-        public async Task<Product?> UpdateProductAsync(UpdateProductDto updateProductDto)
+        /// <summary>
+        /// Cập nhật sản phẩm
+        /// </summary>
+        public async Task<ResultModel> UpdateProductAsync(int productId, UpdateProductRequest request)
         {
             try
             {
-                var product = await _unitOfWork.Products.GetByIdAsync(updateProductDto.ProductId);
+                var product = await _unitOfWork.Products.GetByIdAsync(productId);
                 if (product == null)
                 {
-                    return null;
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy sản phẩm để cập nhật",
+                        StatusCode = StatusCodes.Status404NotFound
+                    };
                 }
 
-                product.ProductId = updateProductDto.ProductId;
-                product.SerialNumber = updateProductDto.SerialNumber;
-                product.Name = updateProductDto.Name;
-                product.ExpiredDate = updateProductDto.ExpiredDate;
-                product.Unit = updateProductDto.Unit;
-                product.UnitPrice = updateProductDto.UnitPrice;
-                product.ReceivedDate = updateProductDto.ReceivedDate;
-                product.PurchasedPrice = updateProductDto.PurchasedPrice;
-                product.ReorderPoint = updateProductDto.ReorderPoint;
-                product.Image = updateProductDto.Image;
-                product.Description = updateProductDto.Description;
+                // Cập nhật nếu có giá trị mới
+                if (!string.IsNullOrEmpty(request.Name)) product.Name = request.Name;
+                if (request.ExpiredDate.HasValue) product.ExpiredDate = request.ExpiredDate.Value;
+                if (!string.IsNullOrEmpty(request.Unit)) product.Unit = request.Unit;
+                if (request.UnitPrice.HasValue) product.UnitPrice = request.UnitPrice.Value;
+                if (request.ReceivedDate.HasValue) product.ReceivedDate = request.ReceivedDate.Value;
+                if (request.PurchasedPrice.HasValue) product.PurchasedPrice = request.PurchasedPrice.Value;
+                if (request.ReorderPoint.HasValue) product.ReorderPoint = request.ReorderPoint.Value;
+                if (!string.IsNullOrEmpty(request.Image)) product.Image = request.Image;
+                if (!string.IsNullOrEmpty(request.Description)) product.Description = request.Description;
 
-
-                //Checking before update
-                if (!ValidateProduct(product))
-                {
-                    throw new Exception("ExpiredDate should be later than ReceivedDate.");
-                }
-
+                _unitOfWork.Products.UpdateAsync(product);
                 await _unitOfWork.SaveChangesAsync();
-                return product;
+
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Message = "Cập nhật sản phẩm thành công",
+                    StatusCode = StatusCodes.Status200OK
+                };
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return null;
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi cập nhật sản phẩm: {ex.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        /// <summary>
+        /// Xóa sản phẩm theo Id
+        /// </summary>
+        public async Task<ResultModel> DeleteProductAsync(int productId)
+        {
+            try
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(productId);
+                if (product == null)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy sản phẩm để xóa",
+                        StatusCode = StatusCodes.Status404NotFound
+                    };
+                }
+
+                _unitOfWork.Products.DeleteAsync(product);
+                await _unitOfWork.SaveChangesAsync();
+
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Message = "Xóa sản phẩm thành công",
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi xóa sản phẩm: {ex.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
             }
         }
     }

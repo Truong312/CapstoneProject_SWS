@@ -1,52 +1,80 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SWS.BusinessObjects.Dtos.Product;
-using SWS.Repositories.Repositories.ProductRepo;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using SWS.Services.ApiModels.ProductModel;
 using SWS.Services.Services.ProductServices;
 
 namespace SWS.ApiCore.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    public class ProductController : BaseApiController
+    [ApiController]
+    public class ProductController : ControllerBase
     {
-        private readonly IProductRepository _productRepository;
-        private readonly IProductService _productService;
-        public ProductController(IProductRepository productRepository, IProductService productService)
+        private readonly IWarehouseProductService _productService;
+
+        public ProductController(IWarehouseProductService productService)
         {
-            _productRepository = productRepository;
             _productService = productService;
         }
 
-        [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAll([FromQuery] string? filter, [FromQuery] string? sortBy, [FromQuery] bool ascending = true)
+        // GET: api/product
+        [HttpGet]
+        public async Task<IActionResult> GetAllProducts()
         {
-            var products = await _productRepository.GetAllAsync(filter, sortBy, ascending);
-            return Ok(products);
+            var result = await _productService.GetAllProductsAsync();
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result.Data);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        // GET: api/product/{id}
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetProductById(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            if (product == null)
-            {
-                return NotFound(new { message = "Product not found" });
-            }
-            return Ok(product);
+            var result = await _productService.GetProductByIdAsync(id);
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result);
         }
 
-        [HttpPost("Create")]
-        public async Task<IActionResult> Create([FromBody] CreateProductDto dto)
+        // POST: api/product
+        [HttpPost]
+        public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request)
         {
-            var product = await _productService.CreateProductAsync(dto);
-            return Ok();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _productService.AddProductAsync(request);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
         }
 
-        [HttpPut("Update")]
-        public async Task<IActionResult> Update([FromBody] UpdateProductDto dto)
+        // PUT: api/product/{id}
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductRequest request)
         {
-            var product = await _productService.UpdateProductAsync(dto);
-            return Ok();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _productService.UpdateProductAsync(id, request);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        // DELETE: api/product/{id}
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var result = await _productService.DeleteProductAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
         }
     }
 }

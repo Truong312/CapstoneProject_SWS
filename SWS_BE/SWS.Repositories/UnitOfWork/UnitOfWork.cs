@@ -19,7 +19,8 @@ namespace SWS.Repositories.UnitOfWork
 
         public IAccountRepository Accounts => _accountRepository ??= new AccountRepository(_context);
         public IUserRepository Users => _userRepository ??= new UserRepository(_context);
-        public IProductRepository Products => _productRepository ??= new ProductRepository(_context); 
+
+        public IProductRepository Products => _productRepository ??= new ProductRepository(_context);
 
         public async Task<int> SaveChangesAsync()
         {
