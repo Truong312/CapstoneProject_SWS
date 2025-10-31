@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SWS.BusinessObjects.DTOs;
-using SWS.BusinessObjects.Models; // giữ 1 using thôi
+using SWS.BusinessObjects.Models;
 
 namespace SWS.Repositories.Repositories.ReturnRepo
 {
@@ -11,7 +11,9 @@ namespace SWS.Repositories.Repositories.ReturnRepo
 
         public async Task<List<ReturnStatusDto>> SearchAsync(string? q)
         {
-            var baseQuery = _ctx.ReturnOrders.Where(ro => ro.Status != null);
+            // baseQuery: chỉ còn chuỗi Status (đã loại null)
+            var baseQuery = _ctx.ReturnOrders
+                                .Where(ro => ro.Status != null);
 
             if (!string.IsNullOrWhiteSpace(q))
             {
@@ -19,11 +21,18 @@ namespace SWS.Repositories.Repositories.ReturnRepo
                 baseQuery = baseQuery.Where(ro => ro.Status!.Contains(q));
             }
 
-            return await baseQuery
-                .GroupBy(ro => ro.Status!)                 // đã loại null ở trên
-                .Select(g => new ReturnStatusDto(g.Key, g.Count())) // dùng positional args
+            // GroupBy trên cột đơn giản (string) -> EF dịch tốt
+            var grouped = await baseQuery
+                .Select(ro => ro.Status!)              // chọn chuỗi
+                .GroupBy(s => s)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
                 .OrderBy(x => x.Status)
-                .ToListAsync();
+                .ToListAsync();                        // materialize
+
+            // Map sang DTO ở phía client
+            return grouped
+                .Select(x => new ReturnStatusDto(x.Status, x.Count))
+                .ToList();
         }
     }
 }
