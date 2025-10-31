@@ -1,6 +1,7 @@
 using SWS.ApiCore.Extensions;
 using AppBackend.Extensions;
 using SWS.BusinessObjects.AppSettings;
+using SWS.Services.Services.ProductServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,7 @@ builder.Services.AddMemoryCache();
 
 // All Application Services (includes Booking, Queue, Cache, etc.)
 builder.Services.AddServicesConfig();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddControllers()   
     .AddJsonOptions(options =>

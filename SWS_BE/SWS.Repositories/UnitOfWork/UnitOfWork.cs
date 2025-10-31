@@ -1,5 +1,6 @@
 using SWS.BusinessObjects.Models;
 using SWS.Repositories.Repositories.AccountRepo;
+using SWS.Repositories.Repositories.ProductRepo;
 using SWS.Repositories.Repositories.UserRepo;
 
 namespace SWS.Repositories.UnitOfWork
@@ -9,6 +10,7 @@ namespace SWS.Repositories.UnitOfWork
         private readonly SmartWarehouseDbContext _context;
         private IAccountRepository? _accountRepository;
         private IUserRepository? _userRepository;
+        private IProductRepository? _productRepository;
 
         public UnitOfWork(SmartWarehouseDbContext context)
         {
@@ -17,6 +19,7 @@ namespace SWS.Repositories.UnitOfWork
 
         public IAccountRepository Accounts => _accountRepository ??= new AccountRepository(_context);
         public IUserRepository Users => _userRepository ??= new UserRepository(_context);
+        public IProductRepository Products => _productRepository ??= new ProductRepository(_context); 
 
         public async Task<int> SaveChangesAsync()
         {
