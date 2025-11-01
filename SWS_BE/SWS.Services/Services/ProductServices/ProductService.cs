@@ -283,7 +283,7 @@ namespace SWS.Services.Services.ProductServices
         {
             try
             {
-                var products = await _unitOfWork.Products.GetNearExpiredProductsAsync(DateOnly.FromDateTime(DateTime.Now));
+                var products = await _unitOfWork.Products.GetExpiredProductsAsync(DateOnly.FromDateTime(DateTime.Now));
                 var result = products.Select(product => new ProductResponseDto
                 {
                     ProductId = product.ProductId,

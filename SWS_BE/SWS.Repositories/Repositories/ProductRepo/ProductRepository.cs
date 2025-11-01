@@ -35,14 +35,14 @@ namespace SWS.Repositories.Repositories.ProductRepo
         public async Task<IEnumerable<Product>> GetNearExpiredProductsAsync(DateOnly currentDate)
         {
             return await _context.Products
-                .Where(p => p.ExpiredDate < currentDate.AddDays(30))
+                .Where(p => p.ExpiredDate > currentDate.AddDays(30))
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Product>> GetExpiredProductsAsync(DateOnly currentDate)
         {
             return await _context.Products
-                .Where(p => p.ExpiredDate < currentDate)
+                .Where(p => p.ExpiredDate > currentDate)
                 .ToListAsync();
         }
 
