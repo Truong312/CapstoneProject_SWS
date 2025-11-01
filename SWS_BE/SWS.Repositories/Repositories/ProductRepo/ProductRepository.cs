@@ -32,6 +32,13 @@ namespace SWS.Repositories.Repositories.ProductRepo
                 .FirstOrDefaultAsync(p => p.SerialNumber == serialNumber);
         }
 
+        public async Task<IEnumerable<Product>> GetNearExpiredProductsAsync(DateOnly currentDate)
+        {
+            return await _context.Products
+                .Where(p => p.ExpiredDate < currentDate.AddDays(30))
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<Product>> GetExpiredProductsAsync(DateOnly currentDate)
         {
             return await _context.Products
@@ -43,9 +50,18 @@ namespace SWS.Repositories.Repositories.ProductRepo
         {
             // Giả sử ReorderPoint là mức tồn kho tối thiểu
             // và bạn muốn tìm các sản phẩm có tồn kho thấp hơn mức đó.
-            return await _context.Products
-                .Where(p => p.ReorderPoint != null && p.ReorderPoint > 0)
-                .ToListAsync();
+            var products = await _context.Products.ToListAsync();
+            var result = new List<Product>();
+            foreach (var product in products)
+            {
+                //quantity là số lượng sản có thể tham gia order 
+                var quantity = _context.Inventories.Where(i => i.ProductId == product.ProductId).FirstAsync().Result.QuantityAvailable;
+                if(quantity< product.ReorderPoint)
+                {
+                    result.Add(product);
+                }
+            }
+            return result;
         }
     }
 }

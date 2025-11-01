@@ -15,6 +15,8 @@ namespace SWS.Repositories.Repositories.ProductRepo
     {
         // Có thể thêm các hàm đặc thù nếu cần
         Task<Product?> GetBySerialNumberAsync(string serialNumber);
+
+        Task<IEnumerable<Product>> GetNearExpiredProductsAsync(DateOnly currentDate);
         Task<IEnumerable<Product>> GetExpiredProductsAsync(DateOnly currentDate);
         Task<IEnumerable<Product>> GetLowStockProductsAsync();
     }
