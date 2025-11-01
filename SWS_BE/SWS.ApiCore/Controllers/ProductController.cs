@@ -76,5 +76,38 @@ namespace SWS.ApiCore.Controllers
 
             return Ok(result);
         }
+
+        // GET: api/product/near-expired
+        [HttpGet("near-expired")]
+        public async Task<IActionResult> NearExpiredProducts()
+        {
+            var result = await _productService.GetNearExpiredProductsAsync();
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        // GET: api/product/expired
+        [HttpGet("expired")]
+        public async Task<IActionResult> ExpiredProducts()
+        {
+            var result = await _productService.GetExpiredProductsAsync();
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        // GET: api/product/low-stock
+        [HttpGet("low-stock")]
+        public async Task<IActionResult> LowStockProducts()
+        {
+            var result = await _productService.GetLowStockProductsAsync();
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
     }
 }

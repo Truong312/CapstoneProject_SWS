@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace AppBackend.Extensions;
@@ -15,6 +16,21 @@ public static class SwaggerConfig
                 Title = "SWS.ApiCore",
                 Version = "v1",
                 Description = "API documentation for AppBackend"
+            });
+
+            //DateOnly format display in Swagger
+            c.MapType<DateOnly>(() => new OpenApiSchema
+            {
+                Type = "string",
+                Format = "date",
+                Example = new OpenApiString("2025-12-31")
+            });
+            // TimeOnly format display in Swagger
+            c.MapType<TimeOnly>(() => new OpenApiSchema
+            {
+                Type = "string",
+                Format = "time",
+                Example = new OpenApiString("14:30:00")
             });
 
             // JWT Security Definition

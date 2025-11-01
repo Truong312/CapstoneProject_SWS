@@ -240,5 +240,118 @@ namespace SWS.Services.Services.ProductServices
                 };
             }
         }
+
+        public async Task<ResultModel<IEnumerable<ProductResponseDto>>> GetNearExpiredProductsAsync()
+        {
+            try
+            {
+                var products = await _unitOfWork.Products.GetNearExpiredProductsAsync(DateOnly.FromDateTime(DateTime.Now));
+                var result = products.Select(product => new ProductResponseDto
+                {
+                    ProductId = product.ProductId,
+                    SerialNumber = product.SerialNumber,
+                    Name = product.Name,
+                    ExpiredDate = product.ExpiredDate,
+                    Unit = product.Unit,
+                    UnitPrice = product.UnitPrice,
+                    ReceivedDate = product.ReceivedDate,
+                    PurchasedPrice = product.PurchasedPrice,
+                    ReorderPoint = product.ReorderPoint,
+                    Image = product.Image,
+                    Description = product.Description
+                });
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = true,
+                    Message = "Danh sách sản phẩm sắp hết hạn( dưới 30 ngày)",
+                    Data = result,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi tìm sản phẩm sắp hết hạn: {ex.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        public async Task<ResultModel<IEnumerable<ProductResponseDto>>> GetExpiredProductsAsync()
+        {
+            try
+            {
+                var products = await _unitOfWork.Products.GetNearExpiredProductsAsync(DateOnly.FromDateTime(DateTime.Now));
+                var result = products.Select(product => new ProductResponseDto
+                {
+                    ProductId = product.ProductId,
+                    SerialNumber = product.SerialNumber,
+                    Name = product.Name,
+                    ExpiredDate = product.ExpiredDate,
+                    Unit = product.Unit,
+                    UnitPrice = product.UnitPrice,
+                    ReceivedDate = product.ReceivedDate,
+                    PurchasedPrice = product.PurchasedPrice,
+                    ReorderPoint = product.ReorderPoint,
+                    Image = product.Image,
+                    Description = product.Description
+                });
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = true,
+                    Message = "Danh sách sản phẩm đã hết hạn",
+                    Data = result,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi tìm sản phẩm đã hết hạn: {ex.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        public async Task<ResultModel<IEnumerable<ProductResponseDto>>> GetLowStockProductsAsync()
+        {
+            try
+            {
+                var products = await _unitOfWork.Products.GetLowStockProductsAsync();
+                var result = products.Select(product => new ProductResponseDto
+                {
+                    ProductId = product.ProductId,
+                    SerialNumber = product.SerialNumber,
+                    Name = product.Name,
+                    ExpiredDate = product.ExpiredDate,
+                    Unit = product.Unit,
+                    UnitPrice = product.UnitPrice,
+                    ReceivedDate = product.ReceivedDate,
+                    PurchasedPrice = product.PurchasedPrice,
+                    ReorderPoint = product.ReorderPoint,
+                    Image = product.Image,
+                    Description = product.Description
+                });
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = true,
+                    Message = "Danh sách sản phẩm cần nhập thêm",
+                    Data = result,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }catch(Exception ex)
+            {
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi tìm sản phẩm đã hết hạn: {ex.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
     }
 }
