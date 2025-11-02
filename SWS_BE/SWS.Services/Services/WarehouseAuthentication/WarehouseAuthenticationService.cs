@@ -400,28 +400,32 @@ namespace SWS.Services.Services.WarehouseAuthentication
 
         private string GenerateJwtToken(User user)
         {
-            var jwtSettings = _configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings["SecretKey"] ?? "YourDefaultSecretKeyForSmartWarehouse2024!@#";
-            var issuer = jwtSettings["Issuer"] ?? "SmartWarehouse";
-            var audience = jwtSettings["Audience"] ?? "SmartWarehouseUsers";
+            // Đọc đúng cùng section với AuthConfig (Jwt)
+            var issuer = _configuration["Jwt:Issuer"]!;
+            var audience = _configuration["Jwt:Audience"]!;
+            var keyBytes = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+            var signingKey = new SymmetricSecurityKey(keyBytes);
+            var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.FullName),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
-            };
+            // Thêm cả "uid" lẫn NameIdentifier để mọi helper đều đọc được
+            var claims = new List<Claim>
+    {
+        new("uid", user.UserId.ToString()),
+        new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+        new(ClaimTypes.Email, user.Email),
+        new(ClaimTypes.Name, user.FullName ?? string.Empty),
+        new(ClaimTypes.Role, user.Role.ToString())
+    };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var minutes = int.TryParse(_configuration["Jwt:AccessTokenExpirationMinutes"], out var m) ? m : 30;
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(24),
-                signingCredentials: credentials
+                notBefore: DateTime.UtcNow,
+                expires: DateTime.UtcNow.AddMinutes(minutes),
+                signingCredentials: creds
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
