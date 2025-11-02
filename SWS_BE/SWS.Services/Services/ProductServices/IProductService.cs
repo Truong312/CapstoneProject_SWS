@@ -52,6 +52,11 @@ namespace SWS.Services.Services.ProductServices
         /// Tìm sản phẩm có ít hàng cần nhập thêm
         /// </summary>
         Task<ResultModel<IEnumerable<ProductResponseDto>>> GetLowStockProductsAsync();
+
+        /// <summary>
+        /// Tìm kiếm sản phẩm theo tên hoặc số serial
+        /// </summary>
+        Task<ResultModel<IEnumerable<ProductResponseDto>>> SearchProductsAsync(string searchText);
     }
 
 }

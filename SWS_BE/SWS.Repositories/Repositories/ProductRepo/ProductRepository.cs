@@ -67,5 +67,18 @@ namespace SWS.Repositories.Repositories.ProductRepo
             var quantity= _context.Inventories.Where(i => i.ProductId == productId).FirstAsync().Result.QuantityAvailable;
             return quantity;
         }
+
+        public async Task<IEnumerable<Product>> SearchAsync(string searchText)
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+                return Enumerable.Empty<Product>();
+
+            return await _context.Products
+                .Where(p =>
+                    (!string.IsNullOrEmpty(p.Name) && EF.Functions.Like(p.Name, $"%{searchText}%")) ||
+                    (!string.IsNullOrEmpty(p.SerialNumber) && EF.Functions.Like(p.SerialNumber, $"%{searchText}%"))
+                )
+                .ToListAsync();
+        }
     }
 }

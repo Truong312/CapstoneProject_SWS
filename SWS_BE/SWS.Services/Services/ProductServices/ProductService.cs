@@ -353,5 +353,47 @@ namespace SWS.Services.Services.ProductServices
                 };
             }
         }
+        /// <summary>
+        /// Tìm kiếm sản phẩm theo tên hoặc số serial
+        /// </summary>
+        public async Task<ResultModel<IEnumerable<ProductResponseDto>>> SearchProductsAsync(string searchText)
+        {
+            try
+            {
+                var products = await _unitOfWork.Products.SearchAsync(searchText);
+
+                var result = products.Select(p => new ProductResponseDto
+                {
+                    ProductId = p.ProductId,
+                    SerialNumber = p.SerialNumber,
+                    Name = p.Name,
+                    ExpiredDate = p.ExpiredDate,
+                    Unit = p.Unit,
+                    UnitPrice = p.UnitPrice,
+                    ReceivedDate = p.ReceivedDate,
+                    PurchasedPrice = p.PurchasedPrice,
+                    ReorderPoint = p.ReorderPoint,
+                    Image = p.Image,
+                    Description = p.Description
+                });
+
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = true,
+                    Message = $"Kết quả tìm kiếm cho từ khóa: '{searchText}'",
+                    Data = result,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi tìm kiếm sản phẩm: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
     }
 }

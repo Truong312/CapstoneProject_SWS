@@ -17,7 +17,7 @@ namespace SWS.Repositories.Repositories.ProductRepo
         Task<IEnumerable<Product>> GetNearExpiredProductsAsync(DateOnly currentDate);
         Task<IEnumerable<Product>> GetExpiredProductsAsync(DateOnly currentDate);
         Task<IEnumerable<Product>> GetLowStockProductsAsync();
-
         Task<int> GetProductQuantity(int productId);
+        Task<IEnumerable<Product>> SearchAsync(string searchText);
     }
 }

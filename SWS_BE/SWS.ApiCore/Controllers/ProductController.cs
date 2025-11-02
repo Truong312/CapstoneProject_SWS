@@ -109,5 +109,17 @@ namespace SWS.ApiCore.Controllers
 
             return Ok(result.Data);
         }
+
+        // GET: api/product/search?text=abc
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProducts([FromQuery] string text)
+        {
+            var result = await _productService.SearchProductsAsync(text);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result.Data);
+        }
+
     }
 }
