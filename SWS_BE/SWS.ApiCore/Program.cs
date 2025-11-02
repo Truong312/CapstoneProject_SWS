@@ -1,9 +1,6 @@
 using SWS.ApiCore.Extensions;
 using AppBackend.Extensions;
 using SWS.BusinessObjects.AppSettings;
-using SWS.Repositories.Repositories.ReturnRepo;
-using SWS.Services.ReturnLookups;
-using SWS.Services.ReturnOrders;
 using SWS.BusinessObjects.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
