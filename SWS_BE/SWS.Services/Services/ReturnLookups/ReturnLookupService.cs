@@ -1,5 +1,5 @@
 ﻿using SWS.BusinessObjects.DTOs;
-using SWS.Repositories.Repositories.ReturnRepo;
+using SWS.Repositories.UnitOfWork;
 
 namespace SWS.Services.ReturnLookups
 {
@@ -11,24 +11,18 @@ namespace SWS.Services.ReturnLookups
 
     public class ReturnLookupService : IReturnLookupService
     {
-        private readonly IReturnReasonRepository _reasonRepo;
-        private readonly IReturnStatusRepository _statusRepo;
-
-        public ReturnLookupService(
-            IReturnReasonRepository reasonRepo,
-            IReturnStatusRepository statusRepo)
-        {
-            _reasonRepo = reasonRepo;
-            _statusRepo = statusRepo;
-        }
+        private readonly IUnitOfWork _uow;
+        public ReturnLookupService(IUnitOfWork uow) => _uow = uow;
 
         public async Task<List<ReturnReasonDto>> GetReasonsAsync(string? q)
         {
-            var items = await _reasonRepo.SearchAsync(q);
-            return items.Select(r => new ReturnReasonDto(r.ReasonId, r.ReasonCode, r.Description)).ToList();
+            var reasons = await _uow.ReturnReasons.SearchAsync(q);
+            return reasons
+                .Select(r => new ReturnReasonDto(r.ReasonId, r.ReasonCode ?? string.Empty, r.Description ?? string.Empty))
+                .ToList();
         }
 
         public Task<List<ReturnStatusDto>> GetStatusesAsync(string? q)
-            => _statusRepo.SearchAsync(q);
+            => _uow.ReturnStatuses.SearchAsync(q);
     }
 }
