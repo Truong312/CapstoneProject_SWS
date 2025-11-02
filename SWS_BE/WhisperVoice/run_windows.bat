@@ -1,7 +1,8 @@
 @echo off
 REM run_windows.bat - Start FastAPI uvicorn and static server (Windows CMD)
 REM Usage: run_windows.bat [MODEL] [COMPUTE]
-REM Example: run_windows.bat small float16
+REM Example: run_windows.bat small ""    -> CPU (default)
+REM Example: run_windows.bat small float16 -> try GPU float16 (may fail if cuDNN/CUDA not installed)
 
 setlocal EnableDelayedExpansion
 set PORT=8001
@@ -37,13 +38,20 @@ call .venv\Scripts\activate
 
 REM Set environment variables for this process
 set WHISPER_MODEL=%MODEL%
-set WHISPER_COMPUTE=%COMPUTE%
+
+REM Default to CPU to avoid cuDNN/CUDA errors unless user explicitly provides a compute type
+if NOT "%COMPUTE%"=="" (
+  set WHISPER_COMPUTE=%COMPUTE%
+) else (
+  set WHISPER_COMPUTE=
+)
 
 REM Start uvicorn in background, redirect logs
-if "%COMPUTE%"=="" (
-  start "uvicorn" /B cmd /C ".venv\Scripts\uvicorn.exe main:app --host 127.0.0.1 --port %PORT% --log-level info > uvicorn.log 2>&1"
+REM Use venv python -m uvicorn to avoid relying on uvicorn.exe availability
+if "%WHISPER_COMPUTE%"=="" (
+  start "uvicorn" /B cmd /C ".venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port %PORT% --log-level info > uvicorn.log 2>&1"
 ) else (
-  start "uvicorn" /B cmd /C "set WHISPER_MODEL=%MODEL%&& set WHISPER_COMPUTE=%COMPUTE%&& .venv\Scripts\uvicorn.exe main:app --host 127.0.0.1 --port %PORT% --log-level info > uvicorn.log 2>&1"
+  start "uvicorn" /B cmd /C "set WHISPER_MODEL=%MODEL%&& set WHISPER_COMPUTE=%WHISPER_COMPUTE%&& .venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port %PORT% --log-level info > uvicorn.log 2>&1"
 )
 
 echo Starting static file server on port %STATIC_PORT% (serves test.html)
@@ -60,4 +68,3 @@ echo Press any key to exit this window (services continue running in background)
 pause >nul
 
 endlocal
-
