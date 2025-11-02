@@ -35,7 +35,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         // POST: api/product
@@ -49,7 +49,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         // PUT: api/product/{id}
@@ -63,7 +63,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         // DELETE: api/product/{id}
@@ -74,7 +74,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         // GET: api/product/near-expired
@@ -83,9 +83,9 @@ namespace SWS.ApiCore.Controllers
         {
             var result = await _productService.GetNearExpiredProductsAsync();
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return NotFound(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         // GET: api/product/expired
@@ -94,9 +94,9 @@ namespace SWS.ApiCore.Controllers
         {
             var result = await _productService.GetExpiredProductsAsync();
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return NotFound(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         // GET: api/product/low-stock
@@ -105,9 +105,9 @@ namespace SWS.ApiCore.Controllers
         {
             var result = await _productService.GetLowStockProductsAsync();
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return NotFound(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
     }
 }

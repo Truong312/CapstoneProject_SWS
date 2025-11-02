@@ -51,17 +51,9 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new JsonDateOnlyConverter());
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
-    c.MapType<DateOnly?>(() => new OpenApiSchema
-    {
-        Type = "string",
-        Format = "date",
-        Nullable = true,
-        Example = new OpenApiString("2025-11-02")
-    });
-});
 
 // Bind app settings
 builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection("GoogleAuthSettings"));

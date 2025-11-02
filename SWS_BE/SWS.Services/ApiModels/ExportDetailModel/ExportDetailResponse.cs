@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SWS.Services.ApiModels.ExportOrderModel
+namespace SWS.Services.ApiModels.ExportDetailModel
 {
     public class ExportDetailResponse
     {

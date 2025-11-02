@@ -18,7 +18,7 @@ namespace SWS.Repositories.Repositories.ExportRepo
             _context = context;
         }
 
-        public async Task<IEnumerable<ExportOrder>> GetByCustomerId(int customerId)
+        public async Task<IEnumerable<ExportOrder>> GetAllByCustomerId(int customerId)
         {
             return await _context.ExportOrders.Where(e => e.CustomerId == customerId).ToListAsync();
         }

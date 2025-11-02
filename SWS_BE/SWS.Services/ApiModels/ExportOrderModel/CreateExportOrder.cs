@@ -7,10 +7,8 @@ using SWS.BusinessObjects.Enums;
 
 namespace SWS.Services.ApiModels.ExportOrderModel
 {
-    public class ExportOrderResponse
+    public class CreateExportOrder
     {
-        public int ExportOrderId { get; set; }
-
         public string? InvoiceNumber { get; set; }
 
         public DateOnly OrderDate { get; set; }
@@ -19,7 +17,7 @@ namespace SWS.Services.ApiModels.ExportOrderModel
 
         public string? Currency { get; set; }
 
-        public DateOnly? CreatedDate { get; set; }
+        //public DateOnly? CreatedDate { get; set; }
 
         public DateOnly? ShippedDate { get; set; }
 
@@ -33,7 +31,7 @@ namespace SWS.Services.ApiModels.ExportOrderModel
 
         public string? Description { get; set; }
 
-        public StatusEnums? Status { get; set; }
+        //public StatusEnums? Status { get; set; }
 
         public int? CreatedBy { get; set; }
     }
