@@ -1,5 +1,6 @@
-﻿using SWS.BusinessObjects.DTOs;
-using SWS.Repositories.Repositories.ReturnRepo;
+﻿// File: SWS.Services/Services/ReturnOrders/ReturnOrderQueryService.cs
+using SWS.BusinessObjects.DTOs;
+using SWS.Repositories.UnitOfWork;   // 👈 dùng UoW, KHÔNG inject repo trực tiếp nữa
 
 namespace SWS.Services.ReturnOrders
 {
@@ -14,14 +15,16 @@ namespace SWS.Services.ReturnOrders
 
     public class ReturnOrderQueryService : IReturnOrderQueryService
     {
-        private readonly IReturnOrderQueryRepository _repo;
-        public ReturnOrderQueryService(IReturnOrderQueryRepository repo) => _repo = repo;
+        private readonly IUnitOfWork _uow;
+        public ReturnOrderQueryService(IUnitOfWork uow) => _uow = uow;
 
         public async Task<List<ReturnOrderListItemDto>> GetListAsync(
             DateOnly? from, DateOnly? to, string? status,
             int? exportOrderId, int? checkedBy, int? reviewedBy)
         {
-            var list = await _repo.GetListAsync(from, to, status, exportOrderId, checkedBy, reviewedBy);
+            var list = await _uow.ReturnOrdersQuery.GetListAsync(from, to, status, exportOrderId, checkedBy, reviewedBy);
+
+            // Dùng named-args cho khớp DTO của bạn
             return list.Select(ro => new ReturnOrderListItemDto(
                 ReturnOrderId: ro.ReturnOrderId,
                 ExportOrderId: ro.ExportOrderId,
@@ -35,7 +38,7 @@ namespace SWS.Services.ReturnOrders
 
         public async Task<ReturnOrderDetailDto?> GetDetailAsync(int id)
         {
-            var header = await _repo.GetDetailAsync(id);
+            var header = await _uow.ReturnOrdersQuery.GetDetailAsync(id);
             if (header == null) return null;
 
             var dto = new ReturnOrderDetailDto
@@ -52,10 +55,10 @@ namespace SWS.Services.ReturnOrders
                 Lines = header.ReturnOrderDetails.Select(d => new ReturnOrderLineDto(
                     ReturnDetailId: d.ReturnDetailId,
                     ProductId: d.ProductId,
-                    ProductName: d.Product.Name,
+                    ProductName: d.Product?.Name,              // 👈 null-safe
                     Quantity: d.Quantity,
                     ReasonId: d.ReasonId,
-                    ReasonCode: d.Reason?.ReasonCode,
+                    ReasonCode: d.Reason?.ReasonCode,         // 👈 null-safe
                     Note: d.Note,
                     ActionId: d.ActionId,
                     LocationId: d.LocationId
