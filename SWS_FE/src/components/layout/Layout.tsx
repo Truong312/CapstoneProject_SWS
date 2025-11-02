@@ -20,7 +20,8 @@ import {
   Code,
   TrendingUp,
   BarChart3,
-  ShoppingBag
+  ShoppingBag,
+  Mic
 } from 'lucide-react';
 import { useTheme } from '../theme-provider';
 import { Logo } from '../Logo';
@@ -85,6 +86,7 @@ const Layout = () => {
       ]
     },
     { name: 'Customers', icon: Users, path: '/customers' },
+    { name: 'Voice Query', icon: Mic, path: '/voice-query', badge: 0 },
     { 
       name: 'Reports', 
       icon: BarChart3, 

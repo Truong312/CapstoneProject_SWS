@@ -7,6 +7,7 @@ import Inventory from '@/pages/Inventory'
 import Orders from '@/pages/Orders'
 import Settings from '@/pages/Settings'
 import Login from '@/pages/Login'
+import VoiceQuery from '@/pages/VoiceQuery'
 import UIShowcase from '@/pages/UIShowcase'
 import UIComponents from '@/pages/UIComponents'
 import UIResourcesLanding from '@/pages/UIResourcesLanding'
@@ -22,6 +23,7 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="voice-query" element={<VoiceQuery />} />
           <Route path="settings" element={<Settings />} />
           <Route path="ui-resources" element={<UIResourcesLanding />} />
           <Route path="ui-showcase" element={<UIShowcase />} />

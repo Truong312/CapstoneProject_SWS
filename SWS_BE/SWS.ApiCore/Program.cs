@@ -1,6 +1,10 @@
 using SWS.ApiCore.Extensions;
 using AppBackend.Extensions;
 using SWS.BusinessObjects.AppSettings;
+using SWS.Repositories.Repositories.ReturnRepo;
+using SWS.Services.ReturnLookups;
+using SWS.Services.ReturnOrders;
+using SWS.BusinessObjects.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +20,8 @@ builder.Services.AddDefaultAuth(builder.Configuration);
 builder.Services.AddSessionConfig();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRateLimitConfig();   
+builder.Services.AddGeminiConfig(builder.Configuration);
+builder.Services.AddWhisperConfig(builder.Configuration);
 
 // Memory Cache for room locking
 builder.Services.AddMemoryCache();
@@ -32,6 +38,21 @@ builder.Services.AddControllers()
 builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection("GoogleAuthSettings"));
 
 var app = builder.Build();
+
+// Seed database khi app khởi động
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        await services.SeedDatabaseAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Lỗi khi seed database");
+    }
+}
 
 // Middleware
 if (app.Environment.IsDevelopment())

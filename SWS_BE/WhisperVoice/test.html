@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Whisper API Recorder Test</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding: 20px; max-width: 800px; margin: auto; }
+    h1 { font-size: 1.25rem; }
+    button { margin: 6px; padding: 8px 12px; }
+    #status { margin-top: 12px; }
+    pre { background:#f6f8fa; padding:12px; border-radius:6px; overflow:auto; }
+  </style>
+</head>
+<body>
+  <h1>Whisper API — Test ghi âm và gửi</h1>
+  <p>Nhấn <strong>Start</strong> để bắt đầu ghi âm, <strong>Stop</strong> để dừng; sau đó có thể <strong>Play</strong> hoặc <strong>Send</strong> đến API.</p>
+
+  <div>
+    <button id="btnStart">Start</button>
+    <button id="btnStop" disabled>Stop</button>
+    <button id="btnPlay" disabled>Play</button>
+    <button id="btnSend" disabled>Send to API</button>
+    <select id="lang">
+      <option value="vi" selected>vi (Vietnamese)</option>
+      <option value="en">en (English)</option>
+      <option value="auto">auto</option>
+    </select>
+
+    <!-- New controls for tuning -->
+    <label style="margin-left:12px">beam_size: <input id="beam" type="number" value="5" min="1" max="20" style="width:64px"></label>
+    <label style="margin-left:12px">temperature: <input id="temp" type="number" step="0.1" value="0.0" min="0" max="2" style="width:64px"></label>
+    <label style="margin-left:12px">task:
+      <select id="task">
+        <option value="transcribe" selected>transcribe</option>
+        <option value="translate">translate</option>
+      </select>
+    </label>
+    <label style="margin-left:12px">word timestamps: <input id="wt" type="checkbox"></label>
+  </div>
+
+  <audio id="player" controls style="display:block; margin-top:12px; width:100%"></audio>
+
+  <div id="status"></div>
+  <h3>Response</h3>
+  <pre id="response">(no response yet)</pre>
+
+  <script>
+    // Simple recorder + WAV conversion + upload to FastAPI endpoint
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let wavBlob = null;
+
+    const btnStart = document.getElementById('btnStart');
+    const btnStop = document.getElementById('btnStop');
+    const btnPlay = document.getElementById('btnPlay');
+    const btnSend = document.getElementById('btnSend');
+    const player = document.getElementById('player');
+    const status = document.getElementById('status');
+    const responseEl = document.getElementById('response');
+    const langSelect = document.getElementById('lang');
+    const beamInput = document.getElementById('beam');
+    const tempInput = document.getElementById('temp');
+    const taskSelect = document.getElementById('task');
+    const wtInput = document.getElementById('wt');
+
+    function setStatus(txt) { status.textContent = txt; }
+
+    btnStart.onclick = async () => {
+      setStatus('Requesting microphone...');
+      recordedChunks = [];
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = async () => {
+          setStatus('Recording stopped — converting to WAV...');
+          const blob = new Blob(recordedChunks, { type: recordedChunks[0]?.type || 'audio/webm' });
+          try {
+            wavBlob = await convertToWav(blob);
+            const url = URL.createObjectURL(wavBlob);
+            player.src = url;
+            btnPlay.disabled = false;
+            btnSend.disabled = false;
+            setStatus('Ready (converted to WAV) — you can Play or Send');
+          } catch (err) {
+            console.error(err);
+            setStatus('Conversion to WAV failed: ' + err.message);
+          }
+        };
+        mediaRecorder.start();
+        btnStart.disabled = true;
+        btnStop.disabled = false;
+        btnPlay.disabled = true;
+        btnSend.disabled = true;
+        setStatus('Recording...');
+      } catch (err) {
+        console.error(err);
+        setStatus('Microphone access denied or unavailable: ' + err.message);
+      }
+    };
+
+    btnStop.onclick = () => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        btnStart.disabled = false;
+        btnStop.disabled = true;
+      }
+    };
+
+    btnPlay.onclick = () => {
+      if (player.src) player.play();
+    };
+
+    btnSend.onclick = async () => {
+      if (!wavBlob) { setStatus('No recording to send'); return; }
+      setStatus('Uploading...');
+      responseEl.textContent = '(waiting)';
+
+      const fd = new FormData();
+      fd.append('file', wavBlob, 'recording.wav');
+      fd.append('lang', langSelect.value || 'vi');
+      // append tuning params
+      fd.append('beam_size', beamInput.value);
+      fd.append('temperature', tempInput.value);
+      fd.append('task', taskSelect.value);
+      fd.append('word_timestamps', wtInput.checked ? 'true' : 'false');
+
+      try {
+        // NOTE: ensure this port matches the server where uvicorn is running (default 8001 in our setup)
+        const res = await fetch('http://127.0.0.1:8001/v1/audio/transcriptions', {
+          method: 'POST',
+          body: fd
+        });
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok) {
+          if (contentType.includes('application/json')) {
+            const data = await res.json();
+            responseEl.textContent = JSON.stringify(data, null, 2);
+            setStatus('Got response (HTTP ' + res.status + ')');
+          } else {
+            const text = await res.text();
+            responseEl.textContent = text;
+            setStatus('Got non-JSON response (HTTP ' + res.status + ')');
+          }
+        } else {
+          const text = await res.text();
+          responseEl.textContent = text;
+          setStatus('Error: HTTP ' + res.status);
+        }
+      } catch (err) {
+        console.error(err);
+        responseEl.textContent = err.toString();
+        setStatus('Upload failed: ' + err.message + '\nIf this is a CORS error, enable CORS in your FastAPI app.');
+      }
+    };
+
+    // Convert a recorded blob (webm/ogg) to WAV using WebAudio decode + WAV encoder
+    async function convertToWav(blob) {
+      const arrayBuffer = await blob.arrayBuffer();
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+      // Resample & mixdown to mono 16kHz to provide consistent input to the ASR model
+      const targetRate = 16000;
+      const monoBuffer = await resampleToMono(audioBuffer, targetRate);
+      const wavArrayBuffer = encodeWAV(monoBuffer);
+      return new Blob([wavArrayBuffer], { type: 'audio/wav' });
+    }
+
+    // Resample and mix to mono using OfflineAudioContext
+    async function resampleToMono(audioBuffer, targetSampleRate) {
+      // Create an OfflineAudioContext with 1 channel (mono) at target sample rate
+      const lengthInSamples = Math.ceil(audioBuffer.duration * targetSampleRate);
+      const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, lengthInSamples, targetSampleRate);
+
+      // Create a buffer source and copy multi-channel into a single channel (mixdown)
+      const src = offlineCtx.createBufferSource();
+
+      // If original has multiple channels, mix them down into one temporary buffer
+      if (audioBuffer.numberOfChannels === 1) {
+        src.buffer = audioBuffer;
+      } else {
+        // create an intermediate buffer with same length and sampleRate as original
+        const tmp = offlineCtx.createBuffer(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
+        for (let ch = 0; ch < audioBuffer.numberOfChannels; ch++) {
+          tmp.getChannelData(ch).set(audioBuffer.getChannelData(ch));
+        }
+        src.buffer = tmp;
+      }
+
+      // Connect through a gain node to mix channels down to mono
+      const merger = offlineCtx.createChannelMerger(1);
+      // Simpler approach: connect source directly to destination - WebAudio will do channel mixing
+      src.connect(offlineCtx.destination);
+      src.start(0);
+
+      const renderedBuffer = await offlineCtx.startRendering();
+
+      // `renderedBuffer` is mono at targetSampleRate
+      return renderedBuffer;
+    }
+
+    // WAV encoder taken from common browser examples; supports multi-channel
+    function encodeWAV(audioBuffer) {
+      const numChannels = audioBuffer.numberOfChannels;
+      const sampleRate = audioBuffer.sampleRate;
+      const duration = audioBuffer.length;
+
+      // interleave
+      let interleaved;
+      if (numChannels === 1) {
+        interleaved = audioBuffer.getChannelData(0);
+      } else {
+        const chanData = [];
+        for (let c = 0; c < numChannels; c++) chanData.push(audioBuffer.getChannelData(c));
+        interleaved = interleave(chanData);
+      }
+
+      const bitsPerSample = 16;
+      const bytesPerSample = bitsPerSample / 8;
+      const blockAlign = numChannels * bytesPerSample;
+      const buffer = new ArrayBuffer(44 + interleaved.length * bytesPerSample);
+      const view = new DataView(buffer);
+
+      /* RIFF identifier */ writeString(view, 0, 'RIFF');
+      /* file length */ view.setUint32(4, 36 + interleaved.length * bytesPerSample, true);
+      /* RIFF type */ writeString(view, 8, 'WAVE');
+      /* format chunk identifier */ writeString(view, 12, 'fmt ');
+      /* format chunk length */ view.setUint32(16, 16, true);
+      /* sample format (raw) */ view.setUint16(20, 1, true);
+      /* channel count */ view.setUint16(22, numChannels, true);
+      /* sample rate */ view.setUint32(24, sampleRate, true);
+      /* byte rate (sample rate * block align) */ view.setUint32(28, sampleRate * blockAlign, true);
+      /* block align (channel count * bytes per sample) */ view.setUint16(32, blockAlign, true);
+      /* bits per sample */ view.setUint16(34, bitsPerSample, true);
+      /* data chunk identifier */ writeString(view, 36, 'data');
+      /* data chunk length */ view.setUint32(40, interleaved.length * bytesPerSample, true);
+
+      // write PCM samples
+      floatTo16BitPCM(view, 44, interleaved);
+
+      return buffer;
+    }
+
+    function writeString(view, offset, string) {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    }
+
+    function floatTo16BitPCM(output, offset, input) {
+      for (let i = 0; i < input.length; i++, offset += 2) {
+        let s = Math.max(-1, Math.min(1, input[i]));
+        output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      }
+    }
+
+    function interleave(channels) {
+      const length = channels[0].length;
+      const numChannels = channels.length;
+      const interleaved = new Float32Array(length * numChannels);
+      for (let i = 0; i < length; i++) {
+        for (let ch = 0; ch < numChannels; ch++) {
+          interleaved[i * numChannels + ch] = channels[ch][i];
+        }
+      }
+      return interleaved;
+    }
+
+  </script>
+
+  <!-- Usage notes:
+    * Serve this file from a local static server (e.g. `python -m http.server`) and open it in the browser.
+    * If you get CORS errors when calling http://127.0.0.1:8001, enable CORS in your FastAPI app (add CORSMiddleware).
+    Example FastAPI CORS snippet:
+
+    from fastapi.middleware.cors import CORSMiddleware
+    app.add_middleware(
+      CORSMiddleware,
+      allow_origins=["http://localhost:8000", "http://127.0.0.1:8080", "http://localhost:8080"],
+      allow_credentials=True,
+      allow_methods=["*"],
+      allow_headers=["*"],
+    )
+  -->
+</body>
+</html>
