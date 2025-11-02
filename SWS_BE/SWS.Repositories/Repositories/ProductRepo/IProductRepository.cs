@@ -6,8 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SWS.BusinessObjects.Dtos.Product;
-using SWS.BusinessObjects.Models;
-using SWS.Repositories.Generic;
 
 namespace SWS.Repositories.Repositories.ProductRepo
 {
@@ -19,5 +17,7 @@ namespace SWS.Repositories.Repositories.ProductRepo
         Task<IEnumerable<Product>> GetNearExpiredProductsAsync(DateOnly currentDate);
         Task<IEnumerable<Product>> GetExpiredProductsAsync(DateOnly currentDate);
         Task<IEnumerable<Product>> GetLowStockProductsAsync();
+
+        Task<int> GetProductQuantity(int productId);
     }
 }

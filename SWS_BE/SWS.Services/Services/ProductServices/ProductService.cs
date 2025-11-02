@@ -6,7 +6,7 @@ using SWS.Services.ApiModels.ProductModel;
 
 namespace SWS.Services.Services.ProductServices
 {
-    public class WarehouseProductService : IWarehouseProductService
+    public class WarehouseProductService : IProductService
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -47,12 +47,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status200OK
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel<IEnumerable<ProductResponseDto>>
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi lấy danh sách sản phẩm: {ex.Message}",
+                    Message = $"Lỗi khi lấy danh sách sản phẩm: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -99,12 +99,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status200OK
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel<ProductResponseDto>
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi lấy sản phẩm: {ex.Message}",
+                    Message = $"Lỗi khi lấy sản phẩm: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -141,12 +141,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status201Created
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi thêm sản phẩm: {ex.Message}",
+                    Message = $"Lỗi khi thêm sản phẩm: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -191,12 +191,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status200OK
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi cập nhật sản phẩm: {ex.Message}",
+                    Message = $"Lỗi khi cập nhật sản phẩm: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -230,12 +230,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status200OK
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi xóa sản phẩm: {ex.Message}",
+                    Message = $"Lỗi khi xóa sản phẩm: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -268,12 +268,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status200OK
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel<IEnumerable<ProductResponseDto>>
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi tìm sản phẩm sắp hết hạn: {ex.Message}",
+                    Message = $"Lỗi khi tìm sản phẩm sắp hết hạn: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -306,12 +306,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status200OK
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel<IEnumerable<ProductResponseDto>>
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi tìm sản phẩm đã hết hạn: {ex.Message}",
+                    Message = $"Lỗi khi tìm sản phẩm đã hết hạn: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -343,12 +343,12 @@ namespace SWS.Services.Services.ProductServices
                     Data = result,
                     StatusCode = StatusCodes.Status200OK
                 };
-            }catch(Exception ex)
+            }catch(Exception e)
             {
                 return new ResultModel<IEnumerable<ProductResponseDto>>
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi tìm sản phẩm đã hết hạn: {ex.Message}",
+                    Message = $"Lỗi khi tìm sản phẩm đã hết hạn: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }

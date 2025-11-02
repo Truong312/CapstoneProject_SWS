@@ -5,6 +5,7 @@ using SWS.Services;
 using SWS.Services.Helpers;
 using SWS.Services.RateLimiting;
 using SWS.Services.Services.Email;
+using SWS.Services.Services.ExportOrderServices;
 using SWS.Services.Services.ProductServices;
 using SWS.Services.Services.WarehouseAuthentication;
 
@@ -31,7 +32,8 @@ public static class ServicesConfig
         services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IWarehouseAuthenticationService, WarehouseAuthenticationService>();
         services.AddScoped<IGoogleLoginService, GoogleLoginService>();
-        services.AddScoped<IWarehouseProductService, WarehouseProductService>();
+        services.AddScoped<IProductService, WarehouseProductService>();
+        services.AddScoped<IExportOrderService, ExportOrderService>();
         services.AddSingleton<RateLimiterStore>();
         #endregion
 

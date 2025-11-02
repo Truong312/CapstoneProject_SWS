@@ -7,11 +7,11 @@ namespace SWS.ApiCore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductController : BaseApiController
     {
-        private readonly IWarehouseProductService _productService;
+        private readonly IProductService _productService;
 
-        public ProductController(IWarehouseProductService productService)
+        public ProductController(IProductService productService)
         {
             _productService = productService;
         }

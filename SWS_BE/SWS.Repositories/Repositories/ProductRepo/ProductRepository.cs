@@ -9,8 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SWS.BusinessObjects.Dtos.Product;
-using SWS.BusinessObjects.Models;
-using SWS.Repositories.Generic;
 using System.Linq.Dynamic.Core;
 
 
@@ -54,14 +52,20 @@ namespace SWS.Repositories.Repositories.ProductRepo
             var result = new List<Product>();
             foreach (var product in products)
             {
-                //quantity là số lượng sản có thể tham gia order 
-                var quantity = _context.Inventories.Where(i => i.ProductId == product.ProductId).FirstAsync().Result.QuantityAvailable;
+                var quantity = GetProductQuantity(product.ProductId).Result;
                 if(quantity< product.ReorderPoint)
                 {
                     result.Add(product);
                 }
             }
             return result;
+        }
+
+        //quantity là số lượng sản có thể tham gia order
+        public async Task<int> GetProductQuantity(int productId)
+        {
+            var quantity= _context.Inventories.Where(i => i.ProductId == productId).FirstAsync().Result.QuantityAvailable;
+            return quantity;
         }
     }
 }

@@ -11,7 +11,7 @@ using SWS.BusinessObjects.Models;
 namespace SWS.Services.Services.ProductServices
 {
 
-    public interface IWarehouseProductService
+    public interface IProductService
     {
         /// <summary>
         /// Lấy danh sách tất cả sản phẩm
