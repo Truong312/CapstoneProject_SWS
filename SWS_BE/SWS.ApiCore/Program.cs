@@ -2,6 +2,7 @@
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using SWS.Repositories.UnitOfWork;
 
 using SWS.ApiCore.Extensions;
 using AppBackend.Extensions;
@@ -57,6 +58,7 @@ builder.Services.AddControllers()
 
 // Bind app settings
 builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection("GoogleAuthSettings"));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // ========== Authorization Policies (dựa trên Role) ==========
 builder.Services.AddAuthorization(options =>
