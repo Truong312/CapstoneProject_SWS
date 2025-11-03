@@ -283,10 +283,17 @@ const Layout = () => {
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600 dark:text-red-400">
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </DropdownMenuItem>
+              <DropdownMenuItem
+  onClick={() => {
+    localStorage.removeItem("token"); // 🧹 Xóa token khỏi localStorage
+    navigate("/login");               // 🔄 Quay về trang đăng nhập
+  }}
+  className="text-red-600 dark:text-red-400 cursor-pointer"
+>
+  <LogOut className="h-4 w-4 mr-2" />
+  Logout
+</DropdownMenuItem>
+
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -11,6 +11,7 @@ import VoiceQuery from '@/pages/VoiceQuery'
 import UIShowcase from '@/pages/UIShowcase'
 import UIComponents from '@/pages/UIComponents'
 import UIResourcesLanding from '@/pages/UIResourcesLanding'
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 function App() {
   return (
@@ -18,7 +19,14 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<Login />} />
-        <Route path="/" element={<Layout />}>
+       <Route
+  path="/"
+  element={
+    <ProtectedRoute>
+      <Layout />
+    </ProtectedRoute>
+  }
+>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
           <Route path="inventory" element={<Inventory />} />
