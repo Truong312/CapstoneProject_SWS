@@ -7,11 +7,11 @@ namespace SWS.ApiCore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductController : BaseApiController
     {
-        private readonly IWarehouseProductService _productService;
+        private readonly IProductService _productService;
 
-        public ProductController(IWarehouseProductService productService)
+        public ProductController(IProductService productService)
         {
             _productService = productService;
         }
@@ -35,7 +35,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         // POST: api/product
@@ -49,7 +49,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         // PUT: api/product/{id}
@@ -63,7 +63,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         // DELETE: api/product/{id}
@@ -74,7 +74,52 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result);
+            return Ok(result.Data);
         }
+
+        // GET: api/product/near-expired
+        [HttpGet("near-expired")]
+        public async Task<IActionResult> NearExpiredProducts()
+        {
+            var result = await _productService.GetNearExpiredProductsAsync();
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result.Data);
+        }
+
+        // GET: api/product/expired
+        [HttpGet("expired")]
+        public async Task<IActionResult> ExpiredProducts()
+        {
+            var result = await _productService.GetExpiredProductsAsync();
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result.Data);
+        }
+
+        // GET: api/product/low-stock
+        [HttpGet("low-stock")]
+        public async Task<IActionResult> LowStockProducts()
+        {
+            var result = await _productService.GetLowStockProductsAsync();
+            if (!result.IsSuccess)
+                return NotFound(result);
+
+            return Ok(result.Data);
+        }
+
+        // GET: api/product/search?text=abc
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProducts([FromQuery] string text)
+        {
+            var result = await _productService.SearchProductsAsync(text);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result.Data);
+        }
+
     }
 }

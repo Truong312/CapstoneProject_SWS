@@ -1,4 +1,6 @@
 ﻿using SWS.Repositories.Repositories.AccountRepo;
+using SWS.Repositories.Repositories.ExportDetailRepo;
+using SWS.Repositories.Repositories.ExportRepo;
 using SWS.Repositories.Repositories.ProductRepo;
 using SWS.Repositories.Repositories.UserRepo;
 using SWS.Repositories.Repositories.ImportOrders;
@@ -22,6 +24,8 @@ namespace SWS.Repositories.UnitOfWork
         IReturnStatusRepository ReturnStatuses { get; }
         IReturnOrderQueryRepository ReturnOrdersQuery { get; }
 
+        IExportOrderRepository ExportOrders { get; }
+        IExportDetailRepository ExportDetails { get; }
         Task<int> SaveChangesAsync();
     }
 }

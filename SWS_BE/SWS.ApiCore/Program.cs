@@ -12,6 +12,7 @@ using SWS.BusinessObjects.AppSettings;
 using SWS.Repositories.Repositories.ReturnRepo;
 using SWS.Services.ReturnLookups;
 using SWS.Services.ReturnOrders;
+using SWS.Services.Services.ProductServices;
 
 // Import Orders
 using SWS.Repositories.Repositories.ImportOrders;
@@ -50,29 +51,10 @@ builder.Services.AddServicesConfig();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        // 👇 ĐĂNG KÝ CONVERTERS CHO DateOnly / DateOnly?
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.Converters.Add(new JsonDateOnlyConverter());
-        options.JsonSerializerOptions.Converters.Add(new JsonNullableDateOnlyConverter());
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
-
-// 👇 BỔ SUNG map schema cho DateOnly trên Swagger (để hiển thị string 'date')
-builder.Services.AddSwaggerGen(c =>
-{
-    c.MapType<DateOnly>(() => new OpenApiSchema
-    {
-        Type = "string",
-        Format = "date",
-        Example = new OpenApiString("2025-11-02")
-    });
-    c.MapType<DateOnly?>(() => new OpenApiSchema
-    {
-        Type = "string",
-        Format = "date",
-        Nullable = true,
-        Example = new OpenApiString("2025-11-02")
-    });
-});
 
 // Bind app settings
 builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection("GoogleAuthSettings"));

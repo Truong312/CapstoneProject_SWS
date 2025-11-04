@@ -6,7 +6,7 @@ using SWS.Services.ApiModels.ProductModel;
 
 namespace SWS.Services.Services.ProductServices
 {
-    public class WarehouseProductService : IWarehouseProductService
+    public class WarehouseProductService : IProductService
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -47,12 +47,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status200OK
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel<IEnumerable<ProductResponseDto>>
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi lấy danh sách sản phẩm: {ex.Message}",
+                    Message = $"Lỗi khi lấy danh sách sản phẩm: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -99,12 +99,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status200OK
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel<ProductResponseDto>
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi lấy sản phẩm: {ex.Message}",
+                    Message = $"Lỗi khi lấy sản phẩm: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -141,12 +141,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status201Created
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi thêm sản phẩm: {ex.Message}",
+                    Message = $"Lỗi khi thêm sản phẩm: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -191,12 +191,12 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status200OK
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi cập nhật sản phẩm: {ex.Message}",
+                    Message = $"Lỗi khi cập nhật sản phẩm: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -230,12 +230,167 @@ namespace SWS.Services.Services.ProductServices
                     StatusCode = StatusCodes.Status200OK
                 };
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi xóa sản phẩm: {ex.Message}",
+                    Message = $"Lỗi khi xóa sản phẩm: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        public async Task<ResultModel<IEnumerable<ProductResponseDto>>> GetNearExpiredProductsAsync()
+        {
+            try
+            {
+                var products = await _unitOfWork.Products.GetNearExpiredProductsAsync(DateOnly.FromDateTime(DateTime.Now));
+                var result = products.Select(product => new ProductResponseDto
+                {
+                    ProductId = product.ProductId,
+                    SerialNumber = product.SerialNumber,
+                    Name = product.Name,
+                    ExpiredDate = product.ExpiredDate,
+                    Unit = product.Unit,
+                    UnitPrice = product.UnitPrice,
+                    ReceivedDate = product.ReceivedDate,
+                    PurchasedPrice = product.PurchasedPrice,
+                    ReorderPoint = product.ReorderPoint,
+                    Image = product.Image,
+                    Description = product.Description
+                });
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = true,
+                    Message = "Danh sách sản phẩm sắp hết hạn( dưới 30 ngày)",
+                    Data = result,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi tìm sản phẩm sắp hết hạn: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        public async Task<ResultModel<IEnumerable<ProductResponseDto>>> GetExpiredProductsAsync()
+        {
+            try
+            {
+                var products = await _unitOfWork.Products.GetExpiredProductsAsync(DateOnly.FromDateTime(DateTime.Now));
+                var result = products.Select(product => new ProductResponseDto
+                {
+                    ProductId = product.ProductId,
+                    SerialNumber = product.SerialNumber,
+                    Name = product.Name,
+                    ExpiredDate = product.ExpiredDate,
+                    Unit = product.Unit,
+                    UnitPrice = product.UnitPrice,
+                    ReceivedDate = product.ReceivedDate,
+                    PurchasedPrice = product.PurchasedPrice,
+                    ReorderPoint = product.ReorderPoint,
+                    Image = product.Image,
+                    Description = product.Description
+                });
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = true,
+                    Message = "Danh sách sản phẩm đã hết hạn",
+                    Data = result,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi tìm sản phẩm đã hết hạn: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        public async Task<ResultModel<IEnumerable<ProductResponseDto>>> GetLowStockProductsAsync()
+        {
+            try
+            {
+                var products = await _unitOfWork.Products.GetLowStockProductsAsync();
+                var result = products.Select(product => new ProductResponseDto
+                {
+                    ProductId = product.ProductId,
+                    SerialNumber = product.SerialNumber,
+                    Name = product.Name,
+                    ExpiredDate = product.ExpiredDate,
+                    Unit = product.Unit,
+                    UnitPrice = product.UnitPrice,
+                    ReceivedDate = product.ReceivedDate,
+                    PurchasedPrice = product.PurchasedPrice,
+                    ReorderPoint = product.ReorderPoint,
+                    Image = product.Image,
+                    Description = product.Description
+                });
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = true,
+                    Message = "Danh sách sản phẩm cần nhập thêm",
+                    Data = result,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }catch(Exception e)
+            {
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi tìm sản phẩm đã hết hạn: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+        /// <summary>
+        /// Tìm kiếm sản phẩm theo tên hoặc số serial
+        /// </summary>
+        public async Task<ResultModel<IEnumerable<ProductResponseDto>>> SearchProductsAsync(string searchText)
+        {
+            try
+            {
+                var products = await _unitOfWork.Products.SearchAsync(searchText);
+
+                var result = products.Select(p => new ProductResponseDto
+                {
+                    ProductId = p.ProductId,
+                    SerialNumber = p.SerialNumber,
+                    Name = p.Name,
+                    ExpiredDate = p.ExpiredDate,
+                    Unit = p.Unit,
+                    UnitPrice = p.UnitPrice,
+                    ReceivedDate = p.ReceivedDate,
+                    PurchasedPrice = p.PurchasedPrice,
+                    ReorderPoint = p.ReorderPoint,
+                    Image = p.Image,
+                    Description = p.Description
+                });
+
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = true,
+                    Message = $"Kết quả tìm kiếm cho từ khóa: '{searchText}'",
+                    Data = result,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<IEnumerable<ProductResponseDto>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi tìm kiếm sản phẩm: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }

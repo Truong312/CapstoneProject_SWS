@@ -1,0 +1,35 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SWS.Services.ApiModels.ExportOrderModel
+{
+    public class UpdateExportOrder
+    {
+        public DateOnly? OrderDate { get; set; }
+
+        public int? CustomerId { get; set; }
+
+        public string? Currency { get; set; }
+
+        public DateOnly? CreatedDate { get; set; }
+
+        public DateOnly? ShippedDate { get; set; }
+
+        public string? ShippedAddress { get; set; }
+
+        public decimal? TaxRate { get; set; }
+
+        public decimal? TaxAmount { get; set; }
+
+        public decimal? TotalPayment { get; set; }
+
+        public string? Description { get; set; }
+
+        public string? Status { get; set; }
+
+        public int? CreatedBy { get; set; }
+    }
+}
