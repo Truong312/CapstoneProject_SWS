@@ -62,4 +62,11 @@ namespace SWS.BusinessObjects.Enums
         Card,
         Bank
     }
+    public enum StatusEnums
+    {
+        Pending,
+        Shipped,
+        Completed,
+        Canceled
+    }
 }

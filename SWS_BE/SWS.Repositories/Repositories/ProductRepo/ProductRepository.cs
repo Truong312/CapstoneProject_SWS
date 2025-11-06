@@ -4,43 +4,81 @@ using SWS.Repositories.Generic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SWS.BusinessObjects.Dtos.Product;
+using System.Linq.Dynamic.Core;
 
 
 namespace SWS.Repositories.Repositories.ProductRepo
 {
     public class ProductRepository : GenericRepository<Product>, IProductRepository
     {
-       
-            private readonly SmartWarehouseDbContext _context;
 
-            public ProductRepository(SmartWarehouseDbContext context) : base(context)
-            {
-                _context = context;
-            }
+        private readonly SmartWarehouseDbContext _context;
 
-            public async Task<Product?> GetBySerialNumberAsync(string serialNumber)
-            {
-                return await _context.Products
-                    .FirstOrDefaultAsync(p => p.SerialNumber == serialNumber);
-            }
+        public ProductRepository(SmartWarehouseDbContext context) : base(context)
+        {
+            _context = context;
+        }
 
-            public async Task<IEnumerable<Product>> GetExpiredProductsAsync(DateOnly currentDate)
-            {
-                return await _context.Products
-                    .Where(p => p.ExpiredDate < currentDate)
-                    .ToListAsync();
-            }
+        public async Task<Product?> GetBySerialNumberAsync(string serialNumber)
+        {
+            return await _context.Products
+                .FirstOrDefaultAsync(p => p.SerialNumber == serialNumber);
+        }
 
-            public async Task<IEnumerable<Product>> GetLowStockProductsAsync()
+        public async Task<IEnumerable<Product>> GetNearExpiredProductsAsync(DateOnly currentDate)
+        {
+            return await _context.Products
+                .Where(p => p.ExpiredDate > currentDate.AddDays(30))
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Product>> GetExpiredProductsAsync(DateOnly currentDate)
+        {
+            return await _context.Products
+                .Where(p => p.ExpiredDate > currentDate)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Product>> GetLowStockProductsAsync()
+        {
+            // Giả sử ReorderPoint là mức tồn kho tối thiểu
+            // và bạn muốn tìm các sản phẩm có tồn kho thấp hơn mức đó.
+            var products = await _context.Products.ToListAsync();
+            var result = new List<Product>();
+            foreach (var product in products)
             {
-                // Giả sử ReorderPoint là mức tồn kho tối thiểu
-                // và bạn muốn tìm các sản phẩm có tồn kho thấp hơn mức đó.
-                return await _context.Products
-                    .Where(p => p.ReorderPoint != null && p.ReorderPoint > 0)
-                    .ToListAsync();
+                var quantity = GetProductQuantity(product.ProductId).Result;
+                if(quantity< product.ReorderPoint)
+                {
+                    result.Add(product);
+                }
             }
+            return result;
+        }
+
+        //quantity là số lượng sản có thể tham gia order
+        public async Task<int> GetProductQuantity(int productId)
+        {
+            var quantity= _context.Inventories.Where(i => i.ProductId == productId).FirstAsync().Result.QuantityAvailable;
+            return quantity;
+        }
+
+        public async Task<IEnumerable<Product>> SearchAsync(string searchText)
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+                return Enumerable.Empty<Product>();
+
+            return await _context.Products
+                .Where(p =>
+                    (!string.IsNullOrEmpty(p.Name) && EF.Functions.Like(p.Name, $"%{searchText}%")) ||
+                    (!string.IsNullOrEmpty(p.SerialNumber) && EF.Functions.Like(p.SerialNumber, $"%{searchText}%"))
+                )
+                .ToListAsync();
         }
     }
+}
