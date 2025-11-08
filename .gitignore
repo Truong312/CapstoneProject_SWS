@@ -405,3 +405,7 @@ HotelManagementSystem_BE/.gitattributes
 SWS_BE/.idea/*
 SWS_BE/SWS.Services/.DS_Store
 SWS_BE/.DS_Store
+SWS_BE/WhisperVoice/venv/*
+SWS_BE/WhisperVoice/.idea/*
+SWS_FE/.DS_Store
+SWS_FE/src/.DS_Store
