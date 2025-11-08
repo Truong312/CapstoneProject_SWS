@@ -337,6 +337,370 @@ namespace SWS.ApiCore.Extensions
                     Description = "Product does not match description or specifications"
                 }
             );
+
+            // Additional mock data for Import/Export/Return flows and near-expired products
+
+            // Seed Import Orders + Details
+            modelBuilder.Entity<ImportOrder>().HasData(
+                new ImportOrder
+                {
+                    ImportOrderId = 1,
+                    InvoiceNumber = "IMP-20251101-001",
+                    OrderDate = new DateOnly(2025, 11, 1),
+                    ProviderId = 1,
+                    CreatedDate = new DateOnly(2025, 11, 1),
+                    Status = "Pending",
+                    CreatedBy = 2
+                },
+                new ImportOrder
+                {
+                    ImportOrderId = 2,
+                    InvoiceNumber = "IMP-20251015-001",
+                    OrderDate = new DateOnly(2025, 10, 15),
+                    ProviderId = 2,
+                    CreatedDate = new DateOnly(2025, 10, 15),
+                    Status = "Completed",
+                    CreatedBy = 3
+                }
+            );
+
+            modelBuilder.Entity<ImportDetail>().HasData(
+                new ImportDetail { ImportDetailId = 1, ImportOrderId = 1, ProductId = 1, Quantity = 10, ImportPrice = 20000000m },
+                new ImportDetail { ImportDetailId = 2, ImportOrderId = 1, ProductId = 2, Quantity = 20, ImportPrice = 2000000m },
+                new ImportDetail { ImportDetailId = 3, ImportOrderId = 2, ProductId = 3, Quantity = 5, ImportPrice = 2500000m },
+                new ImportDetail { ImportDetailId = 4, ImportOrderId = 2, ProductId = 4, Quantity = 2, ImportPrice = 12000000m }
+            );
+
+            // Seed Export Orders + Details
+            modelBuilder.Entity<ExportOrder>().HasData(
+                new ExportOrder
+                {
+                    ExportOrderId = 1,
+                    InvoiceNumber = "EXP-20251105-001",
+                    OrderDate = new DateOnly(2025, 11, 5),
+                    CustomerId = 3,
+                    Currency = "VND",
+                    CreatedDate = new DateOnly(2025, 11, 5),
+                    ShippedDate = new DateOnly(2025, 11, 7),
+                    ShippedAddress = "123 Customer St",
+                    TaxRate = 0.05m,
+                    TaxAmount = 12500000m * 0.05m, // example calculation
+                    TotalPayment = 12500000m * 1.05m,
+                    Description = "Order to Retail Chain A",
+                    Status = "Shipped",
+                    CreatedBy = 2
+                },
+                new ExportOrder
+                {
+                    ExportOrderId = 2,
+                    InvoiceNumber = "EXP-20251106-001",
+                    OrderDate = new DateOnly(2025, 11, 6),
+                    CustomerId = 4,
+                    Currency = "USD",
+                    CreatedDate = new DateOnly(2025, 11, 6),
+                    Status = "Pending",
+                    CreatedBy = 3
+                }
+            );
+
+            modelBuilder.Entity<ExportDetail>().HasData(
+                new ExportDetail { ExportDetailId = 1, ExportOrderId = 1, ProductId = 2, Quantity = 5, TotalPrice = 2500000m * 5 },
+                new ExportDetail { ExportDetailId = 2, ExportOrderId = 2, ProductId = 1, Quantity = 1, TotalPrice = 25000000m }
+            );
+
+            // Seed Return Orders + Return Details (different statuses for search)
+            modelBuilder.Entity<ReturnOrder>().HasData(
+                new ReturnOrder
+                {
+                    ReturnOrderId = 1,
+                    ExportOrderId = 1,
+                    CheckedBy = 3,
+                    ReviewedBy = 2,
+                    CheckInTime = new DateTime(2025, 11, 7, 10, 0, 0),
+                    Status = "Pending",
+                    Note = "Customer reported damaged items"
+                },
+                new ReturnOrder
+                {
+                    ReturnOrderId = 2,
+                    ExportOrderId = 2,
+                    CheckedBy = 3,
+                    ReviewedBy = 2,
+                    CheckInTime = new DateTime(2025, 11, 8, 9, 30, 0),
+                    Status = "Processed",
+                    Note = "Quality issue"
+                }
+            );
+
+            modelBuilder.Entity<ReturnOrderDetail>().HasData(
+                new ReturnOrderDetail { ReturnDetailId = 1, ReturnOrderId = 1, ProductId = 2, Quantity = 1, Note = "Broken on arrival", ReasonId = 1, ActionId = null, LocationId = 5 },
+                new ReturnOrderDetail { ReturnDetailId = 2, ReturnOrderId = 2, ProductId = 4, Quantity = 1, Note = "Wrong color", ReasonId = 3, ActionId = null, LocationId = 6 }
+            );
+
+            // Seed additional products that are near-expired for "near expired" notifications
+            modelBuilder.Entity<Product>().HasData(
+                new Product
+                {
+                    ProductId = 11,
+                    SerialNumber = "PERISH-001",
+                    Name = "Perishable Item A",
+                    ExpiredDate = new DateOnly(2025, 11, 12),
+                    Unit = "Box",
+                    UnitPrice = 100000m,
+                    ReceivedDate = new DateOnly(2025, 9, 1),
+                    PurchasedPrice = 80000m,
+                    ReorderPoint = 20,
+                    Image = "",
+                    Description = "Perishable product near expiry"
+                },
+                new Product
+                {
+                    ProductId = 12,
+                    SerialNumber = "PERISH-002",
+                    Name = "Perishable Item B",
+                    ExpiredDate = new DateOnly(2025, 11, 20),
+                    Unit = "Box",
+                    UnitPrice = 120000m,
+                    ReceivedDate = new DateOnly(2025, 9, 1),
+                    PurchasedPrice = 90000m,
+                    ReorderPoint = 30,
+                    Image = "",
+                    Description = "Perishable product near expiry"
+                }
+            );
+
+            // Inventory entries for the new near-expired products
+            modelBuilder.Entity<Inventory>().HasData(
+                new Inventory { InventoryId = 11, ProductId = 11, LocationId = 11, QuantityAvailable = 50, AllocatedQuantity = 0 },
+                new Inventory { InventoryId = 12, ProductId = 12, LocationId = 12, QuantityAvailable = 30, AllocatedQuantity = 0 }
+            );
+
+            // ----------------------------------------------------------------
+            // Additional bulk mock data to make lists/details/search/dashboard useful
+            // ----------------------------------------------------------------
+
+            // Add more perishable and regular products (ProductId 13..20)
+            modelBuilder.Entity<Product>().HasData(
+                new Product
+                {
+                    ProductId = 13,
+                    SerialNumber = "FOOD-001",
+                    Name = "Snack Pack A",
+                    ExpiredDate = new DateOnly(2025, 11, 10), // very near-expiry
+                    Unit = "Pack",
+                    UnitPrice = 50000m,
+                    ReceivedDate = new DateOnly(2025, 9, 15),
+                    PurchasedPrice = 40000m,
+                    ReorderPoint = 100,
+                    Image = "",
+                    Description = "Snack pack near expiry"
+                },
+                new Product
+                {
+                    ProductId = 14,
+                    SerialNumber = "FOOD-002",
+                    Name = "Beverage B",
+                    ExpiredDate = new DateOnly(2025, 11, 25),
+                    Unit = "Bottle",
+                    UnitPrice = 30000m,
+                    ReceivedDate = new DateOnly(2025, 9, 10),
+                    PurchasedPrice = 20000m,
+                    ReorderPoint = 200,
+                    Image = "",
+                    Description = "Beverage near expiry"
+                },
+                new Product
+                {
+                    ProductId = 15,
+                    SerialNumber = "ACCESS-001",
+                    Name = "Phone Case",
+                    ExpiredDate = new DateOnly(2030, 1, 1),
+                    Unit = "Unit",
+                    UnitPrice = 150000m,
+                    ReceivedDate = new DateOnly(2025, 8, 1),
+                    PurchasedPrice = 100000m,
+                    ReorderPoint = 50,
+                    Image = "",
+                    Description = "Phone protective case"
+                },
+                new Product
+                {
+                    ProductId = 16,
+                    SerialNumber = "CABLE-002",
+                    Name = "HDMI Cable 3m",
+                    ExpiredDate = new DateOnly(2029, 12, 31),
+                    Unit = "Piece",
+                    UnitPrice = 80000m,
+                    ReceivedDate = new DateOnly(2025, 7, 1),
+                    PurchasedPrice = 40000m,
+                    ReorderPoint = 150,
+                    Image = "",
+                    Description = "HDMI cable 3 meters"
+                },
+                new Product
+                {
+                    ProductId = 17,
+                    SerialNumber = "PERF-003",
+                    Name = "Perishable C",
+                    ExpiredDate = new DateOnly(2025, 11, 18),
+                    Unit = "Box",
+                    UnitPrice = 90000m,
+                    ReceivedDate = new DateOnly(2025, 9, 5),
+                    PurchasedPrice = 70000m,
+                    ReorderPoint = 40,
+                    Image = "",
+                    Description = "Perishable near expiry"
+                },
+                new Product
+                {
+                    ProductId = 18,
+                    SerialNumber = "PERF-004",
+                    Name = "Perishable D",
+                    ExpiredDate = new DateOnly(2025, 12, 5),
+                    Unit = "Box",
+                    UnitPrice = 110000m,
+                    ReceivedDate = new DateOnly(2025, 8, 20),
+                    PurchasedPrice = 90000m,
+                    ReorderPoint = 25,
+                    Image = "",
+                    Description = "Perishable product"
+                },
+                new Product
+                {
+                    ProductId = 19,
+                    SerialNumber = "GADGET-001",
+                    Name = "USB Hub 4-port",
+                    ExpiredDate = new DateOnly(2030, 6, 30),
+                    Unit = "Unit",
+                    UnitPrice = 350000m,
+                    ReceivedDate = new DateOnly(2025, 6, 10),
+                    PurchasedPrice = 200000m,
+                    ReorderPoint = 20,
+                    Image = "",
+                    Description = "USB hub 4-port"
+                },
+                new Product
+                {
+                    ProductId = 20,
+                    SerialNumber = "CHARGER-001",
+                    Name = "Fast Charger 65W",
+                    ExpiredDate = new DateOnly(2031, 1, 1),
+                    Unit = "Unit",
+                    UnitPrice = 450000m,
+                    ReceivedDate = new DateOnly(2025, 5, 10),
+                    PurchasedPrice = 300000m,
+                    ReorderPoint = 30,
+                    Image = "",
+                    Description = "65W fast charger"
+                }
+            );
+
+            // Inventory for the new products (InventoryId 13..20)
+            modelBuilder.Entity<Inventory>().HasData(
+                new Inventory { InventoryId = 13, ProductId = 13, LocationId = 13, QuantityAvailable = 120, AllocatedQuantity = 10 },
+                new Inventory { InventoryId = 14, ProductId = 14, LocationId = 14, QuantityAvailable = 80, AllocatedQuantity = 5 },
+                new Inventory { InventoryId = 15, ProductId = 15, LocationId = 15, QuantityAvailable = 40, AllocatedQuantity = 0 },
+                new Inventory { InventoryId = 16, ProductId = 16, LocationId = 16, QuantityAvailable = 200, AllocatedQuantity = 30 },
+                new Inventory { InventoryId = 17, ProductId = 17, LocationId = 17, QuantityAvailable = 60, AllocatedQuantity = 8 },
+                new Inventory { InventoryId = 18, ProductId = 18, LocationId = 18, QuantityAvailable = 35, AllocatedQuantity = 2 },
+                new Inventory { InventoryId = 19, ProductId = 19, LocationId = 19, QuantityAvailable = 25, AllocatedQuantity = 0 },
+                new Inventory { InventoryId = 20, ProductId = 20, LocationId = 20, QuantityAvailable = 70, AllocatedQuantity = 5 }
+            );
+
+            // Bulk Import Orders (ImportOrderId 3..12) and ImportDetails (ImportDetailId 5..24)
+            modelBuilder.Entity<ImportOrder>().HasData(
+                new ImportOrder { ImportOrderId = 3, InvoiceNumber = "IMP-20250901-001", OrderDate = new DateOnly(2025, 9, 1), ProviderId = 1, CreatedDate = new DateOnly(2025, 9, 1), Status = "Completed", CreatedBy = 2 },
+                new ImportOrder { ImportOrderId = 4, InvoiceNumber = "IMP-20250915-001", OrderDate = new DateOnly(2025, 9, 15), ProviderId = 2, CreatedDate = new DateOnly(2025, 9, 15), Status = "Completed", CreatedBy = 3 },
+                new ImportOrder { ImportOrderId = 5, InvoiceNumber = "IMP-20251001-001", OrderDate = new DateOnly(2025, 10, 1), ProviderId = 1, CreatedDate = new DateOnly(2025, 10, 1), Status = "Pending", CreatedBy = 2 },
+                new ImportOrder { ImportOrderId = 6, InvoiceNumber = "IMP-20251005-002", OrderDate = new DateOnly(2025, 10, 5), ProviderId = 2, CreatedDate = new DateOnly(2025, 10, 5), Status = "Cancelled", CreatedBy = 3 },
+                new ImportOrder { ImportOrderId = 7, InvoiceNumber = "IMP-20251102-001", OrderDate = new DateOnly(2025, 11, 2), ProviderId = 1, CreatedDate = new DateOnly(2025, 11, 2), Status = "Pending", CreatedBy = 2 },
+                new ImportOrder { ImportOrderId = 8, InvoiceNumber = "IMP-20251103-001", OrderDate = new DateOnly(2025, 11, 3), ProviderId = 2, CreatedDate = new DateOnly(2025, 11, 3), Status = "Pending", CreatedBy = 3 },
+                new ImportOrder { ImportOrderId = 9, InvoiceNumber = "IMP-20251104-001", OrderDate = new DateOnly(2025, 11, 4), ProviderId = 1, CreatedDate = new DateOnly(2025, 11, 4), Status = "Completed", CreatedBy = 2 },
+                new ImportOrder { ImportOrderId = 10, InvoiceNumber = "IMP-20251105-002", OrderDate = new DateOnly(2025, 11, 5), ProviderId = 2, CreatedDate = new DateOnly(2025, 11, 5), Status = "Completed", CreatedBy = 3 },
+                new ImportOrder { ImportOrderId = 11, InvoiceNumber = "IMP-20251106-001", OrderDate = new DateOnly(2025, 11, 6), ProviderId = 1, CreatedDate = new DateOnly(2025, 11, 6), Status = "Pending", CreatedBy = 2 },
+                new ImportOrder { ImportOrderId = 12, InvoiceNumber = "IMP-20251107-001", OrderDate = new DateOnly(2025, 11, 7), ProviderId = 2, CreatedDate = new DateOnly(2025, 11, 7), Status = "Pending", CreatedBy = 3 }
+            );
+
+            modelBuilder.Entity<ImportDetail>().HasData(
+                new ImportDetail { ImportDetailId = 5, ImportOrderId = 3, ProductId = 13, Quantity = 100, ImportPrice = 40000m },
+                new ImportDetail { ImportDetailId = 6, ImportOrderId = 3, ProductId = 14, Quantity = 80, ImportPrice = 20000m },
+                new ImportDetail { ImportDetailId = 7, ImportOrderId = 4, ProductId = 15, Quantity = 50, ImportPrice = 100000m },
+                new ImportDetail { ImportDetailId = 8, ImportOrderId = 4, ProductId = 16, Quantity = 200, ImportPrice = 40000m },
+                new ImportDetail { ImportDetailId = 9, ImportOrderId = 5, ProductId = 17, Quantity = 60, ImportPrice = 70000m },
+                new ImportDetail { ImportDetailId = 10, ImportOrderId = 5, ProductId = 18, Quantity = 30, ImportPrice = 90000m },
+                new ImportDetail { ImportDetailId = 11, ImportOrderId = 6, ProductId = 19, Quantity = 25, ImportPrice = 200000m },
+                new ImportDetail { ImportDetailId = 12, ImportOrderId = 6, ProductId = 20, Quantity = 40, ImportPrice = 300000m },
+                new ImportDetail { ImportDetailId = 13, ImportOrderId = 7, ProductId = 1, Quantity = 10, ImportPrice = 20000000m },
+                new ImportDetail { ImportDetailId = 14, ImportOrderId = 8, ProductId = 2, Quantity = 15, ImportPrice = 2000000m },
+                new ImportDetail { ImportDetailId = 15, ImportOrderId = 9, ProductId = 3, Quantity = 5, ImportPrice = 2500000m },
+                new ImportDetail { ImportDetailId = 16, ImportOrderId = 9, ProductId = 13, Quantity = 20, ImportPrice = 40000m },
+                new ImportDetail { ImportDetailId = 17, ImportOrderId = 10, ProductId = 14, Quantity = 30, ImportPrice = 20000m },
+                new ImportDetail { ImportDetailId = 18, ImportOrderId = 11, ProductId = 15, Quantity = 8, ImportPrice = 100000m },
+                new ImportDetail { ImportDetailId = 19, ImportOrderId = 12, ProductId = 16, Quantity = 60, ImportPrice = 40000m },
+                new ImportDetail { ImportDetailId = 20, ImportOrderId = 12, ProductId = 17, Quantity = 12, ImportPrice = 70000m },
+                new ImportDetail { ImportDetailId = 21, ImportOrderId = 7, ProductId = 18, Quantity = 5, ImportPrice = 90000m },
+                new ImportDetail { ImportDetailId = 22, ImportOrderId = 8, ProductId = 19, Quantity = 3, ImportPrice = 200000m },
+                new ImportDetail { ImportDetailId = 23, ImportOrderId = 10, ProductId = 20, Quantity = 10, ImportPrice = 300000m },
+                new ImportDetail { ImportDetailId = 24, ImportOrderId = 11, ProductId = 4, Quantity = 2, ImportPrice = 12000000m }
+            );
+
+            // Bulk Export Orders (ExportOrderId 3..12) and ExportDetails (ExportDetailId 3..24)
+            modelBuilder.Entity<ExportOrder>().HasData(
+                new ExportOrder { ExportOrderId = 3, InvoiceNumber = "EXP-20250910-001", OrderDate = new DateOnly(2025, 9, 10), CustomerId = 3, Currency = "VND", CreatedDate = new DateOnly(2025, 9, 10), Status = "Delivered", CreatedBy = 2 },
+                new ExportOrder { ExportOrderId = 4, InvoiceNumber = "EXP-20250920-001", OrderDate = new DateOnly(2025, 9, 20), CustomerId = 4, Currency = "USD", CreatedDate = new DateOnly(2025, 9, 20), Status = "Cancelled", CreatedBy = 3 },
+                new ExportOrder { ExportOrderId = 5, InvoiceNumber = "EXP-20251001-001", OrderDate = new DateOnly(2025, 10, 1), CustomerId = 5, Currency = "VND", CreatedDate = new DateOnly(2025, 10, 1), Status = "Pending", CreatedBy = 2 },
+                new ExportOrder { ExportOrderId = 6, InvoiceNumber = "EXP-20251010-001", OrderDate = new DateOnly(2025, 10, 10), CustomerId = 3, Currency = "VND", CreatedDate = new DateOnly(2025, 10, 10), Status = "Shipped", CreatedBy = 3 },
+                new ExportOrder { ExportOrderId = 7, InvoiceNumber = "EXP-20251102-001", OrderDate = new DateOnly(2025, 11, 2), CustomerId = 4, Currency = "USD", CreatedDate = new DateOnly(2025, 11, 2), Status = "Pending", CreatedBy = 2 },
+                new ExportOrder { ExportOrderId = 8, InvoiceNumber = "EXP-20251103-001", OrderDate = new DateOnly(2025, 11, 3), CustomerId = 5, Currency = "VND", CreatedDate = new DateOnly(2025, 11, 3), Status = "Pending", CreatedBy = 3 },
+                new ExportOrder { ExportOrderId = 9, InvoiceNumber = "EXP-20251104-001", OrderDate = new DateOnly(2025, 11, 4), CustomerId = 3, Currency = "VND", CreatedDate = new DateOnly(2025, 11, 4), Status = "Delivered", CreatedBy = 2 },
+                new ExportOrder { ExportOrderId = 10, InvoiceNumber = "EXP-20251105-002", OrderDate = new DateOnly(2025, 11, 5), CustomerId = 4, Currency = "USD", CreatedDate = new DateOnly(2025, 11, 5), Status = "Shipped", CreatedBy = 3 },
+                new ExportOrder { ExportOrderId = 11, InvoiceNumber = "EXP-20251106-001", OrderDate = new DateOnly(2025, 11, 6), CustomerId = 5, Currency = "VND", CreatedDate = new DateOnly(2025, 11, 6), Status = "Pending", CreatedBy = 2 },
+                new ExportOrder { ExportOrderId = 12, InvoiceNumber = "EXP-20251107-001", OrderDate = new DateOnly(2025, 11, 7), CustomerId = 3, Currency = "VND", CreatedDate = new DateOnly(2025, 11, 7), Status = "Pending", CreatedBy = 3 }
+            );
+
+            modelBuilder.Entity<ExportDetail>().HasData(
+                new ExportDetail { ExportDetailId = 3, ExportOrderId = 3, ProductId = 13, Quantity = 20, TotalPrice = 50000m * 20 },
+                new ExportDetail { ExportDetailId = 4, ExportOrderId = 3, ProductId = 14, Quantity = 10, TotalPrice = 30000m * 10 },
+                new ExportDetail { ExportDetailId = 5, ExportOrderId = 4, ProductId = 15, Quantity = 5, TotalPrice = 150000m * 5 },
+                new ExportDetail { ExportDetailId = 6, ExportOrderId = 5, ProductId = 16, Quantity = 30, TotalPrice = 80000m * 30 },
+                new ExportDetail { ExportDetailId = 7, ExportOrderId = 6, ProductId = 1, Quantity = 2, TotalPrice = 25000000m * 2 },
+                new ExportDetail { ExportDetailId = 8, ExportOrderId = 7, ProductId = 2, Quantity = 10, TotalPrice = 2500000m * 10 },
+                new ExportDetail { ExportDetailId = 9, ExportOrderId = 8, ProductId = 3, Quantity = 3, TotalPrice = 3000000m * 3 },
+                new ExportDetail { ExportDetailId = 10, ExportOrderId = 9, ProductId = 4, Quantity = 1, TotalPrice = 15000000m },
+                new ExportDetail { ExportDetailId = 11, ExportOrderId = 10, ProductId = 5, Quantity = 2, TotalPrice = 8000000m * 2 },
+                new ExportDetail { ExportDetailId = 12, ExportOrderId = 11, ProductId = 6, Quantity = 4, TotalPrice = 5000000m * 4 },
+                new ExportDetail { ExportDetailId = 13, ExportOrderId = 12, ProductId = 7, Quantity = 2, TotalPrice = 30000000m * 2 },
+                new ExportDetail { ExportDetailId = 14, ExportOrderId = 5, ProductId = 13, Quantity = 15, TotalPrice = 50000m * 15 },
+                new ExportDetail { ExportDetailId = 15, ExportOrderId = 6, ProductId = 14, Quantity = 8, TotalPrice = 30000m * 8 },
+                new ExportDetail { ExportDetailId = 16, ExportOrderId = 7, ProductId = 15, Quantity = 6, TotalPrice = 150000m * 6 },
+                new ExportDetail { ExportDetailId = 17, ExportOrderId = 8, ProductId = 16, Quantity = 20, TotalPrice = 80000m * 20 },
+                new ExportDetail { ExportDetailId = 18, ExportOrderId = 9, ProductId = 17, Quantity = 5, TotalPrice = 90000m * 5 },
+                new ExportDetail { ExportDetailId = 19, ExportOrderId = 10, ProductId = 18, Quantity = 3, TotalPrice = 110000m * 3 },
+                new ExportDetail { ExportDetailId = 20, ExportOrderId = 11, ProductId = 19, Quantity = 2, TotalPrice = 350000m * 2 },
+                new ExportDetail { ExportDetailId = 21, ExportOrderId = 12, ProductId = 20, Quantity = 4, TotalPrice = 450000m * 4 },
+                new ExportDetail { ExportDetailId = 22, ExportOrderId = 3, ProductId = 1, Quantity = 1, TotalPrice = 25000000m },
+                new ExportDetail { ExportDetailId = 23, ExportOrderId = 4, ProductId = 2, Quantity = 2, TotalPrice = 2500000m * 2 },
+                new ExportDetail { ExportDetailId = 24, ExportOrderId = 5, ProductId = 3, Quantity = 3, TotalPrice = 3000000m * 3 }
+            );
+
+            // Additional Return Orders (ReturnOrderId 3..8) and details (ReturnDetailId 3..8)
+            modelBuilder.Entity<ReturnOrder>().HasData(
+                new ReturnOrder { ReturnOrderId = 3, ExportOrderId = 3, CheckedBy = 3, ReviewedBy = 2, CheckInTime = new DateTime(2025, 9, 12, 11, 0, 0), Status = "Processed", Note = "Minor damage" },
+                new ReturnOrder { ReturnOrderId = 4, ExportOrderId = 4, CheckedBy = 3, ReviewedBy = 2, CheckInTime = new DateTime(2025, 9, 21, 14, 0, 0), Status = "Cancelled", Note = "Customer withdrew" },
+                new ReturnOrder { ReturnOrderId = 5, ExportOrderId = 5, CheckedBy = 2, ReviewedBy = 3, CheckInTime = new DateTime(2025, 10, 3, 9, 30, 0), Status = "Pending", Note = "Quality issue" },
+                new ReturnOrder { ReturnOrderId = 6, ExportOrderId = 6, CheckedBy = 2, ReviewedBy = 3, CheckInTime = new DateTime(2025, 10, 11, 10, 0, 0), Status = "Processed", Note = "Expired item" },
+                new ReturnOrder { ReturnOrderId = 7, ExportOrderId = 7, CheckedBy = 3, ReviewedBy = 2, CheckInTime = new DateTime(2025, 11, 4, 15, 0, 0), Status = "Pending", Note = "Wrong item" },
+                new ReturnOrder { ReturnOrderId = 8, ExportOrderId = 8, CheckedBy = 3, ReviewedBy = 2, CheckInTime = new DateTime(2025, 11, 5, 16, 30, 0), Status = "Processed", Note = "Customer request" }
+            );
+
+            modelBuilder.Entity<ReturnOrderDetail>().HasData(
+                new ReturnOrderDetail { ReturnDetailId = 3, ReturnOrderId = 3, ProductId = 13, Quantity = 2, Note = "Crushed", ReasonId = 1, ActionId = null, LocationId = 13 },
+                new ReturnOrderDetail { ReturnDetailId = 4, ReturnOrderId = 4, ProductId = 14, Quantity = 1, Note = "Not needed", ReasonId = 6, ActionId = null, LocationId = 14 },
+                new ReturnOrderDetail { ReturnDetailId = 5, ReturnOrderId = 5, ProductId = 15, Quantity = 1, Note = "Defect", ReasonId = 2, ActionId = null, LocationId = 15 },
+                new ReturnOrderDetail { ReturnDetailId = 6, ReturnOrderId = 6, ProductId = 17, Quantity = 4, Note = "Expired soon", ReasonId = 4, ActionId = null, LocationId = 17 },
+                new ReturnOrderDetail { ReturnDetailId = 7, ReturnOrderId = 7, ProductId = 16, Quantity = 2, Note = "Wrong SKU", ReasonId = 3, ActionId = null, LocationId = 16 },
+                new ReturnOrderDetail { ReturnDetailId = 8, ReturnOrderId = 8, ProductId = 18, Quantity = 1, Note = "Customer request", ReasonId = 6, ActionId = null, LocationId = 18 }
+            );
         }
 
         /// <summary>

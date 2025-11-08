@@ -412,3 +412,5 @@ SWS_FE/src/.DS_Store
 SWS_BE/WhisperVoice/venv/*
 SWS_BE/WhisperVoice/.idea/*
 .DS_Store
+SWS_FE/dist/*
+SWS_FE/.next/*
