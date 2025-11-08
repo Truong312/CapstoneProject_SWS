@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +7,7 @@ using SWS.Repositories.UnitOfWork;
 using SWS.ApiCore.Extensions;
 using AppBackend.Extensions;
 using SWS.BusinessObjects.AppSettings;
+using SWS.BusinessObjects.Extensions;
 
 // Return lookups / orders
 using SWS.Repositories.Repositories.ReturnRepo;
@@ -43,7 +44,11 @@ builder.Services.AddDefaultAuth(builder.Configuration);    // JWT auth
 
 builder.Services.AddSessionConfig();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddRateLimitConfig();
+builder.Services.AddRateLimitConfig();   
+builder.Services.AddGeminiConfig(builder.Configuration);
+builder.Services.AddWhisperConfig(builder.Configuration);
+
+// Memory Cache for room locking
 builder.Services.AddMemoryCache();
 builder.Services.AddServicesConfig();
 
@@ -87,7 +92,22 @@ builder.Services.AddScoped<IImportOrderCommandService, ImportOrderCommandService
 // ================== Build App ==================
 var app = builder.Build();
 
-// ================== Middleware Pipeline ==================
+// Seed database khi app khởi động
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        await services.SeedDatabaseAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Lỗi khi seed database");
+    }
+}
+
+// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

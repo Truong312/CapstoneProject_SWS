@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Whisper Voice-to-Text Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; text-align: center; }
+        h1 { color: #333; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+        textarea { width: 100%; height: 180px; margin-top: 20px; }
+        #status { margin-top: 10px; color: #666; }
+    </style>
+</head>
+<body>
+<h1>🎙️ Whisper Voice-to-Text Demo</h1>
+
+<button id="startBtn">Bắt đầu ghi âm</button>
+<button id="stopBtn" disabled>Dừng ghi âm</button>
+<div id="status">Nhấn "Bắt đầu ghi âm" để thử.</div>
+
+<audio id="audioPlayback" controls style="margin-top:20px; display:none;"></audio>
+
+<h3>Kết quả:</h3>
+<textarea id="result" placeholder="Kết quả text sẽ hiển thị ở đây..."></textarea>
+
+<script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const resultBox = document.getElementById("result");
+    const status = document.getElementById("status");
+    const audioPlayback = document.getElementById("audioPlayback");
+
+    // 🎙️ Bắt đầu ghi âm
+    startBtn.addEventListener("click", async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                audioPlayback.src = audioUrl;
+                audioPlayback.style.display = "block";
+                await uploadAudio(audioBlob);
+            };
+
+            mediaRecorder.start();
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            status.textContent = "🎧 Đang ghi âm... nói đi!";
+        } catch (err) {
+            console.error(err);
+            alert("Không thể truy cập micro: " + err.message);
+        }
+    });
+
+    // ⏹ Dừng ghi âm
+    stopBtn.addEventListener("click", () => {
+        mediaRecorder.stop();
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        status.textContent = "⏳ Đang xử lý âm thanh...";
+    });
+
+    // 🚀 Gửi audio lên server Whisper
+    async function uploadAudio(blob) {
+        resultBox.value = "Đang tải lên và xử lý...";
+        const formData = new FormData();
+        formData.append("file", blob, "recording.webm");
+        formData.append("model", "whisper-1"); // nếu API yêu cầu
+        formData.append("language", "vi"); // hoặc "en"
+
+        try {
+            const response = await fetch("http://localhost:10300/inference", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) throw new Error("API lỗi: " + response.statusText);
+            const data = await response.json();
+            resultBox.value = data.text || JSON.stringify(data, null, 2);
+            status.textContent = "✅ Hoàn tất!";
+        } catch (err) {
+            console.error(err);
+            resultBox.value = "❌ Lỗi: " + err.message;
+            status.textContent = "❌ Gửi thất bại.";
+        }
+    }
+</script>
+</body>
+</html>

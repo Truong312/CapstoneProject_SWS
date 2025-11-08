@@ -1,0 +1,250 @@
+{
+  "database": "SmartWarehouseDB",
+  "tables": [
+    {
+      "name": "User",
+      "description": "Bảng người dùng - lưu thông tin nhân viên, quản lý, admin",
+      "columns": [
+        { "name": "UserID", "type": "int", "primaryKey": true, "description": "ID người dùng" },
+        { "name": "FullName", "type": "nvarchar(255)", "description": "Họ tên đầy đủ" },
+        { "name": "Email", "type": "nvarchar(255)", "unique": true, "description": "Email đăng nhập" },
+        { "name": "Password", "type": "nvarchar(255)", "description": "Mật khẩu đã hash" },
+        { "name": "Phone", "type": "nvarchar(50)", "nullable": true, "description": "Số điện thoại" },
+        { "name": "Address", "type": "nvarchar(255)", "nullable": true, "description": "Địa chỉ" },
+        { "name": "Role", "type": "int", "description": "Vai trò: 1=Admin, 2=Manager, 3=Staff" }
+      ],
+      "commonQueries": [
+        "tìm người dùng", "nhân viên", "quản lý", "admin", "user"
+      ]
+    },
+    {
+      "name": "Product",
+      "description": "Bảng sản phẩm - lưu thông tin các sản phẩm trong kho",
+      "columns": [
+        { "name": "ProductID", "type": "int", "primaryKey": true, "description": "ID sản phẩm" },
+        { "name": "SerialNumber", "type": "nvarchar(100)", "description": "Mã serial sản phẩm" },
+        { "name": "Name", "type": "nvarchar(255)", "description": "Tên sản phẩm" },
+        { "name": "ExpiredDate", "type": "date", "description": "Ngày hết hạn" },
+        { "name": "Unit", "type": "nvarchar(50)", "nullable": true, "description": "Đơn vị tính: Cái, Bộ, Chiếc" },
+        { "name": "UnitPrice", "type": "decimal(18,2)", "nullable": true, "description": "Giá bán" },
+        { "name": "ReceivedDate", "type": "date", "description": "Ngày nhập kho" },
+        { "name": "PurchasedPrice", "type": "decimal(18,2)", "nullable": true, "description": "Giá mua vào" },
+        { "name": "ReorderPoint", "type": "int", "nullable": true, "description": "Điểm đặt hàng lại" },
+        { "name": "Image", "type": "nvarchar(255)", "nullable": true, "description": "URL hình ảnh" },
+        { "name": "Description", "type": "nvarchar(255)", "nullable": true, "description": "Mô tả sản phẩm" }
+      ],
+      "commonQueries": [
+        "sản phẩm", "hàng hóa", "laptop", "điện thoại", "máy tính", "product", "item"
+      ]
+    },
+    {
+      "name": "Inventory",
+      "description": "Bảng tồn kho - quản lý số lượng sản phẩm tại từng vị trí",
+      "columns": [
+        { "name": "InventoryID", "type": "int", "primaryKey": true, "description": "ID inventory" },
+        { "name": "ProductID", "type": "int", "foreignKey": "Product.ProductID", "description": "ID sản phẩm" },
+        { "name": "QuantityAvailable", "type": "int", "description": "Số lượng khả dụng" },
+        { "name": "AllocatedQuantity", "type": "int", "description": "Số lượng đã phân bổ" },
+        { "name": "LocationID", "type": "int", "foreignKey": "Location.LocationID", "description": "ID vị trí kho" }
+      ],
+      "commonQueries": [
+        "tồn kho", "số lượng", "inventory", "stock", "còn hàng"
+      ]
+    },
+    {
+      "name": "Location",
+      "description": "Bảng vị trí kho - quản lý vị trí lưu trữ trong kho",
+      "columns": [
+        { "name": "LocationID", "type": "int", "primaryKey": true, "description": "ID vị trí" },
+        { "name": "ShelfID", "type": "nvarchar(50)", "nullable": true, "description": "Mã kệ: A, B, C, D, E" },
+        { "name": "ColumnNumber", "type": "int", "nullable": true, "description": "Số cột (1-6)" },
+        { "name": "RowNumber", "type": "int", "nullable": true, "description": "Số tầng (1-6)" },
+        { "name": "Type", "type": "nvarchar(100)", "nullable": true, "description": "Loại vị trí: Tầng Thấp, Tầng Trung, Tầng Cao" },
+        { "name": "IsFull", "type": "bit", "nullable": true, "description": "Vị trí đã đầy chưa" }
+      ],
+      "commonQueries": [
+        "vị trí", "kho", "kệ", "tầng", "location", "shelf"
+      ]
+    },
+    {
+      "name": "ImportOrder",
+      "description": "Bảng đơn nhập hàng - quản lý các đơn nhập kho",
+      "columns": [
+        { "name": "ImportOrderID", "type": "int", "primaryKey": true, "description": "ID đơn nhập" },
+        { "name": "InvoiceNumber", "type": "nvarchar(100)", "description": "Số hóa đơn" },
+        { "name": "ProviderId", "type": "int", "foreignKey": "BusinessPartner.PartnerID", "description": "ID nhà cung cấp" },
+        { "name": "CreatedBy", "type": "int", "nullable": true, "foreignKey": "User.UserID", "description": "Người tạo đơn" },
+        { "name": "CreatedDate", "type": "date", "description": "Ngày tạo đơn" },
+        { "name": "Status", "type": "nvarchar(50)", "description": "Trạng thái: Pending, Completed, Cancelled" }
+      ],
+      "commonQueries": [
+        "nhập hàng", "đơn nhập", "import", "nhập kho"
+      ]
+    },
+    {
+      "name": "ImportDetail",
+      "description": "Bảng chi tiết đơn nhập - chi tiết sản phẩm trong đơn nhập",
+      "columns": [
+        { "name": "ImportDetailID", "type": "int", "primaryKey": true, "description": "ID chi tiết nhập" },
+        { "name": "ImportOrderID", "type": "int", "foreignKey": "ImportOrder.ImportOrderID", "description": "ID đơn nhập" },
+        { "name": "ProductID", "type": "int", "foreignKey": "Product.ProductID", "description": "ID sản phẩm" },
+        { "name": "Quantity", "type": "int", "description": "Số lượng nhập" },
+        { "name": "ImportPrice", "type": "decimal(18,2)", "description": "Giá nhập" }
+      ],
+      "commonQueries": [
+        "chi tiết nhập hàng", "sản phẩm nhập"
+      ]
+    },
+    {
+      "name": "ExportOrder",
+      "description": "Bảng đơn xuất hàng - quản lý các đơn xuất kho",
+      "columns": [
+        { "name": "ExportOrderID", "type": "int", "primaryKey": true, "description": "ID đơn xuất" },
+        { "name": "InvoiceNumber", "type": "nvarchar(100)", "description": "Số hóa đơn" },
+        { "name": "CustomerId", "type": "int", "foreignKey": "BusinessPartner.PartnerID", "description": "ID khách hàng" },
+        { "name": "CreatedBy", "type": "int", "nullable": true, "foreignKey": "User.UserID", "description": "Người tạo đơn" },
+        { "name": "CreatedDate", "type": "date", "description": "Ngày tạo đơn" },
+        { "name": "ShippedAddress", "type": "nvarchar(255)", "description": "Địa chỉ giao hàng" },
+        { "name": "Status", "type": "nvarchar(50)", "description": "Trạng thái: Pending, Shipped, Delivered, Cancelled" },
+        { "name": "TotalPayment", "type": "decimal(18,2)", "description": "Tổng thanh toán" },
+        { "name": "TaxRate", "type": "decimal(5,2)", "nullable": true, "description": "Thuế suất %" },
+        { "name": "TaxAmount", "type": "decimal(18,2)", "nullable": true, "description": "Tiền thuế" },
+        { "name": "Currency", "type": "nvarchar(20)", "description": "Đơn vị tiền tệ: VND, USD" },
+        { "name": "Description", "type": "nvarchar(255)", "nullable": true, "description": "Mô tả đơn hàng" }
+      ],
+      "commonQueries": [
+        "xuất hàng", "đơn xuất", "export", "xuất kho", "giao hàng"
+      ]
+    },
+    {
+      "name": "ExportDetail",
+      "description": "Bảng chi tiết đơn xuất - chi tiết sản phẩm trong đơn xuất",
+      "columns": [
+        { "name": "ExportDetailID", "type": "int", "primaryKey": true, "description": "ID chi tiết xuất" },
+        { "name": "ExportOrderID", "type": "int", "foreignKey": "ExportOrder.ExportOrderID", "description": "ID đơn xuất" },
+        { "name": "ProductID", "type": "int", "foreignKey": "Product.ProductID", "description": "ID sản phẩm" },
+        { "name": "Quantity", "type": "int", "description": "Số lượng xuất" },
+        { "name": "TotalPrice", "type": "decimal(18,2)", "description": "Tổng tiền" }
+      ],
+      "commonQueries": [
+        "chi tiết xuất hàng", "sản phẩm xuất"
+      ]
+    },
+    {
+      "name": "BusinessPartner",
+      "description": "Bảng đối tác - quản lý nhà cung cấp và khách hàng",
+      "columns": [
+        { "name": "PartnerID", "type": "int", "primaryKey": true, "description": "ID đối tác" },
+        { "name": "Name", "type": "nvarchar(255)", "description": "Tên công ty/khách hàng" },
+        { "name": "Email", "type": "nvarchar(255)", "nullable": true, "description": "Email" },
+        { "name": "Phone", "type": "nvarchar(50)", "nullable": true, "description": "Số điện thoại" },
+        { "name": "Address", "type": "nvarchar(255)", "nullable": true, "description": "Địa chỉ" },
+        { "name": "Type", "type": "nvarchar(50)", "nullable": true, "description": "Loại: Supplier, Customer" }
+      ],
+      "commonQueries": [
+        "khách hàng", "nhà cung cấp", "đối tác", "customer", "supplier", "partner"
+      ]
+    },
+    {
+      "name": "ReturnOrder",
+      "description": "Bảng đơn trả hàng - quản lý các đơn trả hàng",
+      "columns": [
+        { "name": "ReturnOrderID", "type": "int", "primaryKey": true, "description": "ID đơn trả hàng" },
+        { "name": "ExportOrderID", "type": "int", "nullable": true, "foreignKey": "ExportOrder.ExportOrderID", "description": "ID đơn xuất gốc" },
+        { "name": "CheckedBy", "type": "int", "nullable": true, "foreignKey": "User.UserID", "description": "Người kiểm tra" },
+        { "name": "ReviewedBy", "type": "int", "nullable": true, "foreignKey": "User.UserID", "description": "Người duyệt" },
+        { "name": "CheckInTime", "type": "datetime", "nullable": true, "description": "Thời gian nhận hàng trả" },
+        { "name": "Status", "type": "nvarchar(50)", "description": "Trạng thái: Pending, Approved, Rejected" },
+        { "name": "Note", "type": "nvarchar(255)", "nullable": true, "description": "Ghi chú" }
+      ],
+      "commonQueries": [
+        "trả hàng", "hoàn trả", "return", "đổi trả"
+      ]
+    },
+    {
+      "name": "ReturnOrderDetail",
+      "description": "Bảng chi tiết đơn trả - chi tiết sản phẩm trả hàng",
+      "columns": [
+        { "name": "ReturnDetailID", "type": "int", "primaryKey": true, "description": "ID chi tiết trả hàng" },
+        { "name": "ReturnOrderID", "type": "int", "foreignKey": "ReturnOrder.ReturnOrderID", "description": "ID đơn trả hàng" },
+        { "name": "ProductID", "type": "int", "foreignKey": "Product.ProductID", "description": "ID sản phẩm" },
+        { "name": "ReasonID", "type": "int", "nullable": true, "foreignKey": "ReturnReason.ReasonID", "description": "ID lý do trả hàng" },
+        { "name": "Quantity", "type": "int", "description": "Số lượng trả" },
+        { "name": "ActionID", "type": "int", "nullable": true, "foreignKey": "ReturnAction.ActionID", "description": "ID hành động xử lý" },
+        { "name": "LocationID", "type": "int", "nullable": true, "foreignKey": "Location.LocationID", "description": "Vị trí xếp hàng trả" },
+        { "name": "Note", "type": "nvarchar(255)", "nullable": true, "description": "Ghi chú" }
+      ],
+      "commonQueries": [
+        "chi tiết trả hàng", "sản phẩm trả"
+      ]
+    },
+    {
+      "name": "ReturnReason",
+      "description": "Bảng lý do trả hàng - danh mục lý do",
+      "columns": [
+        { "name": "ReasonID", "type": "int", "primaryKey": true, "description": "ID lý do" },
+        { "name": "ReasonCode", "type": "nvarchar(50)", "nullable": true, "description": "Mã lý do: HONG_HAO, LOI_KY_THUAT, SAI_HANG, HET_HAN, CHAT_LUONG, KHACH_TRA, TON_KHO, KHONG_DUNG_MO_TA, BAO_BI_HU, THIEU_PHU_KIEN" },
+        { "name": "Description", "type": "nvarchar(255)", "nullable": true, "description": "Mô tả lý do" }
+      ],
+      "commonQueries": [
+        "lý do trả hàng", "nguyên nhân trả", "reason"
+      ]
+    },
+    {
+      "name": "ReturnAction",
+      "description": "Bảng hành động xử lý hàng trả - cách xử lý sản phẩm trả",
+      "columns": [
+        { "name": "ActionID", "type": "int", "primaryKey": true, "description": "ID hành động" },
+        { "name": "Action", "type": "nvarchar(255)", "description": "Tên hành động: Đổi mới, Hoàn tiền, Sửa chữa, Huỷ bỏ" },
+        { "name": "Description", "type": "nvarchar(255)", "nullable": true, "description": "Mô tả hành động" }
+      ],
+      "commonQueries": [
+        "xử lý trả hàng", "hành động", "action"
+      ]
+    },
+    {
+      "name": "TransactionLog",
+      "description": "Bảng nhật ký giao dịch - lưu vết các thao tác với sản phẩm",
+      "columns": [
+        { "name": "TransactionID", "type": "int", "primaryKey": true, "description": "ID giao dịch" },
+        { "name": "ProductID", "type": "int", "nullable": true, "foreignKey": "Product.ProductID", "description": "ID sản phẩm" },
+        { "name": "OrderID", "type": "int", "nullable": true, "description": "ID đơn hàng liên quan" },
+        { "name": "Type", "type": "nvarchar(50)", "description": "Loại giao dịch: Import, Export, Return, Adjust" },
+        { "name": "Quantity", "type": "int", "description": "Số lượng" },
+        { "name": "TransactionDate", "type": "datetime", "description": "Ngày giao dịch" },
+        { "name": "CreatedBy", "type": "int", "nullable": true, "foreignKey": "User.UserID", "description": "Người thực hiện" },
+        { "name": "Notes", "type": "nvarchar(255)", "nullable": true, "description": "Ghi chú" }
+      ],
+      "commonQueries": [
+        "nhật ký", "lịch sử", "transaction", "log", "giao dịch"
+      ]
+    },
+    {
+      "name": "ActionLog",
+      "description": "Bảng nhật ký hành động - lưu vết các thao tác của người dùng",
+      "columns": [
+        { "name": "ActionID", "type": "int", "primaryKey": true, "description": "ID hành động" },
+        { "name": "UserID", "type": "int", "foreignKey": "User.UserID", "description": "ID người dùng" },
+        { "name": "ActionType", "type": "nvarchar(100)", "description": "Loại hành động: Create, Update, Delete, Login" },
+        { "name": "EntityType", "type": "nvarchar(100)", "description": "Loại đối tượng: Product, Order, User" },
+        { "name": "EntityID", "type": "int", "nullable": true, "description": "ID đối tượng" },
+        { "name": "Timestamp", "type": "datetime", "description": "Thời gian thực hiện" },
+        { "name": "Description", "type": "nvarchar(255)", "nullable": true, "description": "Mô tả chi tiết" }
+      ],
+      "commonQueries": [
+        "nhật ký hành động", "audit", "action log", "lịch sử thao tác"
+      ]
+    }
+  ],
+  "commonMisspellings": {
+    "ImportOrder": ["ImportOrders", "Nhập Hàng", "Don Nhap", "Import"],
+    "ExportOrder": ["ExportOrders", "Xuất Hàng", "Don Xuat", "Export"],
+    "Product": ["Products", "San Pham", "Hang Hoa"],
+    "User": ["Users", "Nguoi Dung", "Nhan Vien"],
+    "Inventory": ["Inventories", "Ton Kho", "Kho"],
+    "BusinessPartner": ["BusinessPartners", "Doi Tac", "Khach Hang", "Nha Cung Cap"],
+    "ReturnOrder": ["ReturnOrders", "Tra Hang", "Hoan Tra"],
+    "Location": ["Locations", "Vi Tri", "Kho"]
+  }
+}
+
