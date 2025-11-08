@@ -1,0 +1,104 @@
+# API Test Flows for ApiCore
+# Location: SWS.ApiCore/ApiTest/api-tests.http
+# Usage:
+# - Set environment variables at top of your HTTP client or replace placeholders:
+#   - {{API_BASE}} e.g. http://localhost:5000 or http://localhost:5001
+#   - {{AUTH_TOKEN}} Staff/Manager JWT if endpoint requires authorization
+# - Run requests individually or run the whole file in JetBrains HTTP client / VSCode REST Client.
+
+### Variables (example)
+# @API_BASE = http://localhost:5000
+# @AUTH_TOKEN = <paste_jwt_here>
+
+### 1) Import Orders - List (Staff)
+GET {{API_BASE}}/api/import-orders?q=sample&page=1&pageSize=10
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 1.1) Import Orders - Detail
+GET {{API_BASE}}/api/import-orders/1
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 1.2) Import Orders - Create (Staff role=1)
+POST {{API_BASE}}/api/import-orders
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "providerId": 1,
+  "status": "Pending",
+  "items": [
+    { "productId": 1, "quantity": 10, "price": 100 }
+  ]
+}
+
+### 2) Export Orders - List (All)
+GET {{API_BASE}}/api/ExportOrder/All
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 2.1) Export Orders - By Status
+GET {{API_BASE}}/api/ExportOrder/by-status?status=Pending
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 2.2) Export Order - Detail
+GET {{API_BASE}}/api/ExportOrder/1Details
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 2.3) Export Order - Create
+POST {{API_BASE}}/api/ExportOrder/ExportOder
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "warehouseId": 1,
+  "destination": "Customer ABC",
+  "items": [ { "productId": 1, "quantity": 2 } ]
+}
+
+### 3) Return Reason List + Search
+# Get all reasons
+GET {{API_BASE}}/api/returns/reasons
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Search reasons by keyword
+GET {{API_BASE}}/api/returns/reasons?q=damaged
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 4) Return Status List + Search
+GET {{API_BASE}}/api/returns/statuses
+Authorization: Bearer {{AUTH_TOKEN}}
+
+GET {{API_BASE}}/api/returns/statuses?q=Pending
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 5) Return Orders - List and Detail
+# List (with example filters)
+GET {{API_BASE}}/api/returns/orders?from=2025-01-01&to=2025-12-31&status=Pending
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Detail
+GET {{API_BASE}}/api/returns/orders/1
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 6) Manager Dashboard (route may vary)
+# NOTE: There's no exact dashboard route found in code search. If your project exposes a manager dashboard endpoint,
+# replace the route below with the real one (e.g. /api/manager/dashboard or /api/dashboard).
+GET {{API_BASE}}/api/manager/dashboard
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 7) Products Near Expired Notification
+GET {{API_BASE}}/api/product/near-expired
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 7.1) Expired Products
+GET {{API_BASE}}/api/product/expired
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 8) Helpful quick checks
+# Health (if exists)
+GET {{API_BASE}}/health
+
+# Swagger UI page
+GET {{API_BASE}}/swagger/index.html
+
+# End of file
+

@@ -1,0 +1,308 @@
+# API Test Flows và Sample Models cho Frontend
+# File: SWS.ApiCore/ApiTest/auth-api-tests.http
+# Sử dụng cho testing authentication endpoints
+# Frontend có thể tham khảo sample responses để tạo base models
+
+### ========================================
+### AUTHENTICATION API FLOWS
+### ========================================
+
+### 1. ĐĂNG KÝ (REGISTER)
+POST {{API_BASE}}/api/warehouse/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Nguyễn Văn A",
+  "email": "test@example.com",
+  "password": "password123",
+  "phone": "0123456789",
+  "address": "123 Đường ABC, Quận XYZ",
+  "role": 1
+}
+
+### Sample Response - Success (201)
+# {
+#   "isSuccess": true,
+#   "message": "Đăng ký thành công",
+#   "data": {
+#     "user": {
+#       "userId": 1,
+#       "fullName": "Nguyễn Văn A",
+#       "email": "test@example.com",
+#       "phone": "0123456789",
+#       "address": "123 Đường ABC, Quận XYZ",
+#       "role": 1
+#     },
+#     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+#   },
+#   "statusCode": 201
+# }
+
+### Sample Response - Error (400)
+# {
+#   "isSuccess": false,
+#   "message": "Email đã tồn tại trong hệ thống",
+#   "statusCode": 400
+# }
+
+### 2. ĐĂNG NHẬP (LOGIN)
+POST {{API_BASE}}/api/warehouse/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Sample Response - Success (200)
+# {
+#   "isSuccess": true,
+#   "message": "Đăng nhập thành công",
+#   "data": {
+#     "user": {
+#       "userId": 1,
+#       "fullName": "Nguyễn Văn A",
+#       "email": "test@example.com",
+#       "phone": "0123456789",
+#       "address": "123 Đường ABC, Quận XYZ",
+#       "role": 1
+#     },
+#     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+#   },
+#   "statusCode": 200
+# }
+
+### Sample Response - Error (401)
+# {
+#   "isSuccess": false,
+#   "message": "Email hoặc mật khẩu không chính xác",
+#   "statusCode": 401
+# }
+
+### 3. LẤY THÔNG TIN USER HIỆN TẠI (ME)
+GET {{API_BASE}}/api/warehouse/auth/me
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Sample Response - Success (200)
+# {
+#   "isSuccess": true,
+#   "message": "Lấy thông tin người dùng thành công",
+#   "data": {
+#     "userId": 1,
+#     "fullName": "Nguyễn Văn A",
+#     "email": "test@example.com",
+#     "phone": "0123456789",
+#     "address": "123 Đường ABC, Quận XYZ",
+#     "role": 1
+#   },
+#   "statusCode": 200
+# }
+
+### 4. LẤY THÔNG TIN USER THEO ID
+GET {{API_BASE}}/api/warehouse/auth/1
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Sample Response - Success (200)
+# {
+#   "isSuccess": true,
+#   "message": "Lấy thông tin người dùng thành công",
+#   "data": {
+#     "userId": 1,
+#     "fullName": "Nguyễn Văn A",
+#     "email": "test@example.com",
+#     "phone": "0123456789",
+#     "address": "123 Đường ABC, Quận XYZ",
+#     "role": 1
+#   },
+#   "statusCode": 200
+# }
+
+### 5. CẬP NHẬT THÔNG TIN USER
+PUT {{API_BASE}}/api/warehouse/auth/1
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "fullName": "Nguyễn Văn B",
+  "email": "test2@example.com",
+  "phone": "0987654321",
+  "address": "456 Đường XYZ, Quận ABC",
+  "role": 1
+}
+
+### Sample Response - Success (200)
+# {
+#   "isSuccess": true,
+#   "message": "Cập nhật thông tin người dùng thành công",
+#   "data": {
+#     "userId": 1,
+#     "fullName": "Nguyễn Văn B",
+#     "email": "test2@example.com",
+#     "phone": "0987654321",
+#     "address": "456 Đường XYZ, Quận ABC",
+#     "role": 1
+#   },
+#   "statusCode": 200
+# }
+
+### 6. ĐỔI MẬT KHẨU
+POST {{API_BASE}}/api/warehouse/auth/change-password
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "oldPassword": "password123",
+  "newPassword": "newpassword456"
+}
+
+### Sample Response - Success (200)
+# {
+#   "isSuccess": true,
+#   "message": "Đổi mật khẩu thành công",
+#   "statusCode": 200
+# }
+
+### ========================================
+### GOOGLE LOGIN FLOWS
+### ========================================
+
+### 7. LẤY URL GOOGLE LOGIN
+GET {{API_BASE}}/api/warehouse/auth/google-url
+
+### Sample Response - Success (200)
+# {
+#   "isSuccess": true,
+#   "message": "Lấy URL đăng nhập Google thành công",
+#   "data": {
+#     "authUrl": "https://accounts.google.com/o/oauth2/v2/auth?client_id=...&redirect_uri=...&response_type=code&scope=openid%20email%20profile&access_type=offline&prompt=consent"
+#   },
+#   "statusCode": 200
+# }
+
+### 8. GOOGLE LOGIN TRỰC TIẾP (SPA/MOBILE)
+POST {{API_BASE}}/api/warehouse/auth/google-login
+Content-Type: application/json
+
+{
+  "code": "4/0AX4XfWj..."
+}
+
+### Sample Response - Success (200)
+# {
+#   "isSuccess": true,
+#   "message": "Đăng nhập bằng Google thành công",
+#   "data": {
+#     "userId": 2,
+#     "fullName": "John Doe",
+#     "email": "john.doe@gmail.com",
+#     "phone": null,
+#     "address": null,
+#     "role": 0,
+#     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+#     "isNewUser": true
+#   },
+#   "statusCode": 200
+# }
+
+### ========================================
+### FRONTEND BASE MODELS (TypeScript)
+### ========================================
+
+### User Model
+# export interface User {
+#   userId: number;
+#   fullName: string;
+#   email: string;
+#   phone?: string;
+#   address?: string;
+#   role: number;
+# }
+
+### Auth Response Model
+# export interface AuthResponse {
+#   isSuccess: boolean;
+#   message: string;
+#   data?: {
+#     user: User;
+#     token: string;
+#   };
+#   statusCode: number;
+# }
+
+### Google Auth Response Model
+# export interface GoogleAuthResponse {
+#   isSuccess: boolean;
+#   message: string;
+#   data?: {
+#     userId: number;
+#     fullName: string;
+#     email: string;
+#     phone?: string;
+#     address?: string;
+#     role: number;
+#     token: string;
+#     isNewUser: boolean;
+#   };
+#   statusCode: number;
+# }
+
+### Register Request Model
+# export interface RegisterRequest {
+#   fullName: string;
+#   email: string;
+#   password: string;
+#   phone?: string;
+#   address?: string;
+#   role: number;
+# }
+
+### Login Request Model
+# export interface LoginRequest {
+#   email: string;
+#   password: string;
+# }
+
+### Change Password Request Model
+# export interface ChangePasswordRequest {
+#   oldPassword: string;
+#   newPassword: string;
+# }
+
+### Google Login Request Model
+# export interface GoogleLoginRequest {
+#   code: string;
+# }
+
+### Google Auth URL Response Model
+# export interface GoogleAuthUrlResponse {
+#   isSuccess: boolean;
+#   message: string;
+#   data?: {
+#     authUrl: string;
+#   };
+#   statusCode: number;
+# }
+
+### ========================================
+### TESTING NOTES
+### ========================================
+
+# 1. Set environment variables:
+#    @API_BASE = http://localhost:5000 (or your API URL)
+#    @AUTH_TOKEN = <paste_jwt_token_here>
+
+# 2. Test flow:
+#    - Register → Login → Get Me → Update User → Change Password
+#    - Google URL → (Manual redirect) → Google Login
+
+# 3. Error scenarios:
+#    - Register with existing email
+#    - Login with wrong credentials
+#    - Access protected endpoints without token
+#    - Update other user's info (should fail)
+
+# 4. Role-based access:
+#    - Role 0: Regular user
+#    - Role 1: Staff/Admin
+
+### ========================================
