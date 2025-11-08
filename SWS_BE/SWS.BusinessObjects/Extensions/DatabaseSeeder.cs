@@ -660,8 +660,276 @@ namespace SWS.BusinessObjects.Extensions
             await context.SaveChangesAsync();
             Console.WriteLine($"[Seeding] Đã thêm {returnReasons.Count} lý do trả hàng");
 
+            // -------------------------
+            // Seed Import / Export / Return Orders + Details
+            // -------------------------
+
+            // Reload required lookup data (ids are generated after SaveChanges)
+            var dbUsers = await context.Users.ToListAsync();
+            var dbPartners = await context.BusinessPartners.ToListAsync();
+            var dbProducts = await context.Products.ToListAsync();
+            var dbLocations = await context.Locations.ToListAsync();
+
+            // Helper to pick ids safely
+            int uidAdmin = dbUsers.ElementAtOrDefault(0)?.UserId ?? 1;
+            int uidManager = dbUsers.ElementAtOrDefault(1)?.UserId ?? uidAdmin;
+            int uidStaff1 = dbUsers.ElementAtOrDefault(2)?.UserId ?? uidAdmin;
+
+            int supplier1 = dbPartners.FirstOrDefault(p => p.Type == "Supplier")?.PartnerId ?? dbPartners.First().PartnerId;
+            int customer1 = dbPartners.FirstOrDefault(p => p.Type == "Customer")?.PartnerId ?? dbPartners.First().PartnerId;
+
+            // Create several Import Orders with details
+            var importOrders = new List<ImportOrder>
+            {
+                new ImportOrder
+                {
+                    InvoiceNumber = "IMP-MOCK-001",
+                    OrderDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-20)),
+                    ProviderId = supplier1,
+                    CreatedDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-20)),
+                    Status = "Completed",
+                    CreatedBy = uidStaff1,
+                    ImportDetails = new List<ImportDetail>
+                    {
+                        new ImportDetail { ProductId = dbProducts[0].ProductId, Quantity = 10, ImportPrice = dbProducts[0].PurchasedPrice },
+                        new ImportDetail { ProductId = dbProducts[1].ProductId, Quantity = 20, ImportPrice = dbProducts[1].PurchasedPrice }
+                    }
+                },
+                new ImportOrder
+                {
+                    InvoiceNumber = "IMP-MOCK-002",
+                    OrderDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-15)),
+                    ProviderId = supplier1,
+                    CreatedDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-15)),
+                    Status = "Pending",
+                    CreatedBy = uidManager,
+                    ImportDetails = new List<ImportDetail>
+                    {
+                        new ImportDetail { ProductId = dbProducts[2].ProductId, Quantity = 5, ImportPrice = dbProducts[2].PurchasedPrice },
+                        new ImportDetail { ProductId = dbProducts[3].ProductId, Quantity = 2, ImportPrice = dbProducts[3].PurchasedPrice }
+                    }
+                },
+                new ImportOrder
+                {
+                    InvoiceNumber = "IMP-MOCK-003",
+                    OrderDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-7)),
+                    ProviderId = supplier1,
+                    CreatedDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-7)),
+                    Status = "Pending",
+                    CreatedBy = uidStaff1,
+                    ImportDetails = new List<ImportDetail>
+                    {
+                        new ImportDetail { ProductId = dbProducts[4].ProductId, Quantity = 12, ImportPrice = dbProducts[4].PurchasedPrice },
+                        new ImportDetail { ProductId = dbProducts[5].ProductId, Quantity = 6, ImportPrice = dbProducts[5].PurchasedPrice }
+                    }
+                }
+            };
+
+            await context.ImportOrders.AddRangeAsync(importOrders);
+            await context.SaveChangesAsync();
+            Console.WriteLine($"[Seeding] Đã thêm {importOrders.Count} import orders + details");
+
+            // Create several Export Orders with details
+            var exportOrders = new List<ExportOrder>
+            {
+                new ExportOrder
+                {
+                    InvoiceNumber = "EXP-MOCK-001",
+                    OrderDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)),
+                    CustomerId = customer1,
+                    Currency = "VND",
+                    CreatedDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-10)),
+                    ShippedDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-8)),
+                    ShippedAddress = "123 Mock Street",
+                    TaxRate = 0.05m,
+                    TotalPayment = (dbProducts[0].UnitPrice + dbProducts[1].UnitPrice) * 1,
+                    Description = "Mock export order",
+                    Status = "Shipped",
+                    CreatedBy = uidManager,
+                    ExportDetails = new List<ExportDetail>
+                    {
+                        new ExportDetail { ProductId = dbProducts[0].ProductId, Quantity = 1, TotalPrice = dbProducts[0].UnitPrice },
+                        new ExportDetail { ProductId = dbProducts[1].ProductId, Quantity = 2, TotalPrice = dbProducts[1].UnitPrice * 2 }
+                    }
+                },
+                new ExportOrder
+                {
+                    InvoiceNumber = "EXP-MOCK-002",
+                    OrderDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-5)),
+                    CustomerId = customer1,
+                    Currency = "VND",
+                    CreatedDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-5)),
+                    Status = "Pending",
+                    CreatedBy = uidStaff1,
+                    ExportDetails = new List<ExportDetail>
+                    {
+                        new ExportDetail { ProductId = dbProducts[2].ProductId, Quantity = 3, TotalPrice = dbProducts[2].UnitPrice * 3 }
+                    }
+                }
+            };
+
+            await context.ExportOrders.AddRangeAsync(exportOrders);
+            await context.SaveChangesAsync();
+            Console.WriteLine($"[Seeding] Đã thêm {exportOrders.Count} export orders + details");
+
+            // Create Return Orders linked to some export orders
+            var createdExport = context.ExportOrders.Take(3).ToList();
+            var returnOrders = new List<ReturnOrder>
+            {
+                new ReturnOrder
+                {
+                    ExportOrderId = createdExport.ElementAtOrDefault(0)?.ExportOrderId,
+                    CheckedBy = uidStaff1,
+                    ReviewedBy = uidManager,
+                    CheckInTime = DateTime.Now.AddDays(-6),
+                    Status = "Pending",
+                    Note = "Customer reported damage",
+                    ReturnOrderDetails = new List<ReturnOrderDetail>
+                    {
+                        new ReturnOrderDetail { ProductId = dbProducts[0].ProductId, Quantity = 1, Note = "Cracked", ReasonId = returnReasons.First().ReasonId, LocationId = dbLocations.First().LocationId }
+                    }
+                },
+                new ReturnOrder
+                {
+                    ExportOrderId = createdExport.ElementAtOrDefault(1)?.ExportOrderId,
+                    CheckedBy = uidStaff1,
+                    ReviewedBy = uidManager,
+                    CheckInTime = DateTime.Now.AddDays(-3),
+                    Status = "Processed",
+                    Note = "Quality issue",
+                    ReturnOrderDetails = new List<ReturnOrderDetail>
+                    {
+                        new ReturnOrderDetail { ProductId = dbProducts[2].ProductId, Quantity = 2, Note = "Not powering on", ReasonId = returnReasons.Skip(1).First().ReasonId, LocationId = dbLocations.Skip(1).First().LocationId }
+                    }
+                }
+            };
+
+            await context.ReturnOrders.AddRangeAsync(returnOrders);
+            await context.SaveChangesAsync();
+            Console.WriteLine($"[Seeding] Đã thêm {returnOrders.Count} return orders + details");
+
+            // -------------------------
+            // Bulk/generative seeding: create lots of import/export/return data
+            // -------------------------
+
+            var rnd = new Random(12345);
+            var statuses = new[] { "Pending", "Completed", "Cancelled", "Shipped", "Delivered" };
+
+            // Suppliers and customers lists
+            var supplierIds = dbPartners.Where(p => p.Type == "Supplier").Select(p => p.PartnerId).ToList();
+            var customerIds = dbPartners.Where(p => p.Type == "Customer").Select(p => p.PartnerId).ToList();
+            if (!supplierIds.Any()) supplierIds.Add(supplier1);
+            if (!customerIds.Any()) customerIds.Add(customer1);
+
+            // Generate many import orders (50)
+            var largeImportOrders = new List<ImportOrder>();
+            for (int i = 0; i < 50; i++)
+            {
+                var creator = (i % 2 == 0) ? uidStaff1 : uidManager;
+                var prov = supplierIds[rnd.Next(supplierIds.Count)];
+                var ordDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-rnd.Next(1, 120)));
+                var status = statuses[rnd.Next(0, 3)]; // only Pending/Completed/Cancelled for import
+
+                var details = new List<ImportDetail>();
+                int detailCount = rnd.Next(1, 5);
+                for (int d = 0; d < detailCount; d++)
+                {
+                    var prod = dbProducts[rnd.Next(dbProducts.Count)];
+                    details.Add(new ImportDetail
+                    {
+                        ProductId = prod.ProductId,
+                        Quantity = rnd.Next(1, 200),
+                        ImportPrice = prod.PurchasedPrice
+                    });
+                }
+
+                largeImportOrders.Add(new ImportOrder
+                {
+                    InvoiceNumber = $"IMP-LARGE-{DateTime.Now:yyyyMMdd}-{i + 1}",
+                    OrderDate = ordDate,
+                    ProviderId = prov,
+                    CreatedDate = ordDate,
+                    Status = status,
+                    CreatedBy = creator,
+                    ImportDetails = details
+                });
+            }
+
+            await context.ImportOrders.AddRangeAsync(largeImportOrders);
+            await context.SaveChangesAsync();
+            Console.WriteLine($"[Seeding] Đã thêm {largeImportOrders.Count} import orders (large)");
+
+            // Generate many export orders (60)
+            var largeExportOrders = new List<ExportOrder>();
+            for (int i = 0; i < 60; i++)
+            {
+                var creator = (i % 3 == 0) ? uidManager : uidStaff1;
+                var cust = customerIds[rnd.Next(customerIds.Count)];
+                var ordDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-rnd.Next(1, 120)));
+                var status = statuses[rnd.Next(statuses.Length)];
+
+                var details = new List<ExportDetail>();
+                int detailCount = rnd.Next(1, 6);
+                for (int d = 0; d < detailCount; d++)
+                {
+                    var prod = dbProducts[rnd.Next(dbProducts.Count)];
+                    details.Add(new ExportDetail
+                    {
+                        ProductId = prod.ProductId,
+                        Quantity = rnd.Next(1, 20),
+                        TotalPrice = prod.UnitPrice * rnd.Next(1, 20)
+                    });
+                }
+
+                largeExportOrders.Add(new ExportOrder
+                {
+                    InvoiceNumber = $"EXP-LARGE-{DateTime.Now:yyyyMMdd}-{i + 1}",
+                    OrderDate = ordDate,
+                    CustomerId = cust,
+                    Currency = "VND",
+                    CreatedDate = ordDate,
+                    ShippedDate = ordDate.AddDays(rnd.Next(1, 10)),
+                    ShippedAddress = "Auto seeded address",
+                    TaxRate = 0.05m,
+                    TotalPayment = details.Sum(x => x.TotalPrice ?? 0m),
+                    Description = "Auto generated export",
+                    Status = status,
+                    CreatedBy = creator,
+                    ExportDetails = details
+                });
+            }
+
+            await context.ExportOrders.AddRangeAsync(largeExportOrders);
+            await context.SaveChangesAsync();
+            Console.WriteLine($"[Seeding] Đã thêm {largeExportOrders.Count} export orders (large)");
+
+            // Generate return orders for some of the export orders (randomly pick 20)
+            var allExportIds = context.ExportOrders.Select(e => e.ExportOrderId).ToList();
+            var chosenExportIds = allExportIds.OrderBy(x => rnd.Next()).Take(20).ToList();
+            var largeReturnOrders = new List<ReturnOrder>();
+            foreach (var exId in chosenExportIds)
+            {
+                var prod = dbProducts[rnd.Next(dbProducts.Count)];
+                largeReturnOrders.Add(new ReturnOrder
+                {
+                    ExportOrderId = exId,
+                    CheckedBy = uidStaff1,
+                    ReviewedBy = uidManager,
+                    CheckInTime = DateTime.Now.AddDays(-rnd.Next(1, 30)),
+                    Status = "Pending",
+                    Note = "Auto returned",
+                    ReturnOrderDetails = new List<ReturnOrderDetail>
+                    {
+                        new ReturnOrderDetail { ProductId = prod.ProductId, Quantity = rnd.Next(1, 5), Note = "Auto seed return", ReasonId = returnReasons[rnd.Next(returnReasons.Count)].ReasonId, LocationId = dbLocations[rnd.Next(dbLocations.Count)].LocationId }
+                    }
+                });
+            }
+
+            await context.ReturnOrders.AddRangeAsync(largeReturnOrders);
+            await context.SaveChangesAsync();
+            Console.WriteLine($"[Seeding] Đã thêm {largeReturnOrders.Count} return orders (large)");
+
             Console.WriteLine("[Seeding] Hoàn thành seeding dữ liệu!");
         }
     }
 }
-

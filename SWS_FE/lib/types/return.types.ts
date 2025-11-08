@@ -7,9 +7,8 @@ export interface ReturnReason {
 }
 
 export interface ReturnStatus {
-  statusId: number;
-  statusCode: string;
-  description: string;
+  status: string;
+  count: number;
 }
 
 export interface ReturnOrderItem {
@@ -24,29 +23,23 @@ export interface ReturnOrderItem {
 
 export interface ReturnOrder {
   returnOrderId: number;
-  returnNumber: string;
-  returnDate: string;
-  customerId?: number;
-  customerName?: string;
-  exportOrderId?: number;
-  exportOrderNumber?: string;
-  statusId: number;
-  statusCode?: string;
-  statusDescription?: string;
-  totalItems?: number;
-  createdDate?: string;
-  createdBy?: number;
-  createdByName?: string;
+  exportOrderId: number;
+  checkInTime: string;
+  status: string;
+  note?: string;
+  checkedByName?: string;
+  reviewedByName?: string;
   items?: ReturnOrderItem[];
 }
 
 export interface ReturnOrderListItem {
   returnOrderId: number;
-  returnNumber: string;
-  returnDate: string;
-  customerName?: string;
-  statusCode: string;
-  totalItems: number;
+  exportOrderId: number;
+  checkInTime: string;
+  status: string;
+  note?: string;
+  checkedByName?: string;
+  reviewedByName?: string;
 }
 
 export interface ReturnOrderDetail extends ReturnOrder {

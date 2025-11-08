@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.ProductModel;
 using SWS.Services.Services.ProductServices;
 
@@ -115,6 +116,17 @@ namespace SWS.ApiCore.Controllers
         public async Task<IActionResult> SearchProducts([FromQuery] string text)
         {
             var result = await _productService.SearchProductsAsync(text);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result.Data);
+        }
+
+        // GET: api/product/paged?page=1&pageSize=20&q=keyword
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetProductsPaged([FromQuery] PagedRequestDto req)
+        {
+            var result = await _productService.GetProductsPagedAsync(req);
             if (!result.IsSuccess)
                 return BadRequest(result);
 

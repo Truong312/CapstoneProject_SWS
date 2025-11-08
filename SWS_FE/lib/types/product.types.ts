@@ -2,36 +2,42 @@
 
 export interface Product {
   productId: number;
-  productCode: string;
-  productName: string;
+  serialNumber: string;
+  name: string;
+  expiredDate?: string;
+  unit: string;
+  unitPrice: number;
+  reorderPoint?: number;
   categoryId?: number;
   categoryName?: string;
-  unitId?: number;
-  unitName?: string;
   description?: string;
-  stockQuantity: number;
+  stockQuantity?: number;
   minStockLevel?: number;
   maxStockLevel?: number;
   importPrice?: number;
   exportPrice?: number;
-  expiryDate?: string;
   manufacturingDate?: string;
   batchNumber?: string;
-  isActive: boolean;
+  isActive?: boolean;
   createdDate?: string;
   modifiedDate?: string;
 }
 
 export interface ProductListItem {
   productId: number;
-  productCode: string;
-  productName: string;
+  serialNumber: string;
+  name: string;
+  expiredDate?: string;
+  unit: string;
+  unitPrice: number;
+  receivedDate?: string;
+  purchasedPrice?: number;
+  reorderPoint?: number;
+  image?: string;
+  description?: string;
   categoryName?: string;
-  unitName?: string;
-  stockQuantity: number;
-  exportPrice?: number;
-  expiryDate?: string;
-  isActive: boolean;
+  stockQuantity?: number;
+  isActive?: boolean;
 }
 
 export interface ProductExpiry {
@@ -61,12 +67,26 @@ export interface ProductUnit {
   description?: string;
 }
 
+export interface ProductPagedResponse {
+  total: number;
+  page: number;
+  pageSize: number;
+  items: ProductListItem[];
+}
+
 export interface ProductQueryParams {
   q?: string;
-  categoryId?: number;
-  isActive?: boolean;
   page?: number;
   pageSize?: number;
+  categoryId?: number;
+  isActive?: boolean;
+}
+
+export interface ProductPagedResponse {
+  total: number;
+  page: number;
+  pageSize: number;
+  items: ProductListItem[];
 }
 
 export interface CreateProductRequest {

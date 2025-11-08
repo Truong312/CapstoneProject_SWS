@@ -9,6 +9,8 @@ public class SqlQueryResultDto
 {
     public string Sql { get; set; } = string.Empty;
     public object? Result { get; set; }
+    public Dictionary<string, string>? ColumnMapping { get; set; }
+    public Dictionary<string, object>? Metadata { get; set; }
 }
 
 public class MultiSqlQueryResultDto

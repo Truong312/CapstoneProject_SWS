@@ -3,16 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import {
   Select,
@@ -21,10 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, Plus, FileText, Eye, Loader2 } from 'lucide-react'
+import { Plus, FileText, Eye } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { importOrderApi } from '@/services/api/order.api'
-import type { ImportOrderListItem, OrderStatus } from '@/lib/types'
+import type { ImportOrderListItem } from '@/lib/types'
+import { DataTable } from '@/components/data-table'
+import type { DataTableColumn } from '@/components/data-table'
 
 export default function ImportOrdersPage() {
   const router = useRouter()
@@ -37,11 +30,22 @@ export default function ImportOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
-  const pageSize = 10
+  const [pageSize, setPageSize] = useState(10)
 
   useEffect(() => {
     fetchOrders()
-  }, [currentPage, searchQuery, statusFilter])
+  }, [currentPage, pageSize])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (currentPage === 1) {
+        fetchOrders()
+      } else {
+        setCurrentPage(1)
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery, statusFilter])
 
   const fetchOrders = async () => {
     try {
@@ -99,6 +103,47 @@ export default function ImportOrdersPage() {
     })
   }
 
+  // Define columns for DataTable
+  const columns: DataTableColumn<ImportOrderListItem>[] = [
+    {
+      key: 'invoiceNumber',
+      header: 'Số hóa đơn',
+      cell: (order: ImportOrderListItem) => (
+        <span className="font-medium">{order.invoiceNumber}</span>
+      ),
+      sortable: true,
+    },
+    {
+      key: 'orderDate',
+      header: 'Ngày đặt',
+      cell: (order: ImportOrderListItem) => formatDate(order.orderDate),
+      sortable: true,
+    },
+    {
+      key: 'providerName',
+      header: 'Nhà cung cấp',
+      cell: (order: ImportOrderListItem) => order.providerName,
+      sortable: true,
+    },
+    {
+      key: 'totalItems',
+      header: 'Số lượng SP',
+      cell: (order: ImportOrderListItem) => order.totalItems,
+      className: 'text-center',
+      headerClassName: 'text-center',
+    },
+    {
+      key: 'status',
+      header: 'Trạng thái',
+      cell: (order: ImportOrderListItem) => getStatusBadge(order.status),
+    },
+    {
+      key: 'createdByName',
+      header: 'Người tạo',
+      cell: (order: ImportOrderListItem) => order.createdByName,
+    },
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -119,24 +164,10 @@ export default function ImportOrdersPage() {
         </Button>
       </div>
 
+      {/* Filter Section */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Tìm kiếm & Lọc</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Tìm kiếm theo số hóa đơn, nhà cung cấp..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value)
-                  setCurrentPage(1)
-                }}
-                className="pl-10"
-              />
-            </div>
             <Select
               value={statusFilter}
               onValueChange={(value) => {
@@ -144,11 +175,11 @@ export default function ImportOrdersPage() {
                 setCurrentPage(1)
               }}
             >
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Trạng thái" />
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Lọc theo trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="all">Tất cả trạng thái</SelectItem>
                 <SelectItem value="Pending">Chờ duyệt</SelectItem>
                 <SelectItem value="Approved">Đã duyệt</SelectItem>
                 <SelectItem value="Completed">Hoàn thành</SelectItem>
@@ -159,99 +190,46 @@ export default function ImportOrdersPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>
-              Danh sách đơn nhập ({totalItems})
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="text-center py-12">
-              <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500">Không có đơn nhập hàng nào</p>
-            </div>
-          ) : (
-            <>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Số hóa đơn</TableHead>
-                      <TableHead>Ngày đặt</TableHead>
-                      <TableHead>Nhà cung cấp</TableHead>
-                      <TableHead className="text-center">Số lượng SP</TableHead>
-                      <TableHead>Trạng thái</TableHead>
-                      <TableHead>Người tạo</TableHead>
-                      <TableHead className="text-right">Thao tác</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {orders.map((order) => (
-                      <TableRow key={order.importOrderId}>
-                        <TableCell className="font-medium">
-                          {order.invoiceNumber}
-                        </TableCell>
-                        <TableCell>{formatDate(order.orderDate)}</TableCell>
-                        <TableCell>{order.providerName}</TableCell>
-                        <TableCell className="text-center">
-                          {order.totalItems}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(order.status)}</TableCell>
-                        <TableCell>{order.createdByName}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              router.push(`/dashboard/import-orders/${order.importOrderId}`)
-                            }
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Xem
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Pagination */}
-              <div className="flex items-center justify-between mt-4">
-                <p className="text-sm text-gray-500">
-                  Hiển thị {(currentPage - 1) * pageSize + 1} -{' '}
-                  {Math.min(currentPage * pageSize, totalItems)} trong số {totalItems}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Trước
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Sau
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+      {/* DataTable */}
+      <DataTable
+        data={orders}
+        columns={columns}
+        keyField="importOrderId"
+        isLoading={isLoading}
+        emptyMessage="Không có đơn nhập hàng nào"
+        emptyIcon={<FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />}
+        searchable
+        searchPlaceholder="Tìm kiếm theo số hóa đơn, nhà cung cấp..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        sortable
+        pagination={{
+          currentPage,
+          pageSize,
+          totalItems,
+          totalPages,
+        }}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size)
+          setCurrentPage(1)
+        }}
+        pageSizeOptions={[5, 10, 20, 50, 100]}
+        actions={[
+          {
+            label: 'Xem',
+            icon: <Eye className="h-4 w-4 mr-1" />,
+            onClick: (order: ImportOrderListItem) =>
+              router.push(`/dashboard/import-orders/${order.importOrderId}`),
+            variant: 'ghost',
+          },
+        ]}
+        onRowClick={(order: ImportOrderListItem) =>
+          router.push(`/dashboard/import-orders/${order.importOrderId}`)
+        }
+        hoverable
+        striped
+      />
     </div>
   )
 }

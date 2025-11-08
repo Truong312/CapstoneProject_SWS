@@ -5,14 +5,6 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import {
   Select,
@@ -21,10 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, Plus, RotateCcw, Eye, Loader2 } from 'lucide-react'
+import { Plus, RotateCcw, Eye } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { returnOrderApi, returnStatusApi } from '@/services/api/return.api'
 import type { ReturnOrderListItem, ReturnStatus } from '@/lib/types'
+import { DataTable } from '@/components/data-table'
+import type { DataTableColumn } from '@/components/data-table'
 
 export default function ReturnsPage() {
   const router = useRouter()
@@ -37,14 +31,26 @@ export default function ReturnsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [fromDate, setFromDate] = useState<string>('')
   const [toDate, setToDate] = useState<string>('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   useEffect(() => {
     fetchStatuses()
-    fetchOrders()
   }, [])
 
   useEffect(() => {
     fetchOrders()
+  }, [currentPage, pageSize])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (currentPage === 1) {
+        fetchOrders()
+      } else {
+        setCurrentPage(1)
+      }
+    }, 500)
+    return () => clearTimeout(timer)
   }, [searchQuery, statusFilter, fromDate, toDate])
 
   const fetchStatuses = async () => {
@@ -55,6 +61,11 @@ export default function ReturnsPage() {
       }
     } catch (error) {
       console.error('Failed to fetch return statuses:', error)
+      // Set default statuses if API fails
+      setStatuses([
+        { status: 'Pending', count: 0 },
+        { status: 'Processed', count: 0 },
+      ])
     }
   }
 
@@ -82,17 +93,26 @@ export default function ReturnsPage() {
     }
   }
 
-  const getStatusBadge = (statusCode: string) => {
+  const getStatusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       Pending: 'outline',
+      Processed: 'default',
       Approved: 'secondary',
       Completed: 'default',
       Rejected: 'destructive',
     }
 
+    const labels: Record<string, string> = {
+      Pending: 'Chờ xử lý',
+      Processed: 'Đã xử lý',
+      Approved: 'Đã duyệt',
+      Completed: 'Hoàn thành',
+      Rejected: 'Từ chối',
+    }
+
     return (
-      <Badge variant={variants[statusCode] || 'outline'}>
-        {statusCode}
+      <Badge variant={variants[status] || 'outline'}>
+        {labels[status] || status}
       </Badge>
     )
   }
@@ -104,6 +124,47 @@ export default function ReturnsPage() {
       day: '2-digit',
     })
   }
+
+  // Define columns for DataTable
+  const columns: DataTableColumn<ReturnOrderListItem>[] = [
+    {
+      key: 'returnOrderId',
+      header: 'Mã đơn trả',
+      cell: (order: ReturnOrderListItem) => (
+        <span className="font-medium">#{order.returnOrderId}</span>
+      ),
+      sortable: true,
+    },
+    {
+      key: 'exportOrderId',
+      header: 'Mã đơn xuất',
+      cell: (order: ReturnOrderListItem) => `#${order.exportOrderId}`,
+      sortable: true,
+    },
+    {
+      key: 'checkInTime',
+      header: 'Thời gian nhận',
+      cell: (order: ReturnOrderListItem) => formatDate(order.checkInTime),
+      sortable: true,
+    },
+    {
+      key: 'status',
+      header: 'Trạng thái',
+      cell: (order: ReturnOrderListItem) => getStatusBadge(order.status),
+    },
+    {
+      key: 'checkedByName',
+      header: 'Người kiểm tra',
+      cell: (order: ReturnOrderListItem) => order.checkedByName || '-',
+    },
+    {
+      key: 'note',
+      header: 'Ghi chú',
+      cell: (order: ReturnOrderListItem) => (
+        <span className="max-w-xs truncate block">{order.note || '-'}</span>
+      ),
+    },
+  ]
 
   return (
     <div className="space-y-6">
@@ -125,117 +186,80 @@ export default function ReturnsPage() {
         </Button>
       </div>
 
+      {/* Filter Section */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Tìm kiếm & Lọc</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="relative md:col-span-2">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Tìm kiếm theo số đơn, khách hàng..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
+        <CardContent className="pt-6">
+          <div className="grid gap-4 md:grid-cols-3">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Trạng thái" />
+                <SelectValue placeholder="Lọc theo trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                {statuses.map((status) => (
-                  <SelectItem key={status.statusId} value={status.statusCode}>
-                    {status.description || status.statusCode}
+                <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                {statuses.map((item, index) => (
+                  <SelectItem key={index} value={item.status}>
+                    {item.status === 'Pending' ? 'Chờ xử lý' : item.status === 'Processed' ? 'Đã xử lý' : item.status} ({item.count})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="date"
-                placeholder="Từ ngày"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-              />
-              <Input
-                type="date"
-                placeholder="Đến ngày"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-              />
-            </div>
+            <Input
+              type="date"
+              placeholder="Từ ngày"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+            />
+            <Input
+              type="date"
+              placeholder="Đến ngày"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+            />
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>
-              Danh sách đơn trả hàng ({orders.length})
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="text-center py-12">
-              <RotateCcw className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500">Không có đơn trả hàng nào</p>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Số đơn trả</TableHead>
-                    <TableHead>Ngày trả</TableHead>
-                    <TableHead>Khách hàng</TableHead>
-                    <TableHead className="text-center">Số SP</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {orders.map((order) => (
-                    <TableRow key={order.returnOrderId}>
-                      <TableCell className="font-medium">
-                        {order.returnNumber}
-                      </TableCell>
-                      <TableCell>{formatDate(order.returnDate)}</TableCell>
-                      <TableCell>{order.customerName || '-'}</TableCell>
-                      <TableCell className="text-center">
-                        {order.totalItems}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(order.statusCode)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            router.push(`/dashboard/returns/${order.returnOrderId}`)
-                          }
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Xem
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* DataTable */}
+      <DataTable
+        data={orders}
+        columns={columns}
+        keyField="returnOrderId"
+        isLoading={isLoading}
+        emptyMessage="Không có đơn trả hàng nào"
+        emptyIcon={<RotateCcw className="h-12 w-12 mx-auto text-gray-400 mb-4" />}
+        searchable
+        searchPlaceholder="Tìm kiếm theo số đơn, khách hàng..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        sortable
+        pagination={{
+          currentPage,
+          pageSize,
+          totalItems: orders.length,
+          totalPages: Math.ceil(orders.length / pageSize),
+        }}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size)
+          setCurrentPage(1)
+        }}
+        pageSizeOptions={[5, 10, 20, 50, 100]}
+        actions={[
+          {
+            label: 'Xem',
+            icon: <Eye className="h-4 w-4 mr-1" />,
+            onClick: (order: ReturnOrderListItem) =>
+              router.push(`/dashboard/returns/${order.returnOrderId}`),
+            variant: 'ghost',
+          },
+        ]}
+        onRowClick={(order: ReturnOrderListItem) =>
+          router.push(`/dashboard/returns/${order.returnOrderId}`)
+        }
+        hoverable
+        striped
+      />
     </div>
   )
 }

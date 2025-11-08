@@ -8,6 +8,7 @@ import type {
   ProductCategory,
   ProductUnit,
   ProductQueryParams,
+  ProductPagedResponse,
   CreateProductRequest,
   UpdateProductRequest,
   StockLevel,
@@ -53,7 +54,13 @@ apiClient.interceptors.response.use(
 // ===== PRODUCTS =====
 
 export const productApi = {
-  // List products with filters and pagination
+  // List products with pagination (using paged endpoint)
+  listPaged: async (params?: ProductQueryParams): Promise<ProductPagedResponse> => {
+    const { data } = await apiClient.get('/product/paged', { params });
+    return data;
+  },
+
+  // List products with filters and pagination (fallback)
   list: async (params?: ProductQueryParams): Promise<ApiResponse<PaginatedResponse<ProductListItem>>> => {
     const { data } = await apiClient.get('/products', { params });
     return data;

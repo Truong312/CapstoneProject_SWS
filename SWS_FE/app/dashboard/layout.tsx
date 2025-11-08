@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
 import { 
@@ -20,6 +20,7 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   RotateCcw,
+  Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,15 +34,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
-import { VoiceSearch } from '@/components/voice-search'
+import { HeaderSearch } from '@/components/header-search'
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Tổng quan' },
-  { href: '/dashboard/products', icon: Package, label: 'Sản phẩm' },
+  { href: '/dashboard/products-list', icon: Package, label: 'Danh sách SP' },
+  { href: '/dashboard/products', icon: Package, label: 'SP Hết hạn' },
   { href: '/dashboard/import-orders', icon: ArrowDownToLine, label: 'Đơn Nhập' },
   { href: '/dashboard/export-orders', icon: ArrowUpFromLine, label: 'Đơn Xuất' },
   { href: '/dashboard/returns', icon: RotateCcw, label: 'Trả Hàng' },
   { href: '/dashboard/inventory', icon: Box, label: 'Tồn kho' },
+  { href: '/dashboard/ai-search', icon: Sparkles, label: 'AI Search' },
   { href: '/ui-showcase', icon: Palette, label: 'Thư viện UI' },
 ]
 
@@ -51,9 +54,9 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const { user, logout } = useAuthStore()
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [searchValue, setSearchValue] = useState('')
 
   const handleLogout = () => {
     logout()
@@ -144,14 +147,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
           <div className="flex items-center justify-between h-16 px-6">
             {/* Search */}
-            <div className="flex-1 max-w-md">
-              <VoiceSearch
-                value={searchValue}
-                onChange={setSearchValue}
-                placeholder="Tìm kiếm sản phẩm, đơn hàng..."
-                className="w-full"
-              />
-            </div>
+            <HeaderSearch />
 
             {/* Right Section */}
             <div className="flex items-center gap-3">
