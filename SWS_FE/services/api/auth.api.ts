@@ -1,16 +1,16 @@
 import axios from 'axios';
+import type { ApiResponse } from '@/lib/types/api.types';
+import type { User } from '@/lib/types/user.types';
 import type {
-  AuthResponse,
+  AuthData,
+  GoogleAuthData,
+  GoogleAuthUrlData,
   LoginRequest,
   RegisterRequest,
   GoogleLoginRequest,
-  GoogleAuthResponse,
-  GoogleAuthUrlResponse,
-  ApiResponse,
-  User,
   ChangePasswordRequest,
   UpdateUserRequest,
-} from '@/lib/types/api.types';
+} from '@/lib/types/auth.types';
 
 // API Base URL from environment variable
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
@@ -64,8 +64,8 @@ export const authService = {
    * @param data - Registration data
    * @returns Promise with auth response (user + token)
    */
-  register: async (data: RegisterRequest): Promise<AuthResponse> => {
-    const response = await authApi.post<AuthResponse>('/register', data);
+  register: async (data: RegisterRequest): Promise<ApiResponse<AuthData>> => {
+    const response = await authApi.post<ApiResponse<AuthData>>('/register', data);
     return response.data;
   },
 
@@ -74,8 +74,8 @@ export const authService = {
    * @param data - Login credentials
    * @returns Promise with auth response (user + token)
    */
-  login: async (data: LoginRequest): Promise<AuthResponse> => {
-    const response = await authApi.post<AuthResponse>('/login', data);
+  login: async (data: LoginRequest): Promise<ApiResponse<AuthData>> => {
+    const response = await authApi.post<ApiResponse<AuthData>>('/login', data);
     return response.data;
   },
 
@@ -131,8 +131,8 @@ export const authService = {
    * Get Google OAuth URL
    * @returns Promise with Google auth URL
    */
-  getGoogleAuthUrl: async (): Promise<GoogleAuthUrlResponse> => {
-    const response = await authApi.get<GoogleAuthUrlResponse>('/google-url');
+  getGoogleAuthUrl: async (): Promise<ApiResponse<GoogleAuthUrlData>> => {
+    const response = await authApi.get<ApiResponse<GoogleAuthUrlData>>('/google-url');
     return response.data;
   },
 
@@ -141,8 +141,8 @@ export const authService = {
    * @param data - Google OAuth code
    * @returns Promise with auth response (user + token)
    */
-  googleLogin: async (data: GoogleLoginRequest): Promise<GoogleAuthResponse> => {
-    const response = await authApi.post<GoogleAuthResponse>(
+  googleLogin: async (data: GoogleLoginRequest): Promise<ApiResponse<GoogleAuthData>> => {
+    const response = await authApi.post<ApiResponse<GoogleAuthData>>(
       '/google-login',
       data
     );

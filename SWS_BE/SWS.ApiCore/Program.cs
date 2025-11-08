@@ -115,6 +115,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRateLimiter();
+
+// Ensure routing is enabled before CORS/auth middleware
+app.UseRouting();
+
 app.UseCors("AllowAllOrigins");
 
 // app.UseHttpsRedirection(); // tắt khi dev http, bật nếu bạn dùng https cổng đúng

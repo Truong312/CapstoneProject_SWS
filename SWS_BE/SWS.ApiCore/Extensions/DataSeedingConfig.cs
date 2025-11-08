@@ -337,6 +337,143 @@ namespace SWS.ApiCore.Extensions
                     Description = "Product does not match description or specifications"
                 }
             );
+
+            // Additional mock data for Import/Export/Return flows and near-expired products
+
+            // Seed Import Orders + Details
+            modelBuilder.Entity<ImportOrder>().HasData(
+                new ImportOrder
+                {
+                    ImportOrderId = 1,
+                    InvoiceNumber = "IMP-20251101-001",
+                    OrderDate = new DateOnly(2025, 11, 1),
+                    ProviderId = 1,
+                    CreatedDate = new DateOnly(2025, 11, 1),
+                    Status = "Pending",
+                    CreatedBy = 2
+                },
+                new ImportOrder
+                {
+                    ImportOrderId = 2,
+                    InvoiceNumber = "IMP-20251015-001",
+                    OrderDate = new DateOnly(2025, 10, 15),
+                    ProviderId = 2,
+                    CreatedDate = new DateOnly(2025, 10, 15),
+                    Status = "Completed",
+                    CreatedBy = 3
+                }
+            );
+
+            modelBuilder.Entity<ImportDetail>().HasData(
+                new ImportDetail { ImportDetailId = 1, ImportOrderId = 1, ProductId = 1, Quantity = 10, ImportPrice = 20000000m },
+                new ImportDetail { ImportDetailId = 2, ImportOrderId = 1, ProductId = 2, Quantity = 20, ImportPrice = 2000000m },
+                new ImportDetail { ImportDetailId = 3, ImportOrderId = 2, ProductId = 3, Quantity = 5, ImportPrice = 2500000m },
+                new ImportDetail { ImportDetailId = 4, ImportOrderId = 2, ProductId = 4, Quantity = 2, ImportPrice = 12000000m }
+            );
+
+            // Seed Export Orders + Details
+            modelBuilder.Entity<ExportOrder>().HasData(
+                new ExportOrder
+                {
+                    ExportOrderId = 1,
+                    InvoiceNumber = "EXP-20251105-001",
+                    OrderDate = new DateOnly(2025, 11, 5),
+                    CustomerId = 3,
+                    Currency = "VND",
+                    CreatedDate = new DateOnly(2025, 11, 5),
+                    ShippedDate = new DateOnly(2025, 11, 7),
+                    ShippedAddress = "123 Customer St",
+                    TaxRate = 0.05m,
+                    TaxAmount = 12500000m * 0.05m, // example calculation
+                    TotalPayment = 12500000m * 1.05m,
+                    Description = "Order to Retail Chain A",
+                    Status = "Shipped",
+                    CreatedBy = 2
+                },
+                new ExportOrder
+                {
+                    ExportOrderId = 2,
+                    InvoiceNumber = "EXP-20251106-001",
+                    OrderDate = new DateOnly(2025, 11, 6),
+                    CustomerId = 4,
+                    Currency = "USD",
+                    CreatedDate = new DateOnly(2025, 11, 6),
+                    Status = "Pending",
+                    CreatedBy = 3
+                }
+            );
+
+            modelBuilder.Entity<ExportDetail>().HasData(
+                new ExportDetail { ExportDetailId = 1, ExportOrderId = 1, ProductId = 2, Quantity = 5, TotalPrice = 2500000m * 5 },
+                new ExportDetail { ExportDetailId = 2, ExportOrderId = 2, ProductId = 1, Quantity = 1, TotalPrice = 25000000m }
+            );
+
+            // Seed Return Orders + Return Details (different statuses for search)
+            modelBuilder.Entity<ReturnOrder>().HasData(
+                new ReturnOrder
+                {
+                    ReturnOrderId = 1,
+                    ExportOrderId = 1,
+                    CheckedBy = 3,
+                    ReviewedBy = 2,
+                    CheckInTime = new DateTime(2025, 11, 7, 10, 0, 0),
+                    Status = "Pending",
+                    Note = "Customer reported damaged items"
+                },
+                new ReturnOrder
+                {
+                    ReturnOrderId = 2,
+                    ExportOrderId = 2,
+                    CheckedBy = 3,
+                    ReviewedBy = 2,
+                    CheckInTime = new DateTime(2025, 11, 8, 9, 30, 0),
+                    Status = "Processed",
+                    Note = "Quality issue"
+                }
+            );
+
+            modelBuilder.Entity<ReturnOrderDetail>().HasData(
+                new ReturnOrderDetail { ReturnDetailId = 1, ReturnOrderId = 1, ProductId = 2, Quantity = 1, Note = "Broken on arrival", ReasonId = 1, ActionId = null, LocationId = 5 },
+                new ReturnOrderDetail { ReturnDetailId = 2, ReturnOrderId = 2, ProductId = 4, Quantity = 1, Note = "Wrong color", ReasonId = 3, ActionId = null, LocationId = 6 }
+            );
+
+            // Seed additional products that are near-expired for "near expired" notifications
+            modelBuilder.Entity<Product>().HasData(
+                new Product
+                {
+                    ProductId = 11,
+                    SerialNumber = "PERISH-001",
+                    Name = "Perishable Item A",
+                    ExpiredDate = new DateOnly(2025, 11, 12),
+                    Unit = "Box",
+                    UnitPrice = 100000m,
+                    ReceivedDate = new DateOnly(2025, 9, 1),
+                    PurchasedPrice = 80000m,
+                    ReorderPoint = 20,
+                    Image = "",
+                    Description = "Perishable product near expiry"
+                },
+                new Product
+                {
+                    ProductId = 12,
+                    SerialNumber = "PERISH-002",
+                    Name = "Perishable Item B",
+                    ExpiredDate = new DateOnly(2025, 11, 20),
+                    Unit = "Box",
+                    UnitPrice = 120000m,
+                    ReceivedDate = new DateOnly(2025, 9, 1),
+                    PurchasedPrice = 90000m,
+                    ReorderPoint = 30,
+                    Image = "",
+                    Description = "Perishable product near expiry"
+                }
+            );
+
+            // Inventory entries for the new near-expired products
+            modelBuilder.Entity<Inventory>().HasData(
+                new Inventory { InventoryId = 11, ProductId = 11, LocationId = 11, QuantityAvailable = 50, AllocatedQuantity = 0 },
+                new Inventory { InventoryId = 12, ProductId = 12, LocationId = 12, QuantityAvailable = 30, AllocatedQuantity = 0 }
+            );
         }
 
         /// <summary>

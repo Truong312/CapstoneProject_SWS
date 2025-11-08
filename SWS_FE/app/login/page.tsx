@@ -66,8 +66,11 @@ export default function LoginPage() {
         description: 'Chào mừng bạn đến với Hệ thống quản lý kho',
       })
 
-      // Redirect to dashboard
-      router.push('/dashboard')
+      // Get redirect URL from query params or default to dashboard
+      const redirectUrl = searchParams.get('redirect') || '/dashboard'
+      
+      // Use window.location for hard navigation to ensure middleware runs
+      window.location.href = redirectUrl
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Đăng nhập thất bại'
       
@@ -128,10 +131,10 @@ export default function LoginPage() {
           
           <div className="mt-12">
             <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
-              Manage Your<br />Warehouse Efficiently
+              Quản lý kho hàng<br />Hiệu quả và Chuyên nghiệp
             </h2>
             <p className="text-purple-100 text-lg">
-              Complete solution for inventory, orders, and analytics
+              Giải pháp toàn diện cho quản lý tồn kho, đơn hàng và phân tích
             </p>
           </div>
         </div>
@@ -142,32 +145,32 @@ export default function LoginPage() {
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
               <Package className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-white font-semibold mb-2">Inventory Control</h3>
-            <p className="text-purple-100 text-sm">Real-time stock tracking and management</p>
+            <h3 className="text-white font-semibold mb-2">Kiểm soát tồn kho</h3>
+            <p className="text-purple-100 text-sm">Theo dõi và quản lý hàng tồn kho theo thời gian thực</p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-white font-semibold mb-2">Order Processing</h3>
-            <p className="text-purple-100 text-sm">Streamlined order fulfillment</p>
+            <h3 className="text-white font-semibold mb-2">Xử lý đơn hàng</h3>
+            <p className="text-purple-100 text-sm">Quy trình thực hiện đơn hàng được tối ưu hóa</p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
               <BarChart3 className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-white font-semibold mb-2">Analytics</h3>
-            <p className="text-purple-100 text-sm">Comprehensive reports and insights</p>
+            <h3 className="text-white font-semibold mb-2">Phân tích dữ liệu</h3>
+            <p className="text-purple-100 text-sm">Báo cáo và thống kê toàn diện</p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
               <Warehouse className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-white font-semibold mb-2">Multi-Location</h3>
-            <p className="text-purple-100 text-sm">Manage multiple warehouses</p>
+            <h3 className="text-white font-semibold mb-2">Đa vị trí</h3>
+            <p className="text-purple-100 text-sm">Quản lý nhiều kho hàng cùng lúc</p>
           </div>
         </div>
 
@@ -186,22 +189,22 @@ export default function LoginPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-600 to-teal-500 rounded-2xl mb-4">
                 <Warehouse className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-              <p className="text-gray-500">Sign in to your account to continue</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Chào mừng trở lại</h2>
+              <p className="text-gray-500">Đăng nhập để tiếp tục sử dụng hệ thống</p>
             </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-700 font-medium">
-                  Email Address
+                  Địa chỉ Email
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="your.email@example.com"
+                    placeholder="email@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-11 h-12 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
@@ -212,14 +215,14 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-gray-700 font-medium">
-                  Password
+                  Mật khẩu
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
+                    placeholder="Nhập mật khẩu của bạn"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-11 pr-11 h-12 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
@@ -241,13 +244,13 @@ export default function LoginPage() {
                     type="checkbox"
                     className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                   />
-                  <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                  <span className="ml-2 text-sm text-gray-600">Ghi nhớ đăng nhập</span>
                 </label>
                 <button
                   type="button"
                   className="text-sm font-medium text-purple-600 hover:text-purple-700"
                 >
-                  Forgot password?
+                  Quên mật khẩu?
                 </button>
               </div>
 
@@ -259,10 +262,10 @@ export default function LoginPage() {
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Signing in...</span>
+                    <span>Đang đăng nhập...</span>
                   </div>
                 ) : (
-                  'Sign In'
+                  'Đăng nhập'
                 )}
               </Button>
             </form>
@@ -273,7 +276,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">Or continue with</span>
+                <span className="px-4 bg-white text-gray-500">Hoặc tiếp tục với</span>
               </div>
             </div>
 
@@ -290,17 +293,17 @@ export default function LoginPage() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              <span className="font-medium text-gray-700">Sign in with Google</span>
+              <span className="font-medium text-gray-700">Đăng nhập với Google</span>
             </Button>
 
             {/* Sign up link */}
             <p className="text-center text-sm text-gray-600 mt-6">
-              Don't have an account?{' '}
+              Chưa có tài khoản?{' '}
               <button
                 onClick={() => router.push('/register')}
                 className="font-semibold text-purple-600 hover:text-purple-700"
               >
-                Sign up for free
+                Đăng ký miễn phí
               </button>
             </p>
           </CardContent>

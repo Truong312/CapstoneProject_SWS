@@ -1,4 +1,9 @@
-// Base API Response Types
+/**
+ * Base API Response Types
+ * Chỉ chứa các types liên quan đến API responses
+ */
+
+// Generic API Response wrapper
 export interface ApiResponse<T = any> {
   isSuccess: boolean;
   message: string;
@@ -6,72 +11,32 @@ export interface ApiResponse<T = any> {
   statusCode: number;
 }
 
-// User Model
-export interface User {
-  userId: number;
-  fullName: string;
-  email: string;
-  phone?: string;
-  address?: string;
-  role: number;
+// API Error Response
+export interface ApiError {
+  isSuccess: false;
+  message: string;
+  statusCode: number;
+  errors?: Record<string, string[]>;
 }
 
-// Auth Response Models
-export interface AuthData {
-  user: User;
-  token: string;
+// Pagination
+export interface PaginationParams {
+  page: number;
+  pageSize: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
-export interface AuthResponse extends ApiResponse<AuthData> {}
-
-export interface GoogleAuthData extends User {
-  token: string;
-  isNewUser: boolean;
+export interface PaginatedResponse<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
-export interface GoogleAuthResponse extends ApiResponse<GoogleAuthData> {}
-
-export interface GoogleAuthUrlData {
-  authUrl: string;
-}
-
-export interface GoogleAuthUrlResponse extends ApiResponse<GoogleAuthUrlData> {}
-
-// Request Models
-export interface RegisterRequest {
-  fullName: string;
-  email: string;
-  password: string;
-  phone?: string;
-  address?: string;
-  role: number;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface ChangePasswordRequest {
-  oldPassword: string;
-  newPassword: string;
-}
-
-export interface GoogleLoginRequest {
-  code: string;
-}
-
-export interface UpdateUserRequest {
-  fullName?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  role?: number;
-}
-
-// Role enum
-export enum UserRole {
-  User = 0,
-  Staff = 1,
-  Admin = 1,
+// Common query params
+export interface SearchParams {
+  search?: string;
+  filter?: Record<string, any>;
 }

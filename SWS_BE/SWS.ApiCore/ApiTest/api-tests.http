@@ -2,21 +2,55 @@
 # Location: SWS.ApiCore/ApiTest/api-tests.http
 # Usage:
 # - Set environment variables at top of your HTTP client or replace placeholders:
-#   - {{API_BASE}} e.g. http://localhost:5000 or http://localhost:5001
+#   - {{API_BASE}} e.g. http://localhost:8080
 #   - {{AUTH_TOKEN}} Staff/Manager JWT if endpoint requires authorization
 # - Run requests individually or run the whole file in JetBrains HTTP client / VSCode REST Client.
 
 ### Variables (example)
-# @API_BASE = http://localhost:5000
-# @AUTH_TOKEN = <paste_jwt_here>
+@API_BASE = http://localhost:8080
+@AUTH_TOKEN = <paste_jwt_here>
 
 ### 1) Import Orders - List (Staff)
 GET {{API_BASE}}/api/import-orders?q=sample&page=1&pageSize=10
 Authorization: Bearer {{AUTH_TOKEN}}
 
+### Example response (200)
+# {
+#   "total": 123,
+#   "page": 1,
+#   "pageSize": 10,
+#   "items": [
+#     {
+#       "importOrderId": 1,
+#       "invoiceNumber": "IMP-20251108-001",
+#       "orderDate": "2025-11-08",
+#       "providerName": "Provider A",
+#       "status": "Pending",
+#       "totalItems": 3,
+#       "createdByName": "Admin"
+#     }
+#   ]
+# }
+
 ### 1.1) Import Orders - Detail
 GET {{API_BASE}}/api/import-orders/1
 Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "importOrderId": 1,
+#   "invoiceNumber": "IMP-20251108-001",
+#   "orderDate": "2025-11-08",
+#   "providerId": 5,
+#   "providerName": "Provider A",
+#   "status": "Pending",
+#   "createdDate": "2025-11-08",
+#   "createdBy": 2,
+#   "createdByName": "Admin",
+#   "items": [
+#     { "importDetailId": 10, "productId": 1, "productName": "Product A", "quantity": 10, "importPrice": 100.0 }
+#   ]
+# }
 
 ### 1.2) Import Orders - Create (Staff role=1)
 POST {{API_BASE}}/api/import-orders
@@ -25,15 +59,25 @@ Authorization: Bearer {{AUTH_TOKEN}}
 
 {
   "providerId": 1,
-  "status": "Pending",
+  "orderDate": "2025-11-08",
+  "invoiceNumber": "IMP-20251108-002",
   "items": [
-    { "productId": 1, "quantity": 10, "price": 100 }
+    { "productId": 1, "quantity": 10, "importPrice": 100.0 }
   ]
 }
+
+### Example response (201 Created)
+# {
+#   "importOrderId": 42,
+#   "invoiceNumber": "IMP-20251108-002"
+# }
 
 ### 2) Export Orders - List (All)
 GET {{API_BASE}}/api/ExportOrder/All
 Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# [ { "exportOrderId": 1, "invoiceNumber": "EXP-001", "orderDate": "2025-11-01", "customerId": 10, "status": "Pending" } ]
 
 ### 2.1) Export Orders - By Status
 GET {{API_BASE}}/api/ExportOrder/by-status?status=Pending
@@ -43,21 +87,78 @@ Authorization: Bearer {{AUTH_TOKEN}}
 GET {{API_BASE}}/api/ExportOrder/1Details
 Authorization: Bearer {{AUTH_TOKEN}}
 
+### Example response (200)
+# {
+#   "exportOrderId": 1,
+#   "invoiceNumber": "EXP-20251108-001",
+#   "orderDate": "2025-11-08",
+#   "customerId": 5,
+#   "currency": "USD",
+#   "shippedDate": "2025-11-15",
+#   "shippedAddress": "123 Example St",
+#   "taxRate": 0.1,
+#   "taxAmount": 5.0,
+#   "totalPayment": 55.0,
+#   "description": "Delivery",
+#   "status": "Pending",
+#   "createdBy": 2
+# }
+
 ### 2.3) Export Order - Create
 POST {{API_BASE}}/api/ExportOrder/ExportOder
 Content-Type: application/json
 Authorization: Bearer {{AUTH_TOKEN}}
 
 {
-  "warehouseId": 1,
-  "destination": "Customer ABC",
-  "items": [ { "productId": 1, "quantity": 2 } ]
+  "invoiceNumber": "EXP-20251108-002",
+  "orderDate": "2025-11-08",
+  "customerId": 10,
+  "currency": "USD",
+  "shippedDate": "2025-11-15",
+  "shippedAddress": "Customer ABC Address",
+  "taxRate": 0.05,
+  "taxAmount": 2.5,
+  "totalPayment": 52.5,
+  "description": "Order for Customer ABC",
+  "createdBy": 2
 }
+
+### Example response (200)
+# {
+#   "isSuccess": true,
+#   "message": "Tạo đơn xuất thành công",
+#   "data": { "exportOrderId": 99 }
+# }
+
+### 2.4) Export Detail - Add item to an existing export order
+POST {{API_BASE}}/api/ExportOrder/ExportDetail?exportOrderId=99
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "productId": 1,
+  "quantity": 2
+}
+
+### Example response (200)
+# {
+#   "isSuccess": true,
+#   "message": "Thêm chi tiết thành công",
+#   "data": { "exportDetailId": 123 }
+# }
 
 ### 3) Return Reason List + Search
 # Get all reasons
 GET {{API_BASE}}/api/returns/reasons
 Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 2,
+#   "data": [ { "reasonId": 1, "reasonCode": "DAMAGED", "description": "Hỏng" } ]
+# }
 
 # Search reasons by keyword
 GET {{API_BASE}}/api/returns/reasons?q=damaged
@@ -93,7 +194,65 @@ Authorization: Bearer {{AUTH_TOKEN}}
 GET {{API_BASE}}/api/product/expired
 Authorization: Bearer {{AUTH_TOKEN}}
 
-### 8) Helpful quick checks
+### 8) Auth (Register / Login / Google login)
+
+### 8.1) Register
+POST {{API_BASE}}/api/warehouse/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Nguyen Van A",
+  "email": "nv.a[at]example.com",
+  "password": "P@ssw0rd",
+  "phone": "0123456789",
+  "address": "Hanoi, Vietnam",
+  "role": 0
+}
+
+### Example response (201)
+# {
+#   "isSuccess": true,
+#   "message": "Đăng ký thành công",
+#   "data": {
+#     "user": { "userId": 12, "fullName": "Nguyen Van A", "email": "nv.a[at]example.com", "phone": "0123456789", "address": "Hanoi, Vietnam", "role": 0 },
+#     "token": "<jwt_token>"
+#   }
+# }
+
+### 8.2) Login
+POST {{API_BASE}}/api/warehouse/auth/login
+Content-Type: application/json
+
+{
+  "email": "nv.a[at]example.com",
+  "password": "P@ssw0rd"
+}
+
+### Example response (200)
+# {
+#   "isSuccess": true,
+#   "message": "Đăng nhập thành công",
+#   "data": { "user": { "userId": 12, "fullName": "Nguyen Van A", "email": "nv.a[at]example.com", "role": 0 }, "token": "<jwt_token>" },
+#   "statusCode": 200
+# }
+
+### 8.3) Google Login (mobile/spa flow)
+POST {{API_BASE}}/api/warehouse/auth/google-login
+Content-Type: application/json
+
+{
+  "code": "<authorization_code_from_google>"
+}
+
+### Example response (200)
+# {
+#   "isSuccess": true,
+#   "message": "Đăng nhập bằng Google thành công",
+#   "data": { "userId": 20, "fullName": "Google User", "email": "g.user[at]example.com", "role": 0, "token": "<jwt>", "isNewUser": false },
+#   "statusCode": 200
+# }
+
+### 9) Helpful quick checks
 # Health (if exists)
 GET {{API_BASE}}/health
 
@@ -101,4 +260,3 @@ GET {{API_BASE}}/health
 GET {{API_BASE}}/swagger/index.html
 
 # End of file
-

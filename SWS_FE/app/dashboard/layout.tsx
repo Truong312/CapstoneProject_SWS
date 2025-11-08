@@ -3,12 +3,12 @@
 import { ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { useAuthStore } from '@/lib/auth'
+import { useAuthStore } from '@/store/authStore'
 import { 
-  LayoutDashboard, 
+  LayoutDashboard as Home, 
   Package, 
   ShoppingCart, 
-  TrendingUp, 
+  Box, 
   Settings, 
   LogOut,
   Menu,
@@ -16,8 +16,10 @@ import {
   Search,
   User,
   Warehouse,
-  FileText,
-  BarChart3
+  Palette,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  RotateCcw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,13 +33,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
+import { VoiceSearch } from '@/components/voice-search'
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Inventory', href: '/dashboard/inventory', icon: Warehouse },
-  { name: 'Products', href: '/dashboard/products', icon: Package },
-  { name: 'Orders', href: '/dashboard/orders', icon: ShoppingCart },
-  { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+const navItems = [
+  { href: '/dashboard', icon: Home, label: 'Tổng quan' },
+  { href: '/dashboard/products', icon: Package, label: 'Sản phẩm' },
+  { href: '/dashboard/import-orders', icon: ArrowDownToLine, label: 'Đơn Nhập' },
+  { href: '/dashboard/export-orders', icon: ArrowUpFromLine, label: 'Đơn Xuất' },
+  { href: '/dashboard/returns', icon: RotateCcw, label: 'Trả Hàng' },
+  { href: '/dashboard/inventory', icon: Box, label: 'Tồn kho' },
+  { href: '/ui-showcase', icon: Palette, label: 'Thư viện UI' },
 ]
 
 interface DashboardLayoutProps {
@@ -46,12 +51,12 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
-  const { user, clearAuth } = useAuthStore()
+  const { user, logout } = useAuthStore()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [searchValue, setSearchValue] = useState('')
 
   const handleLogout = () => {
-    clearAuth()
-    window.location.href = '/login'
+    logout()
   }
 
   return (
@@ -87,11 +92,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Navigation */}
         <nav className="flex-1 px-2 py-4 space-y-1">
-          {navigation.map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href
             return (
               <Link
-                key={item.name}
+                key={item.label}
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                   isActive
@@ -100,7 +105,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 }`}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
-                {sidebarOpen && <span>{item.name}</span>}
+                {sidebarOpen && <span>{item.label}</span>}
               </Link>
             )
           })}
@@ -140,14 +145,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center justify-between h-16 px-6">
             {/* Search */}
             <div className="flex-1 max-w-md">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  type="search"
-                  placeholder="Search products, orders..."
-                  className="pl-10 bg-gray-50 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
-                />
-              </div>
+              <VoiceSearch
+                value={searchValue}
+                onChange={setSearchValue}
+                placeholder="Tìm kiếm sản phẩm, đơn hàng..."
+                className="w-full"
+              />
             </div>
 
             {/* Right Section */}
@@ -169,29 +172,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
                     <div className="text-left hidden md:block">
                       <p className="text-sm font-medium text-gray-900">
-                        {user?.name || 'User'}
+                        {user?.fullName || 'User'}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {user?.role === 1 ? 'Admin' : 'User'}
+                        {user?.role === 1 ? 'Staff/Admin' : 'User'}
                       </p>
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <User className="w-4 h-4 mr-2" />
-                    Profile
+                    Hồ sơ
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Settings className="w-4 h-4 mr-2" />
-                    Settings
+                    Cài đặt
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                     <LogOut className="w-4 h-4 mr-2" />
-                    Logout
+                    Đăng xuất
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -1,7 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authService } from '@/services/api/auth.api';
-import type { User, LoginRequest, RegisterRequest } from '@/lib/types/api.types';
+import type { User } from '@/lib/types/user.types';
+import type { LoginRequest, RegisterRequest } from '@/lib/types/auth.types';
+
+// Helper function to set cookie
+const setCookie = (name: string, value: string, days: number = 7) => {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+};
+
+// Helper function to delete cookie
+const deleteCookie = (name: string) => {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+};
 
 interface AuthState {
   user: User | null;
@@ -42,6 +55,10 @@ export const useAuthStore = create<AuthState>()(
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
             
+            // Save to cookies for middleware (7 days, SameSite=Lax for cross-domain)
+            document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`;
+            document.cookie = `userRole=${String(user.role)}; path=/; max-age=604800; SameSite=Lax`;
+            
             // Update store
             set({
               user,
@@ -77,6 +94,10 @@ export const useAuthStore = create<AuthState>()(
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
             
+            // Save to cookies for middleware (7 days, SameSite=Lax for cross-domain)
+            document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`;
+            document.cookie = `userRole=${String(user.role)}; path=/; max-age=604800; SameSite=Lax`;
+            
             // Update store
             set({
               user,
@@ -104,6 +125,10 @@ export const useAuthStore = create<AuthState>()(
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         
+        // Clear cookies
+        document.cookie = 'token=; path=/; max-age=0';
+        document.cookie = 'userRole=; path=/; max-age=0';
+        
         // Clear store
         set({
           user: null,
@@ -124,8 +149,10 @@ export const useAuthStore = create<AuthState>()(
         set({ token });
         if (token) {
           localStorage.setItem('token', token);
+          setCookie('token', token, 7);
         } else {
           localStorage.removeItem('token');
+          deleteCookie('token');
         }
       },
 

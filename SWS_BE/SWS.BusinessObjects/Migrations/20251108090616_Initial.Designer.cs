@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SWS.BusinessObjects.Models;
 
@@ -11,9 +12,11 @@ using SWS.BusinessObjects.Models;
 namespace SWS.BusinessObjects.Migrations
 {
     [DbContext(typeof(SmartWarehouseDbContext))]
-    partial class SmartWarehouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251108090616_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -16,7 +16,7 @@ import {
 import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, Warehouse, TrendingUp, Package, BarChart3 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/store/authStore'
-import { UserRole } from '@/lib/types/api.types'
+import { UserRole } from '@/lib/types/user.types'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -115,8 +115,8 @@ export default function RegisterPage() {
         description: 'Chào mừng bạn đến với Hệ thống quản lý kho',
       })
 
-      // Redirect to dashboard
-      router.push('/dashboard')
+      // Use window.location for hard navigation to ensure middleware runs
+      window.location.href = '/dashboard'
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Đăng ký thất bại'
       

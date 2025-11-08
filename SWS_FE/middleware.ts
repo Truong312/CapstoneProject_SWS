@@ -38,7 +38,7 @@ export function middleware(request: NextRequest) {
   
   // Nếu không phải admin và truy cập admin route -> redirect về dashboard
   const isAdminRoute = ADMIN_ONLY_ROUTES.some(route => pathname.startsWith(route))
-  if (isAdminRoute && userRole !== '1') {
+  if (isAdminRoute && userRole !== '2') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
   

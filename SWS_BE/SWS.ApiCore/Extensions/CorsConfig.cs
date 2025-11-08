@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AppBackend.Extensions;
+namespace SWS.ApiCore.Extensions;
 
 public static class CorsConfig
 {
@@ -8,12 +8,15 @@ public static class CorsConfig
     {
         services.AddCors(options =>
         {
+            // Permissive policy for development: allow any origin and support credentials.
+            // NOTE: This is unsafe for production. In production restrict origins and do NOT use SetIsOriginAllowed(_ => true)
             options.AddPolicy("AllowAllOrigins",
                 builder =>
                 {
-                    builder.AllowAnyOrigin()
+                    builder.SetIsOriginAllowed(_ => true)
                            .AllowAnyMethod()
-                           .AllowAnyHeader();
+                           .AllowAnyHeader()
+                           .AllowCredentials();
                 });
         });
         return services;
