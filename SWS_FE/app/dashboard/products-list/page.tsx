@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Package, Eye, Edit, AlertCircle } from 'lucide-react'
+import { Plus, Package, Eye, Edit, AlertCircle, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { productApi } from '@/services/api/product.api'
 import type { ProductListItem } from '@/lib/types'
@@ -227,6 +227,35 @@ export default function ProductsListPage() {
         </div>
       ),
       sortable: true,
+    },
+    {
+      key: 'actions',
+      header: 'Thao tác',
+      cell: (product: ProductListItem) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              router.push(`/dashboard/products-list/${product.productId}`)
+            }}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              router.push(`/dashboard/products-list/${product.productId}/edit`)
+            }}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+      className: 'w-32',
     },
   ]
 

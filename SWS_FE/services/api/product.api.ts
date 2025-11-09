@@ -62,50 +62,131 @@ export const productApi = {
 
   // List products with filters and pagination (fallback)
   list: async (params?: ProductQueryParams): Promise<ApiResponse<PaginatedResponse<ProductListItem>>> => {
-    const { data } = await apiClient.get('/products', { params });
+    const { data } = await apiClient.get('/product', { params });
     return data;
   },
 
   // Get product by ID
-  getById: async (id: number): Promise<ApiResponse<Product>> => {
-    const { data } = await apiClient.get(`/products/${id}`);
-    return data;
+  getById: async (id: number): Promise<Product> => {
+    const response = await apiClient.get(`/product/${id}`);
+    
+    // Backend returns data directly without ApiResponse wrapper
+    if (response.status >= 200 && response.status < 300) {
+      return {
+        isSuccess: true,
+        responseCode: null,
+        statusCode: response.status,
+        data: response.data,
+        message: 'Lấy thông tin sản phẩm thành công'
+      };
+    }
+    
+    return response.data;
   },
 
   // Create new product
   create: async (request: CreateProductRequest): Promise<ApiResponse<{ productId: number }>> => {
-    const { data } = await apiClient.post('/products', request);
-    return data;
+    const response = await apiClient.post('/product', request);
+    
+    // Backend returns 2xx status on success (e.g., 200, 201, 204)
+    if (response.status >= 200 && response.status < 300) {
+      return {
+        isSuccess: true,
+        responseCode: null,
+        statusCode: response.status,
+        data: response.data || null,
+        message: response.data?.message || 'Tạo sản phẩm thành công'
+      };
+    }
+    
+    return response.data;
   },
 
   // Update product
   update: async (id: number, request: UpdateProductRequest): Promise<ApiResponse<void>> => {
-    const { data } = await apiClient.put(`/products/${id}`, request);
-    return data;
+    const response = await apiClient.put(`/product/${id}`, request);
+    
+    // Backend returns 2xx status on success
+    if (response.status >= 200 && response.status < 300) {
+      return {
+        isSuccess: true,
+        responseCode: null,
+        statusCode: response.status,
+        data: response.data || null,
+        message: response.data?.message || 'Cập nhật sản phẩm thành công'
+      };
+    }
+    
+    return response.data;
   },
 
   // Delete product
   delete: async (id: number): Promise<ApiResponse<void>> => {
-    const { data } = await apiClient.delete(`/products/${id}`);
-    return data;
+    const response = await apiClient.delete(`/product/${id}`);
+    
+    // Backend returns 2xx status on success
+    if (response.status >= 200 && response.status < 300) {
+      return {
+        isSuccess: true,
+        responseCode: null,
+        statusCode: response.status,
+        data: response.data || null,
+        message: response.data?.message || 'Xóa sản phẩm thành công'
+      };
+    }
+    
+    return response.data;
   },
 
   // Get products near expiry
   getNearExpired: async (): Promise<ApiResponse<ProductNearExpired[]>> => {
-    const { data } = await apiClient.get('/product/near-expired');
-    return data;
+    const response = await apiClient.get('/product/near-expired');
+    
+    if (response.status >= 200 && response.status < 300) {
+      return {
+        isSuccess: true,
+        responseCode: null,
+        statusCode: response.status,
+        data: response.data,
+        message: 'Lấy danh sách sản phẩm sắp hết hạn thành công'
+      };
+    }
+    
+    return response.data;
   },
 
   // Get expired products
   getExpired: async (): Promise<ApiResponse<ProductExpiry[]>> => {
-    const { data } = await apiClient.get('/product/expired');
-    return data;
+    const response = await apiClient.get('/product/expired');
+    
+    if (response.status >= 200 && response.status < 300) {
+      return {
+        isSuccess: true,
+        responseCode: null,
+        statusCode: response.status,
+        data: response.data,
+        message: 'Lấy danh sách sản phẩm hết hạn thành công'
+      };
+    }
+    
+    return response.data;
   },
 
   // Search products
   search: async (keyword: string): Promise<ApiResponse<ProductListItem[]>> => {
-    const { data } = await apiClient.get('/products/search', { params: { q: keyword } });
-    return data;
+    const response = await apiClient.get('/product/search', { params: { text: keyword } });
+    
+    if (response.status >= 200 && response.status < 300) {
+      return {
+        isSuccess: true,
+        responseCode: null,
+        statusCode: response.status,
+        data: response.data,
+        message: 'Tìm kiếm sản phẩm thành công'
+      };
+    }
+    
+    return response.data;
   },
 };
 

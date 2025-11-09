@@ -36,16 +36,36 @@ import {
 import { useState } from 'react'
 import { HeaderSearch } from '@/components/header-search'
 
-const navItems = [
-  { href: '/dashboard', icon: Home, label: 'Tổng quan' },
-  { href: '/dashboard/products-list', icon: Package, label: 'Danh sách SP' },
-  { href: '/dashboard/products', icon: Package, label: 'SP Hết hạn' },
-  { href: '/dashboard/import-orders', icon: ArrowDownToLine, label: 'Đơn Nhập' },
-  { href: '/dashboard/export-orders', icon: ArrowUpFromLine, label: 'Đơn Xuất' },
-  { href: '/dashboard/returns', icon: RotateCcw, label: 'Trả Hàng' },
-  { href: '/dashboard/inventory', icon: Box, label: 'Tồn kho' },
-  { href: '/dashboard/ai-search', icon: Sparkles, label: 'AI Search' },
-  { href: '/ui-showcase', icon: Palette, label: 'Thư viện UI' },
+const navGroups = [
+  {
+    title: 'Tổng quan',
+    items: [
+      { href: '/dashboard', icon: Home, label: 'Dashboard' },
+      { href: '/dashboard/ai-search', icon: Sparkles, label: 'AI Search' },
+    ]
+  },
+  {
+    title: 'Quản lý sản phẩm',
+    items: [
+      { href: '/dashboard/products-list', icon: Package, label: 'Danh sách SP' },
+      { href: '/dashboard/products', icon: Package, label: 'SP Hết hạn' },
+      { href: '/dashboard/inventory', icon: Box, label: 'Tồn kho' },
+    ]
+  },
+  {
+    title: 'Quản lý đơn hàng',
+    items: [
+      { href: '/dashboard/import-orders', icon: ArrowDownToLine, label: 'Đơn Nhập' },
+      { href: '/dashboard/export-orders', icon: ArrowUpFromLine, label: 'Đơn Xuất' },
+      { href: '/dashboard/returns', icon: RotateCcw, label: 'Trả Hàng' },
+    ]
+  },
+  {
+    title: 'Khác',
+    items: [
+      { href: '/ui-showcase', icon: Palette, label: 'Thư viện UI' },
+    ]
+  },
 ]
 
 interface DashboardLayoutProps {
@@ -94,24 +114,36 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-2 py-4 space-y-1">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? 'bg-white/20 text-white shadow-lg'
-                    : 'text-purple-100 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                {sidebarOpen && <span>{item.label}</span>}
-              </Link>
-            )
-          })}
+        <nav className="flex-1 px-2 py-4 space-y-4 overflow-y-auto">
+          {navGroups.map((group) => (
+            <div key={group.title}>
+              {sidebarOpen && (
+                <h3 className="px-3 mb-2 text-xs font-semibold text-purple-200 uppercase tracking-wider">
+                  {group.title}
+                </h3>
+              )}
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? 'bg-white/20 text-white shadow-lg'
+                          : 'text-purple-100 hover:bg-white/10 hover:text-white'
+                      }`}
+                      title={!sidebarOpen ? item.label : undefined}
+                    >
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      {sidebarOpen && <span>{item.label}</span>}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Settings & Logout */}
