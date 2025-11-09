@@ -139,54 +139,24 @@ export const productApi = {
   },
 
   // Get products near expiry
-  getNearExpired: async (): Promise<ApiResponse<ProductNearExpired[]>> => {
-    const response = await apiClient.get('/product/near-expired');
-    
-    if (response.status >= 200 && response.status < 300) {
-      return {
-        isSuccess: true,
-        responseCode: null,
-        statusCode: response.status,
-        data: response.data,
-        message: 'Lấy danh sách sản phẩm sắp hết hạn thành công'
-      };
-    }
-    
-    return response.data;
+  getNearExpired: async (): Promise<ProductNearExpired[]> => {
+    const { data } = await apiClient.get('/product/near-expired');
+    // Backend returns array directly without ApiResponse wrapper
+    return data;
   },
 
   // Get expired products
-  getExpired: async (): Promise<ApiResponse<ProductExpiry[]>> => {
-    const response = await apiClient.get('/product/expired');
-    
-    if (response.status >= 200 && response.status < 300) {
-      return {
-        isSuccess: true,
-        responseCode: null,
-        statusCode: response.status,
-        data: response.data,
-        message: 'Lấy danh sách sản phẩm hết hạn thành công'
-      };
-    }
-    
-    return response.data;
+  getExpired: async (): Promise<ProductExpiry[]> => {
+    const { data } = await apiClient.get('/product/expired');
+    // Backend returns array directly without ApiResponse wrapper
+    return data;
   },
 
   // Search products
-  search: async (keyword: string): Promise<ApiResponse<ProductListItem[]>> => {
-    const response = await apiClient.get('/product/search', { params: { text: keyword } });
-    
-    if (response.status >= 200 && response.status < 300) {
-      return {
-        isSuccess: true,
-        responseCode: null,
-        statusCode: response.status,
-        data: response.data,
-        message: 'Tìm kiếm sản phẩm thành công'
-      };
-    }
-    
-    return response.data;
+  search: async (keyword: string): Promise<ProductListItem[]> => {
+    const { data } = await apiClient.get('/product/search', { params: { text: keyword } });
+    // Backend returns array directly without ApiResponse wrapper
+    return data;
   },
 };
 
