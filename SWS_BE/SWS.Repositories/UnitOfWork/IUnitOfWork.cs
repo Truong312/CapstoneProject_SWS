@@ -5,6 +5,9 @@ using SWS.Repositories.Repositories.ProductRepo;
 using SWS.Repositories.Repositories.UserRepo;
 using SWS.Repositories.Repositories.ImportOrders;
 using SWS.Repositories.Repositories.ReturnRepo;
+using SWS.Repositories.Repositories.CycleCountRepo;
+using SWS.Repositories.Repositories.CycleCountDetailRepo;
+using SWS.Repositories.Repositories.InventoryRepo;
 
 namespace SWS.Repositories.UnitOfWork
 {
@@ -14,6 +17,7 @@ namespace SWS.Repositories.UnitOfWork
         IAccountRepository Accounts { get; }
         IUserRepository Users { get; }
         IProductRepository Products { get; }
+        IInventoryRepository Inventories { get; }
 
         // ➕ Thêm cho Import
         IImportOrderQueryRepository ImportOrdersQuery { get; }
@@ -26,6 +30,9 @@ namespace SWS.Repositories.UnitOfWork
 
         IExportOrderRepository ExportOrders { get; }
         IExportDetailRepository ExportDetails { get; }
+
+        ICycleCountRepository CycleCounts { get; }
+        ICycleCountDetailRepository CycleCountDetails { get; }
         Task<int> SaveChangesAsync();
     }
 }
