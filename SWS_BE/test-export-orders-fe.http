@@ -1,0 +1,494 @@
+# Export Orders API Tests - Frontend Flow
+# API Base: http://localhost:8080
+
+### Variables
+@API_BASE = http://localhost:8080
+@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5Aa2hvdmlldG5hbS5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiTmd1eeG7hW4gVsSDbiBBZG1pbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IjEiLCJuYmYiOjE3NjI3MDgwODIsImV4cCI6MTc2MjcwOTg4MiwiaXNzIjoiQXBwQmFja2VuZCIsImF1ZCI6IkFwcEJhY2tlbmRVc2VycyJ9.JOAHKqNd8q2p28Kk0g_H-QKbAg8gIO2N3-GVuqLZAb4
+
+##############################################
+# LOGIN
+##############################################
+
+### Login - Get Token
+POST {{API_BASE}}/api/warehouse/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@khovietnam.com",
+  "password": "Admin@123"
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "responseCode": null,
+#   "statusCode": 200,
+#   "data": {
+#     "user": {
+#       "userId": 1,
+#       "fullName": "Nguyễn Văn Admin",
+#       "email": "admin@khovietnam.com",
+#       "phone": "0901234567",
+#       "address": "123 Đường Láng, Đống Đa, Hà Nội",
+#       "role": 1
+#     },
+#     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+#   },
+#   "message": "Đăng nhập thành công"
+# }
+
+###
+
+##############################################
+# EXPORT ORDERS - LIST
+##############################################
+
+### Get All Export Orders
+GET {{API_BASE}}/api/ExportOrder/All
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# [
+#   {
+#     "exportOrderId": 1,
+#     "invoiceNumber": "EXP-20251110-001",
+#     "orderDate": "2025-11-10",
+#     "customerId": 10,
+#     "currency": "VND",
+#     "createdDate": "2025-11-10",
+#     "shippedDate": "2025-11-12",
+#     "shippedAddress": "123 Đường Láng, Đống Đa, Hà Nội",
+#     "taxRate": 0.10,
+#     "taxAmount": 5000000,
+#     "totalPayment": 55000000,
+#     "description": "Đơn hàng xuất kho tháng 11",
+#     "status": 0,
+#     "createdBy": 1
+#   },
+#   {
+#     "exportOrderId": 2,
+#     "invoiceNumber": "EXP-20251109-002",
+#     "orderDate": "2025-11-09",
+#     "customerId": 15,
+#     "currency": "VND",
+#     "createdDate": "2025-11-09",
+#     "shippedDate": "2025-11-11",
+#     "shippedAddress": "456 Nguyễn Trãi, Thanh Xuân, Hà Nội",
+#     "taxRate": 0.10,
+#     "taxAmount": 3000000,
+#     "totalPayment": 33000000,
+#     "description": "Xuất hàng cho khách VIP",
+#     "status": 1,
+#     "createdBy": 1
+#   }
+# ]
+
+###
+
+### Get Export Orders - Filter by Status (Pending = 0)
+GET {{API_BASE}}/api/ExportOrder/by-status?status=0
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# [
+#   {
+#     "exportOrderId": 1,
+#     "invoiceNumber": "EXP-20251110-001",
+#     "orderDate": "2025-11-10",
+#     "customerId": 10,
+#     "currency": "VND",
+#     "createdDate": "2025-11-10",
+#     "shippedDate": "2025-11-12",
+#     "shippedAddress": "123 Đường Láng, Đống Đa, Hà Nội",
+#     "taxRate": 0.10,
+#     "taxAmount": 5000000,
+#     "totalPayment": 55000000,
+#     "description": "Đơn hàng xuất kho tháng 11",
+#     "status": 0,
+#     "createdBy": 1
+#   }
+# ]
+
+###
+
+### Get Export Orders - Filter by Status (Approved = 1)
+GET {{API_BASE}}/api/ExportOrder/by-status?status=1
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# [
+#   {
+#     "exportOrderId": 2,
+#     "invoiceNumber": "EXP-20251109-002",
+#     "orderDate": "2025-11-09",
+#     "customerId": 15,
+#     "currency": "VND",
+#     "createdDate": "2025-11-09",
+#     "shippedDate": "2025-11-11",
+#     "shippedAddress": "456 Nguyễn Trãi, Thanh Xuân, Hà Nội",
+#     "taxRate": 0.10,
+#     "taxAmount": 3000000,
+#     "totalPayment": 33000000,
+#     "description": "Xuất hàng cho khách VIP",
+#     "status": 1,
+#     "createdBy": 1
+#   }
+# ]
+
+###
+
+### Get Export Orders - Filter by Status (Completed = 2)
+GET {{API_BASE}}/api/ExportOrder/by-status?status=2
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+###
+
+##############################################
+# EXPORT ORDERS - DETAIL
+##############################################
+
+### Get Export Order Details
+GET {{API_BASE}}/api/ExportOrder/1Details
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# [
+#   {
+#     "exportDetailId": 1,
+#     "exportOrderId": 1,
+#     "productId": 100,
+#     "quantity": 10,
+#     "totalPrice": 250000000
+#   },
+#   {
+#     "exportDetailId": 2,
+#     "exportOrderId": 1,
+#     "productId": 101,
+#     "quantity": 20,
+#     "totalPrice": 50000000
+#   },
+#   {
+#     "exportDetailId": 3,
+#     "exportOrderId": 1,
+#     "productId": 102,
+#     "quantity": 15,
+#     "totalPrice": 48000000
+#   }
+# ]
+
+###
+
+### Get Export Order Details - Not Found
+GET {{API_BASE}}/api/ExportOrder/99999Details
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 404 Not Found
+
+###
+
+##############################################
+# EXPORT ORDERS - CREATE
+##############################################
+
+### Create Export Order - Success
+POST {{API_BASE}}/api/ExportOrder/ExportOder
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "invoiceNumber": "EXP-20251110-003",
+  "orderDate": "2025-11-10",
+  "customerId": 10,
+  "currency": "VND",
+  "shippedDate": "2025-11-12",
+  "shippedAddress": "789 Giải Phóng, Hai Bà Trưng, Hà Nội",
+  "taxRate": 0.10,
+  "taxAmount": 2000000,
+  "totalPayment": 22000000,
+  "description": "Đơn hàng mới",
+  "createdBy": 1
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "data": {
+#     "exportOrderId": 3,
+#     "invoiceNumber": "EXP-20251110-003",
+#     "orderDate": "2025-11-10",
+#     "customerId": 10,
+#     "currency": "VND",
+#     "createdDate": "2025-11-10",
+#     "shippedDate": "2025-11-12",
+#     "shippedAddress": "789 Giải Phóng, Hai Bà Trưng, Hà Nội",
+#     "taxRate": 0.10,
+#     "taxAmount": 2000000,
+#     "totalPayment": 22000000,
+#     "description": "Đơn hàng mới",
+#     "status": 0,
+#     "createdBy": 1
+#   },
+#   "message": "Tạo Export Order thành công"
+# }
+
+###
+
+### Create Export Order - Validation Error
+POST {{API_BASE}}/api/ExportOrder/ExportOder
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "orderDate": "2025-11-10",
+  "customerId": 10
+}
+
+# Response: 400 Bad Request
+
+###
+
+##############################################
+# EXPORT DETAILS - CREATE
+##############################################
+
+### Create Export Detail - Success
+POST {{API_BASE}}/api/ExportOrder/ExportDetail?exportOrderId=1
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "productId": 103,
+  "quantity": 5
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "data": {
+#     "exportDetailId": 4,
+#     "exportOrderId": 1,
+#     "productId": 103,
+#     "quantity": 5,
+#     "totalPrice": 12500000
+#   },
+#   "message": "Thêm Export Detail thành công"
+# }
+
+###
+
+### Create Export Detail - Invalid Export Order ID
+POST {{API_BASE}}/api/ExportOrder/ExportDetail?exportOrderId=99999
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "productId": 103,
+  "quantity": 5
+}
+
+# Response: 400 Bad Request
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Export Order không tồn tại"
+# }
+
+###
+
+##############################################
+# EXPORT ORDERS - UPDATE
+##############################################
+
+### Update Export Order - Success
+PUT {{API_BASE}}/api/ExportOrder/ExportOder?exportOrderId=1
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "orderDate": "2025-11-11",
+  "customerId": 10,
+  "currency": "VND",
+  "shippedDate": "2025-11-13",
+  "shippedAddress": "123 Đường Láng, Đống Đa, Hà Nội (Cập nhật)",
+  "taxRate": 0.10,
+  "taxAmount": 5500000,
+  "totalPayment": 60500000,
+  "description": "Đơn hàng đã cập nhật",
+  "status": "Approved",
+  "createdBy": 1
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "data": {
+#     "exportOrderId": 1,
+#     "invoiceNumber": "EXP-20251110-001",
+#     "orderDate": "2025-11-11",
+#     "customerId": 10,
+#     "currency": "VND",
+#     "createdDate": "2025-11-10",
+#     "shippedDate": "2025-11-13",
+#     "shippedAddress": "123 Đường Láng, Đống Đa, Hà Nội (Cập nhật)",
+#     "taxRate": 0.10,
+#     "taxAmount": 5500000,
+#     "totalPayment": 60500000,
+#     "description": "Đơn hàng đã cập nhật",
+#     "status": 1,
+#     "createdBy": 1
+#   },
+#   "message": "Cập nhật Export Order thành công"
+# }
+
+###
+
+### Update Export Order - Not Found
+PUT {{API_BASE}}/api/ExportOrder/ExportOder?exportOrderId=99999
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "orderDate": "2025-11-11",
+  "customerId": 10
+}
+
+# Response: 400 Bad Request
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Export Order không tồn tại"
+# }
+
+###
+
+##############################################
+# EXPORT DETAILS - UPDATE
+##############################################
+
+### Update Export Detail - Success
+PUT {{API_BASE}}/api/ExportOrder/ExportDetail?exportDetailId=1
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "productId": 100,
+  "quantity": 15
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "data": {
+#     "exportDetailId": 1,
+#     "exportOrderId": 1,
+#     "productId": 100,
+#     "quantity": 15,
+#     "totalPrice": 375000000
+#   },
+#   "message": "Cập nhật Export Detail thành công"
+# }
+
+###
+
+### Update Export Detail - Not Found
+PUT {{API_BASE}}/api/ExportOrder/ExportDetail?exportDetailId=99999
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "productId": 100,
+  "quantity": 15
+}
+
+# Response: 400 Bad Request
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Export Detail không tồn tại"
+# }
+
+###
+
+##############################################
+# EXPORT ORDERS - DELETE
+##############################################
+
+### Delete Export Order - Success
+DELETE {{API_BASE}}/api/ExportOrder/ExportOder?exportOrderId=3
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Xóa Export Order thành công"
+# }
+
+###
+
+### Delete Export Order - Not Found
+DELETE {{API_BASE}}/api/ExportOrder/ExportOder?exportOrderId=99999
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 400 Bad Request
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Export Order không tồn tại"
+# }
+
+###
+
+### Delete Export Order - Has Dependencies
+DELETE {{API_BASE}}/api/ExportOrder/ExportOder?exportOrderId=1
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 400 Bad Request
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Không thể xóa Export Order vì có Export Detail liên quan"
+# }
+
+###
+
+##############################################
+# EXPORT DETAILS - DELETE
+##############################################
+
+### Delete Export Detail - Success
+DELETE {{API_BASE}}/api/ExportOrder/ExportDetail?exportDetailId=4
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Xóa Export Detail thành công"
+# }
+
+###
+
+### Delete Export Detail - Not Found
+DELETE {{API_BASE}}/api/ExportOrder/ExportDetail?exportDetailId=99999
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 400 Bad Request
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Export Detail không tồn tại"
+# }
+
+###
+

@@ -12,13 +12,15 @@ export interface ReturnStatus {
 }
 
 export interface ReturnOrderItem {
-  returnDetailId?: number;
+  returnDetailId: number;
   productId: number;
-  productName?: string;
+  productName: string;
   quantity: number;
   reasonId: number;
-  reasonCode?: string;
-  reasonDescription?: string;
+  reasonCode: string;
+  note?: string;
+  actionId?: number;
+  locationId?: number;
 }
 
 export interface ReturnOrder {
@@ -29,7 +31,6 @@ export interface ReturnOrder {
   note?: string;
   checkedByName?: string;
   reviewedByName?: string;
-  items?: ReturnOrderItem[];
 }
 
 export interface ReturnOrderListItem {
@@ -42,8 +43,9 @@ export interface ReturnOrderListItem {
   reviewedByName?: string;
 }
 
-export interface ReturnOrderDetail extends ReturnOrder {
-  items: ReturnOrderItem[];
+export interface ReturnOrderDetail {
+  header: ReturnOrder;
+  lines: ReturnOrderItem[];
 }
 
 export interface CreateReturnOrderRequest {
@@ -64,6 +66,9 @@ export interface ReturnOrderQueryParams {
   from?: string;
   to?: string;
   status?: string;
+  exportOrderId?: number;
+  checkedBy?: number;
+  reviewedBy?: number;
   page?: number;
   pageSize?: number;
 }
