@@ -27,9 +27,9 @@ export async function getAllExportOrders(): Promise<ExportOrderListItem[]> {
 
 /**
  * Get export orders by status
- * Status can be: "Pending", "Shipped", "Completed", "Cancelled" or null
+ * Status: 0 = Pending, 1 = Approved, 2 = Completed
  */
-export async function getExportOrdersByStatus(status: string): Promise<ExportOrderListItem[]> {
+export async function getExportOrdersByStatus(status: number): Promise<ExportOrderListItem[]> {
   const response = await apiClient.get<ExportOrderListItem[]>('/ExportOrder/by-status', {
     params: { status }
   });

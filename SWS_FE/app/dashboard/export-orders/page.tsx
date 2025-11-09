@@ -42,12 +42,11 @@ export default function ExportOrdersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
-  // Hardcoded statuses for Export Orders
+  // Status mapping: API uses numbers
   const exportStatuses = [
-    { status: 'Pending', label: 'Chờ duyệt' },
-    { status: 'Shipped', label: 'Đã vận chuyển' },
-    { status: 'Completed', label: 'Hoàn thành' },
-    { status: 'Cancelled', label: 'Đã hủy' },
+    { value: 0, label: 'Chờ duyệt', apiName: 'Pending' },
+    { value: 1, label: 'Đã duyệt', apiName: 'Approved' },
+    { value: 2, label: 'Hoàn thành', apiName: 'Completed' },
   ]
 
   useEffect(() => {
@@ -66,7 +65,7 @@ export default function ExportOrdersPage() {
       if (statusFilter === 'all') {
         data = await getAllExportOrders()
       } else {
-        data = await getExportOrdersByStatus(statusFilter)
+        data = await getExportOrdersByStatus(Number(statusFilter))
       }
 
       setOrders(Array.isArray(data) ? data : [])
@@ -97,31 +96,24 @@ export default function ExportOrdersPage() {
     setFilteredOrders(filtered)
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: number | null) => {
     // Handle null or undefined status
-    if (!status) {
+    if (status === null || status === undefined) {
       return <Badge variant="outline">Chưa xác định</Badge>
     }
 
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      Pending: 'outline',
-      Shipped: 'secondary',
-      Completed: 'default',
-      Cancelled: 'destructive',
+    const statusConfig: Record<number, { variant: 'default' | 'secondary' | 'destructive' | 'outline', label: string }> = {
+      0: { variant: 'outline', label: 'Chờ duyệt' },
+      1: { variant: 'secondary', label: 'Đã duyệt' },
+      2: { variant: 'default', label: 'Hoàn thành' },
     }
 
-    const labels: Record<string, string> = {
-      Pending: 'Chờ duyệt',
-      Shipped: 'Đã vận chuyển',
-      Completed: 'Hoàn thành',
-      Cancelled: 'Đã hủy',
+    const config = statusConfig[status]
+    if (!config) {
+      return <Badge variant="outline">Không xác định</Badge>
     }
 
-    return (
-      <Badge variant={variants[status] || 'outline'}>
-        {labels[status] || status}
-      </Badge>
-    )
+    return <Badge variant={config.variant}>{config.label}</Badge>
   }
 
   const formatDate = (dateString: string) => {
