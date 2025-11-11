@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SWS.Services.ApiModels.ProductModel;
 using SWS.Services.Services.ProductServices;
 
 namespace SWS.ApiCore.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductController : BaseApiController
@@ -53,6 +55,7 @@ namespace SWS.ApiCore.Controllers
         }
 
         // PUT: api/product/{id}
+        [Authorize(Roles ="2")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductRequest request)
         {
@@ -67,6 +70,7 @@ namespace SWS.ApiCore.Controllers
         }
 
         // DELETE: api/product/{id}
+        [Authorize(Roles = "2")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SWS.BusinessObjects.Enums;
 using SWS.Services.ApiModels.ExportDetailModel;
 using SWS.Services.ApiModels.ExportOrderModel;
@@ -6,6 +7,7 @@ using SWS.Services.Services.ExportOrderServices;
 
 namespace SWS.ApiCore.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ExportOrderController : BaseApiController
@@ -38,7 +40,7 @@ namespace SWS.ApiCore.Controllers
             return Ok(result.Data);
         }
 
-        [HttpGet("{id:int}Details")]
+        [HttpGet("{id:int}/Details")]
         public async Task<IActionResult> GetExportOrderDetails(int id)
         {
             var result = await _exportOrderService.GetExportDetails(id);
