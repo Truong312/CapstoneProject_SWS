@@ -107,6 +107,74 @@ namespace SWS.Services.Services.CycleCountServices
             }
         }
 
+        public async Task<ResultModel> FinalizeCycleCountAsync(int cycleCountId, int userId)
+        {
+            try
+            {
+                //get CycleCount
+                var cycle = await _unitOfWork.CycleCounts.GetByIdAsync(cycleCountId);
+                if (cycle == null)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = $"Không tìm được cycle count với id: {cycleCountId}",
+                        StatusCode = StatusCodes.Status404NotFound
+                    };
+                }
+
+                var details = await _unitOfWork.CycleCountDetails.GetAllByCycleCountId(cycle.CycleCountId);
+                //Check if there is discrepancy in quantity
+                foreach (var detail in details)
+                {
+                    var inventory = await _unitOfWork.Inventories.GetByProductId(detail.ProductId);
+                    if (inventory != null && inventory.QuantityAvailable != detail.CountedQuantity)
+                    {
+                        var difference = detail.CountedQuantity - inventory.QuantityAvailable;
+                        inventory.QuantityAvailable = detail.CountedQuantity;
+
+                        var product = await _unitOfWork.Products.GetByIdAsync(detail.ProductId);
+                        if (product == null)
+                        {
+                            return new ResultModel
+                            {
+                                IsSuccess = false,
+                                Message = $"Lỗi xảy ra khi tìm product với id: {detail.ProductId}",
+                                StatusCode = StatusCodes.Status500InternalServerError
+                            };
+                        }
+                        //Transaction Logs
+                        var actionLog = new ActionLog
+                        {
+                            UserId = userId,
+                            ActionType = "CycleCount",
+                            EntityType = "CycleCount",
+                            Timestamp = DateTime.Now,
+                            Description = $"Adjust quantity of {product.SerialNumber}"
+                        };
+                    }
+                }
+                //CycleCount Task has been completed
+                cycle.Status = StatusEnums.Completed.ToString();
+                await _unitOfWork.SaveChangesAsync();
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Message = "Đã cập nhật cycle count",
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi xảy ra khi chốt cycle count: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
         public async Task<ResultModel> FinalizeCycleCountAsync(string cycleCountName, int userId)
         {
             try
@@ -118,7 +186,7 @@ namespace SWS.Services.Services.CycleCountServices
                     return new ResultModel
                     {
                         IsSuccess = false,
-                        Message = $"Không tìm được cycle count với name: {cycleCountName}",
+                        Message = $"Không tìm được cycle count với id: {cycleCountName}",
                         StatusCode = StatusCodes.Status404NotFound
                     };
                 }

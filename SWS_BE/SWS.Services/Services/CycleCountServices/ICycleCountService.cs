@@ -12,6 +12,7 @@ namespace SWS.Services.Services.CycleCountServices
     {
         Task<ResultModel> StartCycleCountAsync(int userId);
         Task<ResultModel> UpdateCountedQuantityAsync(int detailId, int countedQuantity);
+        Task<ResultModel> FinalizeCycleCountAsync(int cycleCountId, int userId);
         Task<ResultModel> FinalizeCycleCountAsync(string cycleCountName, int userId);
     }
 }
