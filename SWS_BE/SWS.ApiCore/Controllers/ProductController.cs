@@ -9,9 +9,9 @@ namespace SWS.ApiCore.Controllers
     [ApiController]
     public class ProductController : BaseApiController
     {
-        private readonly IProductService _productService;
+        private readonly IWarehouseProductService _productService;
 
-        public ProductController(IProductService productService)
+        public ProductController(IWarehouseProductService productService)
         {
             _productService = productService;
         }

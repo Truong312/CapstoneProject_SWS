@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using SWS.BusinessObjects.Models;
 using SWS.Repositories.UnitOfWork;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.ProductModel;
 
 namespace SWS.Services.Services.ProductServices
 {
-    public class WarehouseProductService : IProductService
+    public class WarehouseProductService : IWarehouseProductService
     {
         private readonly IUnitOfWork _unitOfWork;
 

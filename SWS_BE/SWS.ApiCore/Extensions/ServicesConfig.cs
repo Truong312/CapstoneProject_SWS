@@ -33,7 +33,7 @@ public static class ServicesConfig
         services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IWarehouseAuthenticationService, WarehouseAuthenticationService>();
         services.AddScoped<IGoogleLoginService, GoogleLoginService>();
-        services.AddScoped<IProductService, WarehouseProductService>();
+        services.AddScoped<IWarehouseProductService, WarehouseProductService>();
         services.AddScoped<IExportOrderService, ExportOrderService>();
         services.AddScoped<ICycleCountService, CycleCountService>();
         services.AddSingleton<RateLimiterStore>();

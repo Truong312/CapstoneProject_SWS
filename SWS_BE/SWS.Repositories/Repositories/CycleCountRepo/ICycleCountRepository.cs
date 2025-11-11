@@ -10,5 +10,6 @@ namespace SWS.Repositories.Repositories.CycleCountRepo
 {
     public interface ICycleCountRepository: IGenericRepository<CycleCount>
     {
+        Task<CycleCount>GetByName(string name); 
     }
 }

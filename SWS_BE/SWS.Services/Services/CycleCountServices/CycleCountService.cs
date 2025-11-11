@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using SWS.BusinessObjects.Enums;
 using SWS.BusinessObjects.Models;
 using SWS.Repositories.UnitOfWork;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 
 namespace SWS.Services.Services.CycleCountServices
 {
@@ -57,7 +57,7 @@ namespace SWS.Services.Services.CycleCountServices
                 return new ResultModel
                 {
                     IsSuccess = true,
-                    Message = "Đã tạo cycle count mới",
+                    Message = $"Đã tạo cycle count mới với tên {cycle.CycleName}",
                     StatusCode = StatusCodes.Status201Created
                 };
             }
@@ -101,17 +101,30 @@ namespace SWS.Services.Services.CycleCountServices
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = "Lỗi xảy ra khi cập nhật cycle count quantity",
+                    Message = $"Lỗi xảy ra khi cập nhật cycle count quantity: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
         }
 
-        public async Task<ResultModel> FinalizeCycleCountAsync(int cycleCountId, int userId)
+        public async Task<ResultModel> FinalizeCycleCountAsync(string cycleCountName, int userId)
         {
             try
             {
-                var details = await _unitOfWork.CycleCountDetails.GetAllByCycleCountId(cycleCountId);
+                //get CycleCount
+                var cycle = await _unitOfWork.CycleCounts.GetByName(cycleCountName);
+                if (cycle == null)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = $"Không tìm được cycle count với name: {cycleCountName}",
+                        StatusCode = StatusCodes.Status404NotFound
+                    };
+                }
+
+                var details = await _unitOfWork.CycleCountDetails.GetAllByCycleCountId(cycle.CycleCountId);
+                //Check if there is discrepancy in quantity
                 foreach (var detail in details)
                 {
                     var inventory = await _unitOfWork.Inventories.GetByProductId(detail.ProductId);
@@ -120,32 +133,29 @@ namespace SWS.Services.Services.CycleCountServices
                         var difference = detail.CountedQuantity - inventory.QuantityAvailable;
                         inventory.QuantityAvailable = detail.CountedQuantity;
 
-                        var serialNumber =  _unitOfWork.Products.GetByIdAsync(detail.ProductId).Result.SerialNumber;
+                        var product = await _unitOfWork.Products.GetByIdAsync(detail.ProductId);
+                        if (product == null)
+                        {
+                            return new ResultModel
+                            {
+                                IsSuccess = false,
+                                Message = $"Lỗi xảy ra khi tìm product với id: {detail.ProductId}",
+                                StatusCode = StatusCodes.Status500InternalServerError
+                            };
+                        }
                         //Transaction Logs
                         var actionLog = new ActionLog
                         {
                             UserId = userId,
                             ActionType = "CycleCount",
                             EntityType = "CycleCount",
-                            Timestamp=DateTime.Now,
-                            Description=$"Adjust quantity of {serialNumber}"
+                            Timestamp = DateTime.Now,
+                            Description = $"Adjust quantity of {product.SerialNumber}"
                         };
                     }
                 }
-                var cycle = await _unitOfWork.CycleCounts.GetByIdAsync(cycleCountId);
-                if (cycle != null)
-                {
-                    cycle.Status = StatusEnums.Completed.ToString();
-                }
-                else
-                {
-                    return new ResultModel
-                    {
-                        IsSuccess=false,
-                        Message=$"Không tìm được cycle count với Id={cycleCountId}",
-                        StatusCode=StatusCodes.Status404NotFound
-                    };
-                }
+                //CycleCount Task has been completed
+                cycle.Status = StatusEnums.Completed.ToString();
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
