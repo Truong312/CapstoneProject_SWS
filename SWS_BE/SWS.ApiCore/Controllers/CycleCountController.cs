@@ -49,7 +49,7 @@ namespace SWS.ApiCore.Controllers
             return Ok();
         }
         [Authorize(Roles = "2")]
-        [HttpPost("Finalize/{cycleCountName:string}")]
+        [HttpPost("Finalize/{cycleCountName}")]
         public async Task<IActionResult> FinalizeCycleCountAsync(string cycleCountName, int userId)
         {
             var result = await _cycleCountService.FinalizeCycleCountAsync(cycleCountName, userId);
