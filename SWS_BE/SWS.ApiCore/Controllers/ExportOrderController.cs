@@ -26,7 +26,7 @@ namespace SWS.ApiCore.Controllers
             {
                 return NotFound(result);
             }
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         [HttpGet("by-status")]
@@ -37,7 +37,7 @@ namespace SWS.ApiCore.Controllers
             {
                 return NotFound(result);
             }
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         [HttpGet("{id:int}/Details")]
@@ -48,7 +48,7 @@ namespace SWS.ApiCore.Controllers
             {
                 return NotFound(result);
             }
-            return Ok(result.Data);
+            return Ok(result);
         }
         [HttpPost("ExportOder")]
         public async Task<IActionResult> CreateExportOrder([FromBody] CreateExportOrder createExportOrder)

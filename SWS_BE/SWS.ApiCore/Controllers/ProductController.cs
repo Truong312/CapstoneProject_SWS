@@ -26,7 +26,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/{id}
@@ -37,7 +37,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // POST: api/product
@@ -51,7 +51,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // PUT: api/product/{id}
@@ -66,7 +66,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // DELETE: api/product/{id}
@@ -78,7 +78,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/near-expired
@@ -89,7 +89,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/expired
@@ -100,7 +100,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/low-stock
@@ -111,7 +111,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/search?text=abc
@@ -122,7 +122,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
     }
