@@ -1,4 +1,8 @@
-﻿using SWS.Repositories.Repositories.AccountRepo;
+﻿// File: SWS.Repositories/UnitOfWork/IUnitOfWork.cs
+using System;
+using System.Threading.Tasks;
+
+using SWS.Repositories.Repositories.AccountRepo;
 using SWS.Repositories.Repositories.ExportDetailRepo;
 using SWS.Repositories.Repositories.ExportRepo;
 using SWS.Repositories.Repositories.ProductRepo;
@@ -15,17 +19,22 @@ namespace SWS.Repositories.UnitOfWork
         IUserRepository Users { get; }
         IProductRepository Products { get; }
 
-        // ➕ Thêm cho Import
+        // Import
         IImportOrderQueryRepository ImportOrdersQuery { get; }
         IImportOrderCommandRepository ImportOrdersCommand { get; }
 
-        // ➕ Thêm cho Return
+        // Return (lookup + query)
         IReturnReasonRepository ReturnReasons { get; }
         IReturnStatusRepository ReturnStatuses { get; }
         IReturnOrderQueryRepository ReturnOrdersQuery { get; }
 
+        // ➕ Return (command) — dùng cho Review
+        IReturnOrderCommandRepository ReturnOrdersCommand { get; }
+
+        // Export
         IExportOrderRepository ExportOrders { get; }
         IExportDetailRepository ExportDetails { get; }
+
         Task<int> SaveChangesAsync();
     }
 }
