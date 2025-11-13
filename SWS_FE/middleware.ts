@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Routes công khai - không cần authentication
-const PUBLIC_ROUTES = ['/login', '/register']
+const PUBLIC_ROUTES = ['/login', '/register', '/unauthorized']
 
 // Routes cần authentication  
 const PROTECTED_ROUTES = [
@@ -14,8 +14,22 @@ const PROTECTED_ROUTES = [
   '/dashboard/settings'
 ]
 
-// Routes chỉ dành cho admin (role = 1)
+// Routes chỉ dành cho admin (role = 2)
 const ADMIN_ONLY_ROUTES = ['/dashboard/settings/users', '/dashboard/settings/roles']
+
+/**
+ * Helper function to add security headers to response
+ */
+function addSecurityHeaders(response: NextResponse): void {
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set('X-XSS-Protection', '1; mode=block')
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=()'
+  )
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -23,30 +37,43 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value
   const userRole = request.cookies.get('userRole')?.value
   
-  // Nếu đã login và truy cập public route -> redirect về dashboard
-  if (PUBLIC_ROUTES.includes(pathname) && token) {
+  // Kiểm tra trạng thái đăng nhập
+  const isLoggedIn = !!token
+  
+  // Cho phép truy cập trang unauthorized (luôn cho phép, không kiểm tra auth)
+  // Điều này đảm bảo user luôn thấy trang unauthorized khi gặp lỗi 401 từ API
+  if (pathname === '/unauthorized') {
+    const response = NextResponse.next()
+    addSecurityHeaders(response)
+    return response
+  }
+  
+  // Nếu đã login và truy cập public route (trừ unauthorized) -> redirect về dashboard
+  if (PUBLIC_ROUTES.includes(pathname) && isLoggedIn && pathname !== '/unauthorized') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
   
-  // Nếu chưa login và truy cập protected route -> redirect về login
+  // Nếu chưa login và truy cập protected route -> redirect về unauthorized
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route))
-  if (isProtectedRoute && !token) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirect', pathname)
-    return NextResponse.redirect(loginUrl)
+  if (isProtectedRoute && !isLoggedIn) {
+    return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
   
-  // Nếu không phải admin và truy cập admin route -> redirect về dashboard
+  // Kiểm tra quyền admin cho admin-only routes
   const isAdminRoute = ADMIN_ONLY_ROUTES.some(route => pathname.startsWith(route))
-  if (isAdminRoute && userRole !== '2') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (isAdminRoute) {
+    if (!isLoggedIn) {
+      // Chưa đăng nhập -> về trang unauthorized
+      return NextResponse.redirect(new URL('/unauthorized', request.url))
+    } else if (userRole !== '2') {
+      // Đã đăng nhập nhưng không phải admin -> về trang unauthorized
+      return NextResponse.redirect(new URL('/unauthorized', request.url))
+    }
   }
   
-  // Thêm security headers
+  // Thêm security headers cho tất cả responses
   const response = NextResponse.next()
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  addSecurityHeaders(response)
   
   return response
 }
