@@ -1,7 +1,11 @@
+using System;
+using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authorization;
+
 using SWS.Repositories.UnitOfWork;
 
 using SWS.ApiCore.Extensions;
@@ -24,6 +28,11 @@ using SWS.ApiCore.Converters;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ====== IMPORTANT: logging safety MUST be immediately after CreateBuilder ======
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // ===== DEBUG: in ra cấu hình JWT đang nạp =====
 var envName = builder.Environment.EnvironmentName;
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -44,7 +53,7 @@ builder.Services.AddDefaultAuth(builder.Configuration);    // JWT auth
 
 builder.Services.AddSessionConfig();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddRateLimitConfig();   
+builder.Services.AddRateLimitConfig();
 builder.Services.AddGeminiConfig(builder.Configuration);
 builder.Services.AddWhisperConfig(builder.Configuration);
 
@@ -63,7 +72,26 @@ builder.Services.AddControllers()
 
 // Bind app settings
 builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection("GoogleAuthSettings"));
+
+// ================== DI (Unit of Work & Repos/Services) ==================
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Return: Lookups + Query
+builder.Services.AddScoped<IReturnReasonRepository, ReturnReasonRepository>();
+builder.Services.AddScoped<IReturnStatusRepository, ReturnStatusRepository>();
+builder.Services.AddScoped<IReturnOrderQueryRepository, ReturnOrderQueryRepository>();
+builder.Services.AddScoped<IReturnLookupService, ReturnLookupService>();
+builder.Services.AddScoped<IReturnOrderQueryService, ReturnOrderQueryService>();
+
+// ➕ Return: Command (Review)
+builder.Services.AddScoped<IReturnOrderCommandRepository, ReturnOrderCommandRepository>();
+builder.Services.AddScoped<IReturnOrderReviewService, ReturnOrderReviewService>();
+
+// Import Orders
+builder.Services.AddScoped<IImportOrderQueryRepository, ImportOrderQueryRepository>();
+builder.Services.AddScoped<IImportOrderCommandRepository, ImportOrderCommandRepository>();
+builder.Services.AddScoped<IImportOrderQueryService, ImportOrderQueryService>();
+builder.Services.AddScoped<IImportOrderCommandService, ImportOrderCommandService>();
 
 // ========== Authorization Policies (dựa trên Role) ==========
 builder.Services.AddAuthorization(options =>
@@ -73,26 +101,18 @@ builder.Services.AddAuthorization(options =>
 
     // Staff hoặc Manager (role = "1" hoặc "2") được xem danh sách/chi tiết
     options.AddPolicy("StaffOrManager", policy => policy.RequireRole("1", "2"));
+
+    // ➕ Manager duyệt trả hàng
+    options.AddPolicy("ManagerOnly", policy => policy.RequireRole("2"));
 });
 
-// ========== DI: Return Lookups / Return Orders ==========
-builder.Services.AddScoped<IReturnReasonRepository, ReturnReasonRepository>();
-builder.Services.AddScoped<IReturnStatusRepository, ReturnStatusRepository>();
-builder.Services.AddScoped<IReturnOrderQueryRepository, ReturnOrderQueryRepository>();
-
-builder.Services.AddScoped<IReturnLookupService, ReturnLookupService>();
-builder.Services.AddScoped<IReturnOrderQueryService, ReturnOrderQueryService>();
-
-// ========== DI: Import Orders ==========
-builder.Services.AddScoped<IImportOrderQueryRepository, ImportOrderQueryRepository>();
-builder.Services.AddScoped<IImportOrderCommandRepository, ImportOrderCommandRepository>();
-builder.Services.AddScoped<IImportOrderQueryService, ImportOrderQueryService>();
-builder.Services.AddScoped<IImportOrderCommandService, ImportOrderCommandService>();
+// ================== Configure Kestrel URL: revert to original localhost:8080 ==================
+builder.WebHost.UseUrls("http://localhost:8080");
 
 // ================== Build App ==================
 var app = builder.Build();
 
-// Seed database khi app khởi động
+// Seed database khi app khởi động (safe logging fallback)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -102,8 +122,24 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Lỗi khi seed database");
+        var logger = services.GetService<ILogger<Program>>();
+        if (logger != null)
+        {
+            try
+            {
+                logger.LogError(ex, "Lỗi khi seed database");
+            }
+            catch (Exception logEx)
+            {
+                Console.WriteLine("Logger failed while logging the exception: " + logEx);
+                Console.WriteLine("Original exception during seeding: " + ex);
+            }
+        }
+        else
+        {
+            Console.WriteLine("No ILogger<Program> registered. Original exception during seeding:");
+            Console.WriteLine(ex);
+        }
     }
 }
 
@@ -115,16 +151,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRateLimiter();
-
-// Ensure routing is enabled before CORS/auth middleware
-app.UseRouting();
-
 app.UseCors("AllowAllOrigins");
 
-// app.UseHttpsRedirection(); // tắt khi dev http, bật nếu bạn dùng https cổng đúng
 app.UseSession();
 
-app.UseAuthentication();   // phải trước UseAuthorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
