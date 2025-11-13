@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -26,11 +26,23 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Mark that we're handling a 401 error (để middleware không redirect)
+      sessionStorage.setItem('401_error', 'true')
+      
+      // Clear all authentication data
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      localStorage.removeItem('user')
+      
+      // Clear cookies
+      document.cookie = 'token=; path=/; max-age=0'
+      document.cookie = 'userRole=; path=/; max-age=0'
+      
+      // Redirect to unauthorized page
+      window.location.href = '/unauthorized'
     }
     return Promise.reject(error)
   }
 )
 
+export { apiClient }
 export default apiClient

@@ -23,7 +23,12 @@ import {
 } from '@/components/ui/select'
 import { Search, Plus, FileText, Eye, Loader2, Package } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { exportOrderApi } from '@/services/api/order.api'
+import { 
+  getAllExportOrders, 
+  getExportOrdersByStatus,
+  getExportOrderStatuses,
+  ExportOrderStatusStats 
+} from '@/services/api/export-orders.api'
 import type { ExportOrderListItem } from '@/lib/types'
 
 export default function ExportOrdersPage() {
@@ -32,9 +37,17 @@ export default function ExportOrdersPage() {
   
   const [orders, setOrders] = useState<ExportOrderListItem[]>([])
   const [filteredOrders, setFilteredOrders] = useState<ExportOrderListItem[]>([])
+  const [statuses, setStatuses] = useState<ExportOrderStatusStats[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+
+  // Status mapping: API uses numbers
+  const exportStatuses = [
+    { value: 0, label: 'Chờ duyệt', apiName: 'Pending' },
+    { value: 1, label: 'Đã duyệt', apiName: 'Approved' },
+    { value: 2, label: 'Hoàn thành', apiName: 'Completed' },
+  ]
 
   useEffect(() => {
     fetchOrders()
@@ -48,22 +61,21 @@ export default function ExportOrdersPage() {
     try {
       setIsLoading(true)
       
-      let response
+      let data
       if (statusFilter === 'all') {
-        response = await exportOrderApi.listAll()
+        data = await getAllExportOrders()
       } else {
-        response = await exportOrderApi.listByStatus(statusFilter)
+        data = await getExportOrdersByStatus(Number(statusFilter))
       }
 
-      if (response.isSuccess && response.data) {
-        setOrders(Array.isArray(response.data) ? response.data : [])
-      }
+      setOrders(Array.isArray(data) ? data : [])
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
         description: error.response?.data?.message || 'Không thể tải danh sách đơn xuất hàng',
       })
+      setOrders([])
     } finally {
       setIsLoading(false)
     }
@@ -84,26 +96,24 @@ export default function ExportOrdersPage() {
     setFilteredOrders(filtered)
   }
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      Pending: 'outline',
-      Approved: 'secondary',
-      Completed: 'default',
-      Cancelled: 'destructive',
+  const getStatusBadge = (status: number | null) => {
+    // Handle null or undefined status
+    if (status === null || status === undefined) {
+      return <Badge variant="outline">Chưa xác định</Badge>
     }
 
-    const labels: Record<string, string> = {
-      Pending: 'Chờ duyệt',
-      Approved: 'Đã duyệt',
-      Completed: 'Hoàn thành',
-      Cancelled: 'Đã hủy',
+    const statusConfig: Record<number, { variant: 'default' | 'secondary' | 'destructive' | 'outline', label: string }> = {
+      0: { variant: 'outline', label: 'Chờ duyệt' },
+      1: { variant: 'secondary', label: 'Đã duyệt' },
+      2: { variant: 'default', label: 'Hoàn thành' },
     }
 
-    return (
-      <Badge variant={variants[status] || 'outline'}>
-        {labels[status] || status}
-      </Badge>
-    )
+    const config = statusConfig[status]
+    if (!config) {
+      return <Badge variant="outline">Không xác định</Badge>
+    }
+
+    return <Badge variant={config.variant}>{config.label}</Badge>
   }
 
   const formatDate = (dateString: string) => {
@@ -161,15 +171,16 @@ export default function ExportOrdersPage() {
               value={statusFilter}
               onValueChange={(value) => setStatusFilter(value)}
             >
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Trạng thái" />
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Tất cả trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="Pending">Chờ duyệt</SelectItem>
-                <SelectItem value="Approved">Đã duyệt</SelectItem>
-                <SelectItem value="Completed">Hoàn thành</SelectItem>
-                <SelectItem value="Cancelled">Đã hủy</SelectItem>
+                <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                {exportStatuses.map((item) => (
+                  <SelectItem key={item.status} value={item.status}>
+                    {item.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

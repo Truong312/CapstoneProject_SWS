@@ -27,6 +27,10 @@ export interface ImportOrder {
   createdDate?: string;
   createdBy?: number;
   createdByName?: string;
+  approvedByName?: string;
+  completedByName?: string;
+  note?: string;
+  createdAt?: string;
   items?: ImportOrderItem[];
 }
 
@@ -130,14 +134,123 @@ export interface AddExportDetailResponse {
   exportDetailId: number;
 }
 
+export interface UpdateExportOrderRequest {
+  orderDate: string;
+  customerId: number;
+  currency: string;
+  shippedDate?: string;
+  shippedAddress?: string;
+  taxRate: number;
+  taxAmount: number;
+  totalPayment: number;
+  description?: string;
+  status?: string;
+  createdBy: number;
+}
+
+export interface UpdateExportDetailRequest {
+  productId: number;
+  quantity: number;
+}
+
 // Provider for Import Orders
 export interface Provider {
   providerId: number;
   providerName: string;
+  providerCode?: string;
   contactPerson?: string;
   phone?: string;
   email?: string;
   address?: string;
+}
+
+// Import Order Status Statistics
+export interface ImportOrderStatusStats {
+  status: string;
+  count: number;
+  totalValue: number;
+}
+
+// Import Order Statistics
+export interface ImportOrderStatistics {
+  dateRange: {
+    from: string;
+    to: string;
+  };
+  totalOrders: number;
+  totalValue: number;
+  totalItems: number;
+  byStatus: {
+    status: string;
+    count: number;
+    percentage: number;
+  }[];
+  topProviders: {
+    providerId: number;
+    providerName: string;
+    orderCount: number;
+    totalValue: number;
+  }[];
+  topProducts: {
+    productId: number;
+    productName: string;
+    totalQuantity: number;
+    totalValue: number;
+  }[];
+}
+
+// Import Order Approval/Rejection
+export interface ApproveImportOrderRequest {
+  note?: string;
+}
+
+export interface RejectImportOrderRequest {
+  reason: string;
+}
+
+export interface CompleteImportOrderRequest {
+  receivedDate: string;
+  note?: string;
+}
+
+export interface ApprovalResponse {
+  importOrderId: number;
+  status: string;
+  approvedBy?: number;
+  approvedByName?: string;
+  approvedDate?: string;
+  rejectedBy?: number;
+  rejectedByName?: string;
+  rejectedDate?: string;
+  rejectionReason?: string;
+  completedBy?: number;
+  completedByName?: string;
+  completedDate?: string;
+}
+
+// Bulk Operations
+export interface BulkApproveRequest {
+  importOrderIds: number[];
+  note?: string;
+}
+
+export interface BulkDeleteRequest {
+  importOrderIds: number[];
+}
+
+export interface BulkOperationResult {
+  successCount: number;
+  failedCount: number;
+  results: {
+    importOrderId: number;
+    success: boolean;
+    error?: string;
+  }[];
+}
+
+// Import Order Query Params (extends base)
+export interface ImportOrderQueryParams extends OrderQueryParams {
+  providerId?: number;
 }
 
 // Customer for Export Orders

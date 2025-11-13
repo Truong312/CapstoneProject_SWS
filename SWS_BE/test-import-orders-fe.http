@@ -1,0 +1,444 @@
+# Import Orders API Tests - Frontend Flow
+# API Base: http://localhost:8080
+
+### Variables
+@API_BASE = http://localhost:8080
+@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5Aa2hvdmlldG5hbS5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiTmd1eeG7hW4gVsSDbiBBZG1pbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IjEiLCJuYmYiOjE3NjI3MDgwODIsImV4cCI6MTc2MjcwOTg4MiwiaXNzIjoiQXBwQmFja2VuZCIsImF1ZCI6IkFwcEJhY2tlbmRVc2VycyJ9.JOAHKqNd8q2p28Kk0g_H-QKbAg8gIO2N3-GVuqLZAb4
+
+##############################################
+# LOGIN
+##############################################
+
+### Login - Get Token
+POST {{API_BASE}}/api/warehouse/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@khovietnam.com",
+  "password": "Admin@123"
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "responseCode": null,
+#   "statusCode": 200,
+#   "data": {
+#     "user": {
+#       "userId": 1,
+#       "fullName": "Nguyễn Văn Admin",
+#       "email": "admin@khovietnam.com",
+#       "phone": "0901234567",
+#       "address": "123 Đường Láng, Đống Đa, Hà Nội",
+#       "role": 1
+#     },
+#     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+#   },
+#   "message": "Đăng nhập thành công"
+# }
+
+###
+
+##############################################
+# IMPORT ORDERS - LIST & FILTER
+##############################################
+
+### Get Import Orders - All (with pagination)
+GET {{API_BASE}}/api/import-orders?page=1&pageSize=20
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "total": 125,
+#   "page": 1,
+#   "pageSize": 20,
+#   "items": [
+#     {
+#       "importOrderId": 1,
+#       "invoiceNumber": "IMP-20251110-001",
+#       "orderDate": "2025-11-10",
+#       "providerName": "Công ty TNHH ABC",
+#       "status": "Pending",
+#       "totalItems": 5,
+#       "createdByName": "Nguyễn Văn A"
+#     },
+#     {
+#       "importOrderId": 2,
+#       "invoiceNumber": "IMP-20251109-002",
+#       "orderDate": "2025-11-09",
+#       "providerName": "Công ty Cổ phần XYZ",
+#       "status": "Approved",
+#       "totalItems": 3,
+#       "createdByName": "Trần Thị B"
+#     },
+#     {
+#       "importOrderId": 3,
+#       "invoiceNumber": "IMP-20251108-003",
+#       "orderDate": "2025-11-08",
+#       "providerName": "Nhà phân phối DEF",
+#       "status": "Completed",
+#       "totalItems": 8,
+#       "createdByName": "Lê Văn C"
+#     }
+#   ]
+# }
+
+###
+
+### Get Import Orders - Search by keyword
+GET {{API_BASE}}/api/import-orders?q=ABC&page=1&pageSize=20
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "total": 15,
+#   "page": 1,
+#   "pageSize": 20,
+#   "items": [
+#     {
+#       "importOrderId": 1,
+#       "invoiceNumber": "IMP-20251110-001",
+#       "orderDate": "2025-11-10",
+#       "providerName": "Công ty TNHH ABC",
+#       "status": "Pending",
+#       "totalItems": 5,
+#       "createdByName": "Nguyễn Văn A"
+#     }
+#   ]
+# }
+
+###
+
+### Get Import Orders - Filter by Provider ID
+GET {{API_BASE}}/api/import-orders?providerId=5&page=1&pageSize=20
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "total": 8,
+#   "page": 1,
+#   "pageSize": 20,
+#   "items": [
+#     {
+#       "importOrderId": 1,
+#       "invoiceNumber": "IMP-20251110-001",
+#       "orderDate": "2025-11-10",
+#       "providerName": "Công ty TNHH ABC",
+#       "status": "Pending",
+#       "totalItems": 5,
+#       "createdByName": "Nguyễn Văn A"
+#     }
+#   ]
+# }
+
+###
+
+### Get Import Orders - Filter by Status
+GET {{API_BASE}}/api/import-orders?status=Pending&page=1&pageSize=20
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "total": 25,
+#   "page": 1,
+#   "pageSize": 20,
+#   "items": [
+#     {
+#       "importOrderId": 1,
+#       "invoiceNumber": "IMP-20251110-001",
+#       "orderDate": "2025-11-10",
+#       "providerName": "Công ty TNHH ABC",
+#       "status": "Pending",
+#       "totalItems": 5,
+#       "createdByName": "Nguyễn Văn A"
+#     }
+#   ]
+# }
+
+###
+
+### Get Import Orders - Filter by Date Range
+GET {{API_BASE}}/api/import-orders?from=2025-11-01&to=2025-11-30&page=1&pageSize=20
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "total": 45,
+#   "page": 1,
+#   "pageSize": 20,
+#   "items": [
+#     {
+#       "importOrderId": 1,
+#       "invoiceNumber": "IMP-20251110-001",
+#       "orderDate": "2025-11-10",
+#       "providerName": "Công ty TNHH ABC",
+#       "status": "Pending",
+#       "totalItems": 5,
+#       "createdByName": "Nguyễn Văn A"
+#     }
+#   ]
+# }
+
+###
+
+### Get Import Orders - Multiple Filters Combined
+GET {{API_BASE}}/api/import-orders?q=laptop&providerId=5&status=Approved&from=2025-11-01&to=2025-11-30&page=1&pageSize=20
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "total": 3,
+#   "page": 1,
+#   "pageSize": 20,
+#   "items": [
+#     {
+#       "importOrderId": 2,
+#       "invoiceNumber": "IMP-20251109-002",
+#       "orderDate": "2025-11-09",
+#       "providerName": "Công ty TNHH ABC",
+#       "status": "Approved",
+#       "totalItems": 3,
+#       "createdByName": "Trần Thị B"
+#     }
+#   ]
+# }
+
+###
+
+### Get Import Orders - Page 2
+GET {{API_BASE}}/api/import-orders?page=2&pageSize=20
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+###
+
+##############################################
+# IMPORT ORDERS - DETAIL
+##############################################
+
+### Get Import Order Detail - Success
+GET {{API_BASE}}/api/import-orders/1
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "importOrderId": 1,
+#   "invoiceNumber": "IMP-20251110-001",
+#   "orderDate": "2025-11-10",
+#   "providerId": 5,
+#   "providerName": "Công ty TNHH ABC",
+#   "status": "Pending",
+#   "createdDate": "2025-11-10",
+#   "createdBy": 1,
+#   "createdByName": "Nguyễn Văn Admin",
+#   "items": [
+#     {
+#       "importDetailId": 1,
+#       "productId": 100,
+#       "productName": "Laptop Dell XPS 15",
+#       "quantity": 10,
+#       "importPrice": 25000000
+#     },
+#     {
+#       "importDetailId": 2,
+#       "productId": 101,
+#       "productName": "Mouse Logitech MX Master 3",
+#       "quantity": 50,
+#       "importPrice": 2500000
+#     },
+#     {
+#       "importDetailId": 3,
+#       "productId": 102,
+#       "productName": "Bàn phím cơ Keychron K8",
+#       "quantity": 30,
+#       "importPrice": 3200000
+#     }
+#   ]
+# }
+
+###
+
+### Get Import Order Detail - Not Found
+GET {{API_BASE}}/api/import-orders/99999
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 404 Not Found
+
+###
+
+##############################################
+# IMPORT ORDERS - CREATE
+##############################################
+
+### Create Import Order - Success
+POST {{API_BASE}}/api/import-orders
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "providerId": 5,
+  "orderDate": "2025-11-10",
+  "invoiceNumber": "IMP-20251110-004",
+  "items": [
+    {
+      "productId": 100,
+      "quantity": 10,
+      "importPrice": 25000000
+    },
+    {
+      "productId": 101,
+      "quantity": 50,
+      "importPrice": 2500000
+    }
+  ]
+}
+
+# Response: 201 Created
+# Location: /api/import-orders/4
+# {
+#   "importOrderId": 4,
+#   "invoiceNumber": "IMP-20251110-004"
+# }
+
+###
+
+### Create Import Order - Auto Generate Invoice Number
+POST {{API_BASE}}/api/import-orders
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "providerId": 5,
+  "orderDate": "2025-11-10",
+  "items": [
+    {
+      "productId": 100,
+      "quantity": 10,
+      "importPrice": 25000000
+    }
+  ]
+}
+
+# Response: 201 Created
+# {
+#   "importOrderId": 5,
+#   "invoiceNumber": "IMP-20251110-005"
+# }
+
+###
+
+### Create Import Order - Validation Error (Empty Items)
+POST {{API_BASE}}/api/import-orders
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "providerId": 5,
+  "orderDate": "2025-11-10",
+  "items": []
+}
+
+# Response: 400 Bad Request
+# {
+#   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+#   "title": "One or more validation errors occurred.",
+#   "status": 400,
+#   "errors": {
+#     "Items": [
+#       "Danh sách sản phẩm phải có ít nhất 1 dòng."
+#     ]
+#   }
+# }
+
+###
+
+### Create Import Order - Validation Error (Invalid Quantity)
+POST {{API_BASE}}/api/import-orders
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "providerId": 5,
+  "orderDate": "2025-11-10",
+  "items": [
+    {
+      "productId": 100,
+      "quantity": 0,
+      "importPrice": 25000000
+    }
+  ]
+}
+
+# Response: 400 Bad Request
+# {
+#   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+#   "title": "One or more validation errors occurred.",
+#   "status": 400,
+#   "errors": {
+#     "Items[0].Quantity": [
+#       "Số lượng phải > 0"
+#     ]
+#   }
+# }
+
+###
+
+### Create Import Order - Validation Error (Negative Price)
+POST {{API_BASE}}/api/import-orders
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "providerId": 5,
+  "orderDate": "2025-11-10",
+  "items": [
+    {
+      "productId": 100,
+      "quantity": 10,
+      "importPrice": -1000
+    }
+  ]
+}
+
+# Response: 400 Bad Request
+# {
+#   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+#   "title": "One or more validation errors occurred.",
+#   "status": 400,
+#   "errors": {
+#     "Items[0].ImportPrice": [
+#       "Giá nhập không âm"
+#     ]
+#   }
+# }
+
+###
+
+### Create Import Order - Unauthorized (No Token)
+POST {{API_BASE}}/api/import-orders
+Content-Type: application/json
+
+{
+  "providerId": 5,
+  "orderDate": "2025-11-10",
+  "items": [
+    {
+      "productId": 100,
+      "quantity": 10,
+      "importPrice": 25000000
+    }
+  ]
+}
+
+# Response: 401 Unauthorized
+
+###
+

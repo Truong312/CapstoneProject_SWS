@@ -22,8 +22,45 @@ namespace SWS.ApiCore.Controllers
         [HttpPost("query")]
         public async Task<ActionResult<ResultModel<SqlQueryResultDto>>> Query([FromBody] SqlQueryRequest req, CancellationToken ct)
         {
-            var result = await _textToSqlService.QueryAsync(req.NaturalLanguage, ct);
-            return Ok(result);
+            try
+            {
+                var result = await _textToSqlService.QueryAsync(req.NaturalLanguage, ct);
+                // If service returned a result model with StatusCode set and IsSuccess false, map that
+                if (result != null && !result.IsSuccess && result.StatusCode >= 400)
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
+
+                return Ok(result);
+            }
+            catch (SWS.BusinessObjects.Exceptions.AppException ex)
+            {
+                // Map AppException to structured ResultModel and appropriate HTTP status
+                var err = new ResultModel<SqlQueryResultDto>
+                {
+                    IsSuccess = false,
+                    ResponseCode = ex.Code ?? "error",
+                    Message = ex.Message,
+                    Data = null,
+                    StatusCode = ex.StatusCode
+                };
+
+                return StatusCode(ex.StatusCode, err);
+            }
+            catch (Exception ex)
+            {
+                // Generic fallback
+                var err = new ResultModel<SqlQueryResultDto>
+                {
+                    IsSuccess = false,
+                    ResponseCode = "internal_error",
+                    Message = ex.Message,
+                    Data = null,
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, err);
+            }
         }
 
     }

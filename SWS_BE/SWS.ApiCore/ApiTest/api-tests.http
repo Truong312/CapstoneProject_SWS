@@ -72,79 +72,107 @@ Authorization: Bearer {{AUTH_TOKEN}}
 #   "invoiceNumber": "IMP-20251108-002"
 # }
 
+### Order Import - List (paged)
+GET {{API_BASE}}/api/import-orders?q=&page=1&pageSize=10
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "total": 120,
+#   "page": 1,
+#   "pageSize": 10,
+#   "items": [
+#     {
+#       "importOrderId": 1,
+#       "invoiceNumber": "IMP-20251101-001",
+#       "orderDate": "2025-11-01",
+#       "providerName": "Tech Supplies Co., Ltd",
+#       "status": "Pending",
+#       "totalItems": 2,
+#       "createdByName": "Lê Văn Hùng"
+#     },
+#     {
+#       "importOrderId": 3,
+#       "invoiceNumber": "IMP-LARGE-20251108-1",
+#       "orderDate": "2025-10-28",
+#       "providerName": "Nhà Cung Cấp Linh Kiện Điện Tử ABC",
+#       "status": "Completed",
+#       "totalItems": 3,
+#       "createdByName": "Phạm Thị Mai"
+#     }
+#   ]
+# }
+
+### Order Import - Detail
+GET {{API_BASE}}/api/import-orders/1
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "importOrderId": 1,
+#   "invoiceNumber": "IMP-20251101-001",
+#   "orderDate": "2025-11-01",
+#   "providerId": 1,
+#   "providerName": "Tech Supplies Co., Ltd",
+#   "status": "Pending",
+#   "createdDate": "2025-11-01",
+#   "createdBy": 3,
+#   "createdByName": "Lê Văn Hùng",
+#   "items": [
+#     { "importDetailId": 1, "productId": 1, "productName": "iPhone 14 Pro Max", "quantity": 10, "importPrice": 28000000.00 },
+#     { "importDetailId": 2, "productId": 2, "productName": "Samsung Galaxy S23 Ultra", "quantity": 20, "importPrice": 24000000.00 }
+#   ]
+# }
+
 ### 2) Export Orders - List (All)
 GET {{API_BASE}}/api/ExportOrder/All
 Authorization: Bearer {{AUTH_TOKEN}}
 
 ### Example response (200)
-# [ { "exportOrderId": 1, "invoiceNumber": "EXP-001", "orderDate": "2025-11-01", "customerId": 10, "status": "Pending" } ]
+# [
+#   {
+#     "exportOrderId": 1,
+#     "invoiceNumber": "EXP-20251105-001",
+#     "orderDate": "2025-11-05",
+#     "customerId": 3,
+#     "currency": "VND",
+#     "status": "Shipped",
+#     "totalPayment": 13125000.00
+#   },
+#   {
+#     "exportOrderId": 5,
+#     "invoiceNumber": "EXP-LARGE-20251108-3",
+#     "orderDate": "2025-10-15",
+#     "customerId": 4,
+#     "currency": "USD",
+#     "status": "Pending",
+#     "totalPayment": 450000.00
+#   }
+# ]
 
-### 2.1) Export Orders - By Status
-GET {{API_BASE}}/api/ExportOrder/by-status?status=Pending
-Authorization: Bearer {{AUTH_TOKEN}}
-
-### 2.2) Export Order - Detail
+### Order Export - Detail
 GET {{API_BASE}}/api/ExportOrder/1Details
 Authorization: Bearer {{AUTH_TOKEN}}
 
 ### Example response (200)
 # {
 #   "exportOrderId": 1,
-#   "invoiceNumber": "EXP-20251108-001",
-#   "orderDate": "2025-11-08",
-#   "customerId": 5,
-#   "currency": "USD",
-#   "shippedDate": "2025-11-15",
-#   "shippedAddress": "123 Example St",
-#   "taxRate": 0.1,
-#   "taxAmount": 5.0,
-#   "totalPayment": 55.0,
-#   "description": "Delivery",
-#   "status": "Pending",
-#   "createdBy": 2
-# }
-
-### 2.3) Export Order - Create
-POST {{API_BASE}}/api/ExportOrder/ExportOder
-Content-Type: application/json
-Authorization: Bearer {{AUTH_TOKEN}}
-
-{
-  "invoiceNumber": "EXP-20251108-002",
-  "orderDate": "2025-11-08",
-  "customerId": 10,
-  "currency": "USD",
-  "shippedDate": "2025-11-15",
-  "shippedAddress": "Customer ABC Address",
-  "taxRate": 0.05,
-  "taxAmount": 2.5,
-  "totalPayment": 52.5,
-  "description": "Order for Customer ABC",
-  "createdBy": 2
-}
-
-### Example response (200)
-# {
-#   "isSuccess": true,
-#   "message": "Tạo đơn xuất thành công",
-#   "data": { "exportOrderId": 99 }
-# }
-
-### 2.4) Export Detail - Add item to an existing export order
-POST {{API_BASE}}/api/ExportOrder/ExportDetail?exportOrderId=99
-Content-Type: application/json
-Authorization: Bearer {{AUTH_TOKEN}}
-
-{
-  "productId": 1,
-  "quantity": 2
-}
-
-### Example response (200)
-# {
-#   "isSuccess": true,
-#   "message": "Thêm chi tiết thành công",
-#   "data": { "exportDetailId": 123 }
+#   "invoiceNumber": "EXP-20251105-001",
+#   "orderDate": "2025-11-05",
+#   "customerId": 3,
+#   "currency": "VND",
+#   "createdDate": "2025-11-05",
+#   "shippedDate": "2025-11-07",
+#   "shippedAddress": "123 Customer St",
+#   "taxRate": 0.05,
+#   "taxAmount": 625000.00,
+#   "totalPayment": 13125000.00,
+#   "description": "Order to Retail Chain A",
+#   "status": "Shipped",
+#   "createdBy": 2,
+#   "details": [
+#     { "exportDetailId": 1, "productId": 2, "productName": "Logitech MX Master 3", "quantity": 5, "totalPrice": 12500000.00 }
+#   ]
 # }
 
 ### 3) Return Reason List + Search
@@ -156,8 +184,11 @@ Authorization: Bearer {{AUTH_TOKEN}}
 # {
 #   "isSuccess": true,
 #   "statusCode": 200,
-#   "total": 2,
-#   "data": [ { "reasonId": 1, "reasonCode": "DAMAGED", "description": "Hỏng" } ]
+#   "total": 10,
+#   "data": [
+#     { "reasonId": 1, "reasonCode": "HONG_HAO", "description": "Sản phẩm bị hỏng hóc" },
+#     { "reasonId": 4, "reasonCode": "HET_HAN", "description": "Sản phẩm hết hạn" }
+#   ]
 # }
 
 # Search reasons by keyword
@@ -167,6 +198,17 @@ Authorization: Bearer {{AUTH_TOKEN}}
 ### 4) Return Status List + Search
 GET {{API_BASE}}/api/returns/statuses
 Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 4,
+#   "data": [
+#     { "status": "Pending", "count": 24 },
+#     { "status": "Processed", "count": 37 }
+#   ]
+# }
 
 GET {{API_BASE}}/api/returns/statuses?q=Pending
 Authorization: Bearer {{AUTH_TOKEN}}
@@ -186,13 +228,33 @@ Authorization: Bearer {{AUTH_TOKEN}}
 GET {{API_BASE}}/api/manager/dashboard
 Authorization: Bearer {{AUTH_TOKEN}}
 
-### 7) Products Near Expired Notification
-GET {{API_BASE}}/api/product/near-expired
+### Example response (200)
+# {
+#   "totalImportOrders": 153,
+#   "totalExportOrders": 164,
+#   "totalReturnOrders": 42,
+#   "productsNearExpired": 8,
+#   "lowStockProducts": 12,
+#   "recentlyCreatedOrders": [
+#     { "type": "import", "id": 120, "invoice": "IMP-LARGE-20251108-20", "date": "2025-11-07" },
+#     { "type": "export", "id": 159, "invoice": "EXP-LARGE-20251108-34", "date": "2025-11-06" }
+#   ]
+# }
+
+### Products - Paged API (common)
+GET {{API_BASE}}/api/product/paged?page=1&pageSize=10&q=
 Authorization: Bearer {{AUTH_TOKEN}}
 
-### 7.1) Expired Products
-GET {{API_BASE}}/api/product/expired
-Authorization: Bearer {{AUTH_TOKEN}}
+### Example response (200)
+# {
+#   "total": 60,
+#   "page": 1,
+#   "pageSize": 10,
+#   "items": [
+#     { "productId": 1, "serialNumber": "DT-IP14-001", "name": "Điện thoại iPhone 14 Pro Max 256GB", "expiredDate": "2026-12-31", "unit": "Cái", "unitPrice": 32000000.00, "reorderPoint": 10 },
+#     { "productId": 2, "serialNumber": "DT-SS-002", "name": "Samsung Galaxy S23 Ultra 512GB", "expiredDate": "2026-12-31", "unit": "Cái", "unitPrice": 28000000.00, "reorderPoint": 15 }
+#   ]
+# }
 
 ### 8) Auth (Register / Login / Google login)
 

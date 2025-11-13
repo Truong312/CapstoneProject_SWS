@@ -7,50 +7,45 @@ export interface ReturnReason {
 }
 
 export interface ReturnStatus {
-  statusId: number;
-  statusCode: string;
-  description: string;
+  status: string;
+  count: number;
 }
 
 export interface ReturnOrderItem {
-  returnDetailId?: number;
+  returnDetailId: number;
   productId: number;
-  productName?: string;
+  productName: string;
   quantity: number;
   reasonId: number;
-  reasonCode?: string;
-  reasonDescription?: string;
+  reasonCode: string;
+  note?: string;
+  actionId?: number;
+  locationId?: number;
 }
 
 export interface ReturnOrder {
   returnOrderId: number;
-  returnNumber: string;
-  returnDate: string;
-  customerId?: number;
-  customerName?: string;
-  exportOrderId?: number;
-  exportOrderNumber?: string;
-  statusId: number;
-  statusCode?: string;
-  statusDescription?: string;
-  totalItems?: number;
-  createdDate?: string;
-  createdBy?: number;
-  createdByName?: string;
-  items?: ReturnOrderItem[];
+  exportOrderId: number;
+  checkInTime: string;
+  status: string;
+  note?: string;
+  checkedByName?: string;
+  reviewedByName?: string;
 }
 
 export interface ReturnOrderListItem {
   returnOrderId: number;
-  returnNumber: string;
-  returnDate: string;
-  customerName?: string;
-  statusCode: string;
-  totalItems: number;
+  exportOrderId: number;
+  checkInTime: string;
+  status: string;
+  note?: string;
+  checkedByName?: string;
+  reviewedByName?: string;
 }
 
-export interface ReturnOrderDetail extends ReturnOrder {
-  items: ReturnOrderItem[];
+export interface ReturnOrderDetail {
+  header: ReturnOrder;
+  lines: ReturnOrderItem[];
 }
 
 export interface CreateReturnOrderRequest {
@@ -71,6 +66,9 @@ export interface ReturnOrderQueryParams {
   from?: string;
   to?: string;
   status?: string;
+  exportOrderId?: number;
+  checkedBy?: number;
+  reviewedBy?: number;
   page?: number;
   pageSize?: number;
 }

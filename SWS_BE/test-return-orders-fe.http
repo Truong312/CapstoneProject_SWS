@@ -1,0 +1,423 @@
+# Return Orders & Lookup API Tests - Frontend Flow
+# API Base: http://localhost:8080
+
+### Variables
+@API_BASE = http://localhost:8080
+@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5Aa2hvdmlldG5hbS5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiTmd1eeG7hW4gVsSDbiBBZG1pbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IjEiLCJuYmYiOjE3NjI3MDgwODIsImV4cCI6MTc2MjcwOTg4MiwiaXNzIjoiQXBwQmFja2VuZCIsImF1ZCI6IkFwcEJhY2tlbmRVc2VycyJ9.JOAHKqNd8q2p28Kk0g_H-QKbAg8gIO2N3-GVuqLZAb4
+
+##############################################
+# LOGIN
+##############################################
+
+### Login - Get Token
+POST {{API_BASE}}/api/warehouse/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@khovietnam.com",
+  "password": "Admin@123"
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "responseCode": null,
+#   "statusCode": 200,
+#   "data": {
+#     "user": {
+#       "userId": 1,
+#       "fullName": "Nguyễn Văn Admin",
+#       "email": "admin@khovietnam.com",
+#       "phone": "0901234567",
+#       "address": "123 Đường Láng, Đống Đa, Hà Nội",
+#       "role": 1
+#     },
+#     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5Aa2hvdmlldG5hbS5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiTmd1eeG7hW4gVsSDbiBBZG1pbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IjEiLCJuYmYiOjE3NjI3MDgwODIsImV4cCI6MTc2MjcwOTg4MiwiaXNzIjoiQXBwQmFja2VuZCIsImF1ZCI6IkFwcEJhY2tlbmRVc2VycyJ9.JOAHKqNd8q2p28Kk0g_H-QKbAg8gIO2N3-GVuqLZAb4"
+#   },
+#   "message": "Đăng nhập thành công"
+# }
+
+###
+
+##############################################
+# RETURN LOOKUP ENDPOINTS
+##############################################
+
+### Get Return Reasons - All
+GET {{API_BASE}}/api/returns/reasons
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 4,
+#   "data": [
+#     {
+#       "reasonId": 1,
+#       "reasonCode": "DEFECTIVE",
+#       "description": "Sản phẩm bị lỗi/hỏng"
+#     },
+#     {
+#       "reasonId": 2,
+#       "reasonCode": "WRONG_ITEM",
+#       "description": "Giao sai hàng"
+#     },
+#     {
+#       "reasonId": 3,
+#       "reasonCode": "CUSTOMER_CHANGE",
+#       "description": "Khách hàng đổi ý"
+#     },
+#     {
+#       "reasonId": 4,
+#       "reasonCode": "EXPIRED",
+#       "description": "Sản phẩm hết hạn"
+#     }
+#   ]
+# }
+
+###
+
+### Get Return Reasons - Search by keyword
+GET {{API_BASE}}/api/returns/reasons?q=lỗi
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 1,
+#   "data": [
+#     {
+#       "reasonId": 1,
+#       "reasonCode": "DEFECTIVE",
+#       "description": "Sản phẩm bị lỗi/hỏng"
+#     }
+#   ]
+# }
+
+###
+
+### Get Return Statuses - All with count
+GET {{API_BASE}}/api/returns/statuses
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 4,
+#   "data": [
+#     {
+#       "status": "Pending",
+#       "count": 15
+#     },
+#     {
+#       "status": "Approved",
+#       "count": 42
+#     },
+#     {
+#       "status": "Rejected",
+#       "count": 8
+#     },
+#     {
+#       "status": "Completed",
+#       "count": 35
+#     }
+#   ]
+# }
+
+###
+
+### Get Return Statuses - Search
+GET {{API_BASE}}/api/returns/statuses?q=Pending
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 1,
+#   "data": [
+#     {
+#       "status": "Pending",
+#       "count": 15
+#     }
+#   ]
+# }
+
+###
+
+##############################################
+# RETURN ORDERS ENDPOINTS
+##############################################
+
+### Get Return Orders - All
+GET {{API_BASE}}/api/returns/orders
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 25,
+#   "data": [
+#     {
+#       "returnOrderId": 1,
+#       "exportOrderId": 10,
+#       "checkInTime": "2025-11-10T14:30:00",
+#       "status": "Pending",
+#       "note": "Khách hàng phàn nàn về chất lượng sản phẩm",
+#       "checkedByName": "Nguyễn Văn A",
+#       "reviewedByName": null
+#     },
+#     {
+#       "returnOrderId": 2,
+#       "exportOrderId": 12,
+#       "checkInTime": "2025-11-09T10:15:00",
+#       "status": "Approved",
+#       "note": "Giao sai màu sắc",
+#       "checkedByName": "Trần Thị B",
+#       "reviewedByName": "Lê Văn C"
+#     },
+#     {
+#       "returnOrderId": 3,
+#       "exportOrderId": 15,
+#       "checkInTime": "2025-11-08T16:45:00",
+#       "status": "Completed",
+#       "note": null,
+#       "checkedByName": "Phạm Văn D",
+#       "reviewedByName": "Hoàng Thị E"
+#     }
+#   ]
+# }
+
+###
+
+### Get Return Orders - Filter by Date Range
+GET {{API_BASE}}/api/returns/orders?from=2025-11-01&to=2025-11-30
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 18,
+#   "data": [
+#     {
+#       "returnOrderId": 1,
+#       "exportOrderId": 10,
+#       "checkInTime": "2025-11-10T14:30:00",
+#       "status": "Pending",
+#       "note": "Khách hàng phàn nàn về chất lượng sản phẩm",
+#       "checkedByName": "Nguyễn Văn A",
+#       "reviewedByName": null
+#     }
+#   ]
+# }
+
+###
+
+### Get Return Orders - Filter by Status
+GET {{API_BASE}}/api/returns/orders?status=Pending
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 15,
+#   "data": [
+#     {
+#       "returnOrderId": 1,
+#       "exportOrderId": 10,
+#       "checkInTime": "2025-11-10T14:30:00",
+#       "status": "Pending",
+#       "note": "Khách hàng phàn nàn về chất lượng sản phẩm",
+#       "checkedByName": "Nguyễn Văn A",
+#       "reviewedByName": null
+#     }
+#   ]
+# }
+
+###
+
+### Get Return Orders - Filter by Export Order ID
+GET {{API_BASE}}/api/returns/orders?exportOrderId=10
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 1,
+#   "data": [
+#     {
+#       "returnOrderId": 1,
+#       "exportOrderId": 10,
+#       "checkInTime": "2025-11-10T14:30:00",
+#       "status": "Pending",
+#       "note": "Khách hàng phàn nàn về chất lượng sản phẩm",
+#       "checkedByName": "Nguyễn Văn A",
+#       "reviewedByName": null
+#     }
+#   ]
+# }
+
+###
+
+### Get Return Orders - Filter by Checked By (UserID)
+GET {{API_BASE}}/api/returns/orders?checkedBy=5
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 8,
+#   "data": [
+#     {
+#       "returnOrderId": 1,
+#       "exportOrderId": 10,
+#       "checkInTime": "2025-11-10T14:30:00",
+#       "status": "Pending",
+#       "note": "Khách hàng phàn nàn về chất lượng sản phẩm",
+#       "checkedByName": "Nguyễn Văn A",
+#       "reviewedByName": null
+#     }
+#   ]
+# }
+
+###
+
+### Get Return Orders - Filter by Reviewed By (UserID)
+GET {{API_BASE}}/api/returns/orders?reviewedBy=3
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 12,
+#   "data": [
+#     {
+#       "returnOrderId": 2,
+#       "exportOrderId": 12,
+#       "checkInTime": "2025-11-09T10:15:00",
+#       "status": "Approved",
+#       "note": "Giao sai màu sắc",
+#       "checkedByName": "Trần Thị B",
+#       "reviewedByName": "Lê Văn C"
+#     }
+#   ]
+# }
+
+###
+
+### Get Return Orders - Multiple Filters Combined
+GET {{API_BASE}}/api/returns/orders?from=2025-11-01&to=2025-11-30&status=Approved&exportOrderId=10
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 1,
+#   "data": [
+#     {
+#       "returnOrderId": 1,
+#       "exportOrderId": 10,
+#       "checkInTime": "2025-11-10T14:30:00",
+#       "status": "Approved",
+#       "note": "Khách hàng phàn nàn về chất lượng sản phẩm",
+#       "checkedByName": "Nguyễn Văn A",
+#       "reviewedByName": "Lê Văn C"
+#     }
+#   ]
+# }
+
+###
+
+### Get Return Order Detail - Success
+GET {{API_BASE}}/api/returns/orders/1
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "data": {
+#     "header": {
+#       "returnOrderId": 1,
+#       "exportOrderId": 10,
+#       "checkInTime": "2025-11-10T14:30:00",
+#       "status": "Pending",
+#       "note": "Khách hàng phàn nàn về chất lượng sản phẩm",
+#       "checkedByName": "Nguyễn Văn A",
+#       "reviewedByName": null
+#     },
+#     "lines": [
+#       {
+#         "returnDetailId": 1,
+#         "productId": 100,
+#         "productName": "Laptop Dell XPS 15",
+#         "quantity": 2,
+#         "reasonId": 1,
+#         "reasonCode": "DEFECTIVE",
+#         "note": "Màn hình bị vỡ góc trái",
+#         "actionId": 1,
+#         "locationId": 5
+#       },
+#       {
+#         "returnDetailId": 2,
+#         "productId": 101,
+#         "productName": "Mouse Logitech MX Master 3",
+#         "quantity": 1,
+#         "reasonId": 2,
+#         "reasonCode": "WRONG_ITEM",
+#         "note": "Khách đặt màu trắng nhưng nhận màu đen",
+#         "actionId": 2,
+#         "locationId": 5
+#       },
+#       {
+#         "returnDetailId": 3,
+#         "productId": 102,
+#         "productName": "Bàn phím cơ Keychron K8",
+#         "quantity": 1,
+#         "reasonId": 3,
+#         "reasonCode": "CUSTOMER_CHANGE",
+#         "note": null,
+#         "actionId": 3,
+#         "locationId": 6
+#       }
+#     ]
+#   }
+# }
+
+###
+
+### Get Return Order Detail - Not Found
+GET {{API_BASE}}/api/returns/orders/99999
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 404 Not Found
+# {
+#   "isSuccess": false,
+#   "statusCode": 404,
+#   "message": "Return order not found"
+# }
+
+###

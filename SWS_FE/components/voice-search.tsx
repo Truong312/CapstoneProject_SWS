@@ -11,9 +11,10 @@ interface VoiceSearchProps {
   onChange: (value: string) => void
   placeholder?: string
   className?: string
+  onSearch?: () => void
 }
 
-export function VoiceSearch({ value, onChange, placeholder = 'Tìm kiếm...', className }: VoiceSearchProps) {
+export function VoiceSearch({ value, onChange, placeholder = 'Tìm kiếm...', className, onSearch }: VoiceSearchProps) {
   const [isListening, setIsListening] = useState(false)
   const [isSupported, setIsSupported] = useState(false)
   const recognitionRef = useRef<any>(null)

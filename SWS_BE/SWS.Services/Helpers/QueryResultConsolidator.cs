@@ -1,13 +1,92 @@
 using System.Dynamic;
 using SWS.Services.ApiModels.SqlConverts;
+using System.Text.Json;
 
 namespace SWS.Services.Helpers
 {
     /// <summary>
-    /// Helper để tổng hợp và format kết quả từ multiple queries thành dạng đẹp cho FE
+    /// Helper để tổng hợp và format kết quả từ multiple queries hoặc structured JSON response thành dạng đẹp cho FE
     /// </summary>
     public class QueryResultConsolidator
     {
+        // ===== HELPER METHODS (di chuyển lên đầu để tránh lỗi scope) =====
+        
+        /// <summary>
+        /// Get list of column names from a dictionary (null-safe)
+        /// </summary>
+        private static List<string> GetColumnNames(Dictionary<string, object>? dict)
+        {
+            if (dict == null) return new List<string>();
+            return dict.Keys.ToList();
+        }
+
+        /// <summary>
+        /// Get a value from dictionary with multiple candidate keys (case-insensitive)
+        /// </summary>
+        private static object? GetFirstExistingValue(Dictionary<string, object> dict, params string[] candidates)
+        {
+            foreach (var cand in candidates)
+            {
+                if (dict.TryGetValue(cand, out var v)) return v;
+                var kv = dict.FirstOrDefault(k => string.Equals(k.Key, cand, StringComparison.OrdinalIgnoreCase));
+                if (!kv.Equals(default(KeyValuePair<string, object>))) return kv.Value;
+            }
+            // fallback: try keys that contain candidate tokens
+            foreach (var cand in candidates)
+            {
+                var found = dict.FirstOrDefault(k => k.Key.IndexOf(cand, StringComparison.OrdinalIgnoreCase) >= 0);
+                if (!found.Equals(default(KeyValuePair<string, object>))) return found.Value;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Try to parse an integer-like value from dict by several candidate keys
+        /// </summary>
+        private static int GetIntFromCandidates(Dictionary<string, object> dict, params string[] candidates)
+        {
+            foreach (var cand in candidates)
+            {
+                var val = GetFirstExistingValue(dict, cand);
+                if (val == null || val is DBNull) continue;
+                try
+                {
+                    if (val is long l) return (int)l;
+                    if (val is int i) return i;
+                    if (val is double d) return (int)d;
+                    if (val is decimal dec) return (int)dec;
+                    if (int.TryParse(val.ToString(), out var parsed)) return parsed;
+                    if (double.TryParse(val.ToString(), out var dp)) return (int)dp;
+                }
+                catch { }
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Get string from candidates
+        /// </summary>
+        private static string? GetStringFromCandidates(Dictionary<string, object> dict, params string[] candidates)
+        {
+            var v = GetFirstExistingValue(dict, candidates);
+            if (v == null || v is DBNull) return null;
+            return v.ToString();
+        }
+
+        /// <summary>
+        /// Backwards-compatible GetValue helper used by older code paths. Tries case-insensitive lookup.
+        /// </summary>
+        private static object? GetValue(Dictionary<string, object> dict, string key)
+        {
+            if (dict == null) return null;
+            if (dict.TryGetValue(key, out var v)) return v;
+            var kv = dict.FirstOrDefault(k => string.Equals(k.Key, key, StringComparison.OrdinalIgnoreCase));
+            if (!kv.Equals(default(KeyValuePair<string, object>))) return kv.Value;
+            return null;
+        }
+
+        // ===== MAIN CONSOLIDATION METHODS =====
+
         /// <summary>
         /// Tổng hợp multiple query results thành format đẹp, merge data liên quan
         /// </summary>
@@ -100,13 +179,15 @@ namespace SWS.Services.Helpers
                 {
                     foreach (var invItem in inventoryData)
                     {
-                        var productName = GetValue(invItem, "Name")?.ToString() ?? "Unknown";
-                        var totalAvailable = Convert.ToInt32(GetValue(invItem, "TotalAvailableQuantity") ?? 0);
-                        var totalAllocated = Convert.ToInt32(GetValue(invItem, "TotalAllocatedQuantity") ?? 0);
+                        // Product name may be under many aliases: ProductName, Name
+                        var productName = GetStringFromCandidates(invItem, "ProductName", "Name", "name") ?? "Unknown";
+                        var totalAvailable = GetIntFromCandidates(invItem, "TotalAvailableQuantity", "TotalAvailable", "TotalQuantityAvailable", "QuantityAvailable", "SumQuantity") ;
+                        var totalAllocated = GetIntFromCandidates(invItem, "TotalAllocatedQuantity", "TotalAllocated", "AllocatedQuantity");
 
                         // Tìm location info tương ứng
-                        var locationItems = locationData?.Where(l => 
-                            GetValue(l, "Name")?.ToString() == productName).ToList() ?? new List<Dictionary<string, object>>();
+                        var locationItems = locationData?.Where(l =>
+                            (GetStringFromCandidates(l, "ProductName", "Name") ?? string.Empty) == productName
+                        ).ToList() ?? new List<Dictionary<string, object>>();
 
                         var mergedItem = new Dictionary<string, object>
                         {
@@ -116,11 +197,11 @@ namespace SWS.Services.Helpers
                             { "totalInStock", totalAvailable + totalAllocated },
                             { "locations", locationItems.Select(loc => new Dictionary<string, object>
                             {
-                                { "shelf", GetValue(loc, "ShelfID")?.ToString() ?? "" },
-                                { "column", GetValue(loc, "ColumnNumber") ?? 0 },
-                                { "row", GetValue(loc, "RowNumber") ?? 0 },
-                                { "type", GetValue(loc, "LocationType")?.ToString() ?? "" },
-                                { "quantity", GetValue(loc, "QuantityAvailable") ?? 0 }
+                                { "shelf", GetStringFromCandidates(loc, "ShelfID", "Shelf") ?? "" },
+                                { "column", GetIntFromCandidates(loc, "ColumnNumber", "Column") },
+                                { "row", GetIntFromCandidates(loc, "RowNumber", "Row") },
+                                { "type", GetStringFromCandidates(loc, "LocationType", "Type") ?? "" },
+                                { "quantity", GetIntFromCandidates(loc, "QuantityAvailable", "Quantity", "TotalQuantityAvailable") }
                             }).ToList() }
                         };
 
@@ -144,17 +225,17 @@ namespace SWS.Services.Helpers
                 else if (locationData != null && locationData.Count > 0)
                 {
                     // Chỉ có location data, group theo product
-                    var groupedByProduct = locationData.GroupBy(l => GetValue(l, "Name")?.ToString() ?? "Unknown");
+                    var groupedByProduct = locationData.GroupBy(l => GetStringFromCandidates(l, "ProductName", "Name") ?? "Unknown");
                     
                     foreach (var group in groupedByProduct)
                     {
                         var locations = group.Select(loc => new Dictionary<string, object>
                         {
-                            { "shelf", GetValue(loc, "ShelfID")?.ToString() ?? "" },
-                            { "column", GetValue(loc, "ColumnNumber") ?? 0 },
-                            { "row", GetValue(loc, "RowNumber") ?? 0 },
-                            { "type", GetValue(loc, "LocationType")?.ToString() ?? "" },
-                            { "quantity", GetValue(loc, "QuantityAvailable") ?? 0 }
+                            { "shelf", GetStringFromCandidates(loc, "ShelfID", "Shelf") ?? "" },
+                            { "column", GetIntFromCandidates(loc, "ColumnNumber", "Column") },
+                            { "row", GetIntFromCandidates(loc, "RowNumber", "Row") },
+                            { "type", GetStringFromCandidates(loc, "LocationType", "Type") ?? "" },
+                            { "quantity", GetIntFromCandidates(loc, "QuantityAvailable", "Quantity", "TotalQuantityAvailable") }
                         }).ToList();
 
                         var totalQty = locations.Sum(l => Convert.ToInt32(l["quantity"]));
@@ -215,13 +296,13 @@ namespace SWS.Services.Helpers
                 var invData = ConvertToListDict(inventoryResult.Data);
                 if (invData != null && invData.Count > 0)
                 {
-                    var firstItem = invData.First();
-                    if (firstItem.ContainsKey("TotalAvailableQuantity"))
+                    var firstItem = invData.FirstOrDefault();
+                    if (firstItem != null && firstItem.ContainsKey("TotalAvailableQuantity"))
                     {
                         summary["totalStockAvailable"] = invData.Sum(d => 
                             Convert.ToInt32(GetValue(d, "TotalAvailableQuantity") ?? 0));
                     }
-                    if (firstItem.ContainsKey("TotalAllocatedQuantity"))
+                    if (firstItem != null && firstItem.ContainsKey("TotalAllocatedQuantity"))
                     {
                         summary["totalStockAllocated"] = invData.Sum(d => 
                             Convert.ToInt32(GetValue(d, "TotalAllocatedQuantity") ?? 0));
@@ -231,6 +312,8 @@ namespace SWS.Services.Helpers
 
             return summary;
         }
+
+        // ===== CONVERSION HELPERS =====
 
         private static List<Dictionary<string, object>>? ConvertToListDict(object? data)
         {
@@ -242,7 +325,7 @@ namespace SWS.Services.Helpers
                 {
                     return dynamicList.Select(item => 
                     {
-                        var dict = new Dictionary<string, object>();
+                        var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
                         if (item is IDictionary<string, object> expando)
                         {
                             foreach (var kvp in expando)
@@ -254,9 +337,30 @@ namespace SWS.Services.Helpers
                         {
                             // Try to get properties via reflection
                             var props = item.GetType().GetProperties();
-                            foreach (var prop in props)
+                            if (props != null && props.Length > 0)
                             {
-                                dict[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
+                                foreach (var prop in props)
+                                {
+                                    dict[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
+                                }
+                            }
+                            else
+                            {
+                                // Fallback: serialize to JSON and parse into dictionary (handles DapperRow and other dynamics)
+                                try
+                                {
+                                    var json = System.Text.Json.JsonSerializer.Serialize(item);
+                                    using var doc = System.Text.Json.JsonDocument.Parse(json);
+                                    var parsed = JsonElementToDictionary(doc.RootElement);
+                                    foreach (var kv in parsed)
+                                    {
+                                        dict[kv.Key] = kv.Value ?? DBNull.Value;
+                                    }
+                                }
+                                catch
+                                {
+                                    // give up for this item
+                                }
                             }
                         }
                         return dict;
@@ -271,20 +375,42 @@ namespace SWS.Services.Helpers
             }
         }
 
-        private static object? GetValue(Dictionary<string, object> dict, string key)
+        // Convert a JsonElement object to Dictionary<string, object> recursively
+        private static Dictionary<string, object?> JsonElementToDictionary(System.Text.Json.JsonElement el)
         {
-            if (dict.TryGetValue(key, out var value))
-                return value;
-            
-            // Try case-insensitive
-            var kvp = dict.FirstOrDefault(k => k.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
-            return kvp.Value;
+            var result = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            if (el.ValueKind != System.Text.Json.JsonValueKind.Object) return result;
+
+            foreach (var prop in el.EnumerateObject())
+            {
+                result[prop.Name] = JsonElementToObject(prop.Value);
+            }
+            return result;
         }
 
-        private static List<string> GetColumnNames(Dictionary<string, object>? dict)
+        private static object? JsonElementToObject(System.Text.Json.JsonElement el)
         {
-            return dict?.Keys.ToList() ?? new List<string>();
+            switch (el.ValueKind)
+            {
+                case System.Text.Json.JsonValueKind.Object:
+                    return JsonElementToDictionary(el);
+                case System.Text.Json.JsonValueKind.Array:
+                    var list = new List<object?>();
+                    foreach (var item in el.EnumerateArray()) list.Add(JsonElementToObject(item));
+                    return list;
+                case System.Text.Json.JsonValueKind.String:
+                    return el.GetString();
+                case System.Text.Json.JsonValueKind.Number:
+                    if (el.TryGetInt64(out var l)) return l;
+                    if (el.TryGetDouble(out var d)) return d;
+                    return el.GetRawText();
+                case System.Text.Json.JsonValueKind.True:
+                case System.Text.Json.JsonValueKind.False:
+                    return el.GetBoolean();
+                case System.Text.Json.JsonValueKind.Null:
+                default:
+                    return null;
+            }
         }
     }
 }
-

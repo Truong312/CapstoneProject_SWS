@@ -33,18 +33,14 @@ export default function ProductsPage() {
     try {
       setIsLoading(true)
       
-      const [nearExpiredResponse, expiredResponse] = await Promise.all([
+      const [nearExpiredData, expiredData] = await Promise.all([
         productApi.getNearExpired(),
         productApi.getExpired(),
       ])
 
-      if (nearExpiredResponse.isSuccess && nearExpiredResponse.data) {
-        setNearExpiredProducts(nearExpiredResponse.data)
-      }
-
-      if (expiredResponse.isSuccess && expiredResponse.data) {
-        setExpiredProducts(expiredResponse.data)
-      }
+      // Backend returns array directly without ApiResponse wrapper
+      setNearExpiredProducts(nearExpiredData || [])
+      setExpiredProducts(expiredData || [])
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -151,16 +147,16 @@ export default function ProductsPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {nearExpiredProducts.map((product) => (
-                          <TableRow key={`${product.productId}-${product.batchNumber}`}>
+                        {nearExpiredProducts.map((product: any) => (
+                          <TableRow key={`${product.productId}-${product.batchNumber || product.serialNumber}`}>
                             <TableCell className="font-mono">
-                              {product.productCode}
+                              {product.serialNumber || product.productCode || '-'}
                             </TableCell>
                             <TableCell className="font-medium">
-                              {product.productName}
+                              {product.name || product.productName || '-'}
                             </TableCell>
                             <TableCell>{product.batchNumber || '-'}</TableCell>
-                            <TableCell>{formatDate(product.expiryDate)}</TableCell>
+                            <TableCell>{formatDate(product.expiredDate || product.expiryDate)}</TableCell>
                             <TableCell className="text-center">
                               <span className={
                                 product.daysUntilExpiry <= 7 
@@ -173,7 +169,7 @@ export default function ProductsPage() {
                               </span>
                             </TableCell>
                             <TableCell className="text-center">
-                              {product.stockQuantity}
+                              {product.stockQuantity || 0}
                             </TableCell>
                             <TableCell>
                               {getWarningBadge(product.daysUntilExpiry)}
@@ -207,21 +203,21 @@ export default function ProductsPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {expiredProducts.map((product) => (
-                          <TableRow key={`${product.productId}-${product.batchNumber}`}>
+                        {expiredProducts.map((product: any) => (
+                          <TableRow key={`${product.productId}-${product.batchNumber || product.serialNumber}`}>
                             <TableCell className="font-mono">
-                              {product.productCode}
+                              {product.serialNumber || product.productCode || '-'}
                             </TableCell>
                             <TableCell className="font-medium">
-                              {product.productName}
+                              {product.name || product.productName || '-'}
                             </TableCell>
                             <TableCell>{product.batchNumber || '-'}</TableCell>
-                            <TableCell>{formatDate(product.expiryDate)}</TableCell>
+                            <TableCell>{formatDate(product.expiredDate || product.expiryDate)}</TableCell>
                             <TableCell className="text-center text-red-600 font-bold">
                               {Math.abs(product.daysUntilExpiry)} ngày
                             </TableCell>
                             <TableCell className="text-center">
-                              {product.stockQuantity}
+                              {product.stockQuantity || 0}
                             </TableCell>
                             <TableCell>
                               <Badge variant="destructive">

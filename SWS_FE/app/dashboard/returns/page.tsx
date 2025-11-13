@@ -5,14 +5,6 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import {
   Select,
@@ -21,55 +13,100 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, Plus, RotateCcw, Eye, Loader2 } from 'lucide-react'
+import { Combobox } from '@/components/ui/combobox'
+import { Plus, RotateCcw, Eye, Search } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { returnOrderApi, returnStatusApi } from '@/services/api/return.api'
-import type { ReturnOrderListItem, ReturnStatus } from '@/lib/types'
+import { 
+  getReturnOrders, 
+  getReturnStatuses, 
+  getReturnReasons 
+} from '@/services/api/returns.api'
+import type { ReturnOrder, ReturnStatus, ReturnReason } from '@/lib/types'
+import { DataTable } from '@/components/data-table'
+import type { DataTableColumn } from '@/components/data-table'
 
 export default function ReturnsPage() {
   const router = useRouter()
   const { toast } = useToast()
   
-  const [orders, setOrders] = useState<ReturnOrderListItem[]>([])
+  const [orders, setOrders] = useState<ReturnOrder[]>([])
   const [statuses, setStatuses] = useState<ReturnStatus[]>([])
+  const [reasons, setReasons] = useState<ReturnReason[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [reasonFilter, setReasonFilter] = useState<string>('all')
+  const [exportOrderId, setExportOrderId] = useState<string>('')
   const [fromDate, setFromDate] = useState<string>('')
   const [toDate, setToDate] = useState<string>('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [totalItems, setTotalItems] = useState(0)
 
   useEffect(() => {
     fetchStatuses()
-    fetchOrders()
+    fetchReasons()
   }, [])
 
   useEffect(() => {
     fetchOrders()
-  }, [searchQuery, statusFilter, fromDate, toDate])
+  }, [currentPage, pageSize])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (currentPage === 1) {
+        fetchOrders()
+      } else {
+        setCurrentPage(1)
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery, statusFilter, reasonFilter, exportOrderId, fromDate, toDate])
 
   const fetchStatuses = async () => {
     try {
-      const response = await returnStatusApi.list()
+      const response = await getReturnStatuses()
       if (response.isSuccess && response.data) {
         setStatuses(response.data)
       }
     } catch (error) {
       console.error('Failed to fetch return statuses:', error)
+      setStatuses([
+        { status: 'Pending', count: 0 },
+        { status: 'Approved', count: 0 },
+        { status: 'Rejected', count: 0 },
+        { status: 'Completed', count: 0 },
+      ])
+    }
+  }
+
+  const fetchReasons = async () => {
+    try {
+      const response = await getReturnReasons()
+      if (response.isSuccess && response.data) {
+        setReasons(response.data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch return reasons:', error)
     }
   }
 
   const fetchOrders = async () => {
     try {
       setIsLoading(true)
-      const response = await returnOrderApi.list({
+      const response = await getReturnOrders({
         q: searchQuery || undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined,
         from: fromDate || undefined,
         to: toDate || undefined,
+        exportOrderId: exportOrderId ? parseInt(exportOrderId) : undefined,
+        page: currentPage,
+        pageSize: pageSize,
       })
 
       if (response.isSuccess && response.data) {
         setOrders(Array.isArray(response.data) ? response.data : [])
+        setTotalItems(response.total || 0)
       }
     } catch (error: any) {
       toast({
@@ -77,22 +114,33 @@ export default function ReturnsPage() {
         title: 'Lỗi',
         description: error.response?.data?.message || 'Không thể tải danh sách đơn trả hàng',
       })
+      setOrders([])
+      setTotalItems(0)
     } finally {
       setIsLoading(false)
     }
   }
 
-  const getStatusBadge = (statusCode: string) => {
+  const getStatusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       Pending: 'outline',
+      Processed: 'default',
       Approved: 'secondary',
       Completed: 'default',
       Rejected: 'destructive',
     }
 
+    const labels: Record<string, string> = {
+      Pending: 'Chờ xử lý',
+      Processed: 'Đã xử lý',
+      Approved: 'Đã duyệt',
+      Completed: 'Hoàn thành',
+      Rejected: 'Từ chối',
+    }
+
     return (
-      <Badge variant={variants[statusCode] || 'outline'}>
-        {statusCode}
+      <Badge variant={variants[status] || 'outline'}>
+        {labels[status] || status}
       </Badge>
     )
   }
@@ -104,6 +152,52 @@ export default function ReturnsPage() {
       day: '2-digit',
     })
   }
+
+  // Define columns for DataTable
+  const columns: DataTableColumn<ReturnOrder>[] = [
+    {
+      key: 'returnOrderId',
+      header: 'Mã đơn trả',
+      cell: (order: ReturnOrder) => (
+        <span className="font-medium">#{order.returnOrderId}</span>
+      ),
+      sortable: true,
+    },
+    {
+      key: 'exportOrderId',
+      header: 'Mã đơn xuất',
+      cell: (order: ReturnOrder) => `#${order.exportOrderId}`,
+      sortable: true,
+    },
+    {
+      key: 'checkInTime',
+      header: 'Thời gian nhận',
+      cell: (order: ReturnOrder) => formatDate(order.checkInTime),
+      sortable: true,
+    },
+    {
+      key: 'status',
+      header: 'Trạng thái',
+      cell: (order: ReturnOrder) => getStatusBadge(order.status),
+    },
+    {
+      key: 'checkedByName',
+      header: 'Người kiểm tra',
+      cell: (order: ReturnOrder) => order.checkedByName || '-',
+    },
+    {
+      key: 'reviewedByName',
+      header: 'Người duyệt',
+      cell: (order: ReturnOrder) => order.reviewedByName || '-',
+    },
+    {
+      key: 'note',
+      header: 'Ghi chú',
+      cell: (order: ReturnOrder) => (
+        <span className="max-w-xs truncate block">{order.note || '-'}</span>
+      ),
+    },
+  ]
 
   return (
     <div className="space-y-6">
@@ -125,43 +219,76 @@ export default function ReturnsPage() {
         </Button>
       </div>
 
+      {/* Filter Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Tìm kiếm & Lọc</CardTitle>
+          <CardTitle className="text-lg">Bộ lọc</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="relative md:col-span-2">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Tìm kiếm theo số đơn, khách hàng..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Trạng thái</label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Tất cả trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                  {statuses.map((item, index) => (
+                    <SelectItem key={index} value={item.status}>
+                      {item.status === 'Pending' ? 'Chờ xử lý' : 
+                       item.status === 'Approved' ? 'Đã duyệt' :
+                       item.status === 'Rejected' ? 'Từ chối' :
+                       item.status === 'Completed' ? 'Hoàn thành' : 
+                       item.status} ({item.count})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Lý do trả hàng</label>
+              <Combobox
+                options={[
+                  { value: 'all', label: 'Tất cả lý do' },
+                  ...reasons.map((reason) => ({
+                    value: reason.reasonCode,
+                    label: `${reason.description} (${reason.reasonCode})`,
+                  })),
+                ]}
+                value={reasonFilter}
+                onValueChange={setReasonFilter}
+                placeholder="Chọn lý do trả hàng"
+                searchPlaceholder="Tìm kiếm lý do..."
+                emptyText="Không tìm thấy lý do"
               />
             </div>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                {statuses.map((status) => (
-                  <SelectItem key={status.statusId} value={status.statusCode}>
-                    {status.description || status.statusCode}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Mã đơn xuất</label>
+              <Input
+                type="number"
+                placeholder="Nhập mã đơn xuất"
+                value={exportOrderId}
+                onChange={(e) => setExportOrderId(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Từ ngày</label>
               <Input
                 type="date"
                 placeholder="Từ ngày"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
               />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Đến ngày</label>
               <Input
                 type="date"
                 placeholder="Đến ngày"
@@ -169,73 +296,69 @@ export default function ReturnsPage() {
                 onChange={(e) => setToDate(e.target.value)}
               />
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium invisible">Action</label>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setStatusFilter('all')
+                  setReasonFilter('all')
+                  setExportOrderId('')
+                  setFromDate('')
+                  setToDate('')
+                  setSearchQuery('')
+                }}
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Xóa bộ lọc
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>
-              Danh sách đơn trả hàng ({orders.length})
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="text-center py-12">
-              <RotateCcw className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500">Không có đơn trả hàng nào</p>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Số đơn trả</TableHead>
-                    <TableHead>Ngày trả</TableHead>
-                    <TableHead>Khách hàng</TableHead>
-                    <TableHead className="text-center">Số SP</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {orders.map((order) => (
-                    <TableRow key={order.returnOrderId}>
-                      <TableCell className="font-medium">
-                        {order.returnNumber}
-                      </TableCell>
-                      <TableCell>{formatDate(order.returnDate)}</TableCell>
-                      <TableCell>{order.customerName || '-'}</TableCell>
-                      <TableCell className="text-center">
-                        {order.totalItems}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(order.statusCode)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            router.push(`/dashboard/returns/${order.returnOrderId}`)
-                          }
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Xem
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* DataTable */}
+      <DataTable
+        data={orders}
+        columns={columns}
+        keyField="returnOrderId"
+        isLoading={isLoading}
+        emptyMessage="Không có đơn trả hàng nào"
+        emptyIcon={<RotateCcw className="h-12 w-12 mx-auto text-gray-400 mb-4" />}
+        searchable
+        searchPlaceholder="Tìm kiếm theo mã đơn, ghi chú..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        sortable
+        pagination={{
+          currentPage,
+          pageSize,
+          totalItems: totalItems,
+          totalPages: Math.ceil(totalItems / pageSize),
+        }}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size)
+          setCurrentPage(1)
+        }}
+        pageSizeOptions={[5, 10, 20, 50, 100]}
+        actions={[
+          {
+            label: 'Xem',
+            icon: <Eye className="h-4 w-4 mr-1" />,
+            onClick: (order: ReturnOrder) =>
+              router.push(`/dashboard/returns/${order.returnOrderId}`),
+            variant: 'ghost',
+          },
+        ]}
+        onRowClick={(order: ReturnOrder) =>
+          router.push(`/dashboard/returns/${order.returnOrderId}`)
+        }
+        hoverable
+        striped
+      />
     </div>
   )
 }

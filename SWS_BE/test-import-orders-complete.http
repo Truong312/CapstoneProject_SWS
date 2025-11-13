@@ -1,0 +1,596 @@
+# Import Orders API Tests - Complete Flow
+# API Base: http://localhost:8080
+
+### Variables
+@API_BASE = http://localhost:8080
+@AUTH_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5Aa2hvdmlldG5hbS5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiTmd1eeG7hW4gVsSDbiBBZG1pbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IjEiLCJuYmYiOjE3NjI3MDgwODIsImV4cCI6MTc2MjcwOTg4MiwiaXNzIjoiQXBwQmFja2VuZCIsImF1ZCI6IkFwcEJhY2tlbmRVc2VycyJ9.JOAHKqNd8q2p28Kk0g_H-QKbAg8gIO2N3-GVuqLZAb4
+
+##############################################
+# IMPORT ORDERS - UPDATE
+##############################################
+
+### Update Import Order - Success
+PUT {{API_BASE}}/api/import-orders/1
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "providerId": 6,
+  "orderDate": "2025-11-10",
+  "invoiceNumber": "IMP-20251110-001-UPDATED",
+  "items": [
+    {
+      "productId": 100,
+      "quantity": 15,
+      "importPrice": 24000000
+    },
+    {
+      "productId": 101,
+      "quantity": 60,
+      "importPrice": 2400000
+    },
+    {
+      "productId": 103,
+      "quantity": 20,
+      "importPrice": 1500000
+    }
+  ]
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Cập nhật đơn nhập hàng thành công"
+# }
+
+###
+
+### Update Import Order - Not Found
+PUT {{API_BASE}}/api/import-orders/99999
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "providerId": 5,
+  "orderDate": "2025-11-10",
+  "items": [
+    {
+      "productId": 100,
+      "quantity": 10,
+      "importPrice": 25000000
+    }
+  ]
+}
+
+# Response: 404 Not Found
+# {
+#   "isSuccess": false,
+#   "statusCode": 404,
+#   "message": "Không tìm thấy đơn nhập hàng"
+# }
+
+###
+
+### Update Import Order - Cannot Update Approved Order
+PUT {{API_BASE}}/api/import-orders/2
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "providerId": 5,
+  "orderDate": "2025-11-10",
+  "items": [
+    {
+      "productId": 100,
+      "quantity": 10,
+      "importPrice": 25000000
+    }
+  ]
+}
+
+# Response: 400 Bad Request
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Không thể sửa đơn nhập hàng đã được duyệt hoặc hoàn thành"
+# }
+
+###
+
+##############################################
+# IMPORT ORDERS - DELETE
+##############################################
+
+### Delete Import Order - Success
+DELETE {{API_BASE}}/api/import-orders/1
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Xóa đơn nhập hàng thành công"
+# }
+
+###
+
+### Delete Import Order - Not Found
+DELETE {{API_BASE}}/api/import-orders/99999
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 404 Not Found
+# {
+#   "isSuccess": false,
+#   "statusCode": 404,
+#   "message": "Không tìm thấy đơn nhập hàng"
+# }
+
+###
+
+### Delete Import Order - Cannot Delete Approved Order
+DELETE {{API_BASE}}/api/import-orders/2
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 400 Bad Request
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Không thể xóa đơn nhập hàng đã được duyệt hoặc hoàn thành"
+# }
+
+###
+
+##############################################
+# IMPORT ORDERS - APPROVAL WORKFLOW
+##############################################
+
+### Approve Import Order - Success
+POST {{API_BASE}}/api/import-orders/1/approve
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "note": "Đã kiểm tra và xác nhận đơn hàng hợp lệ"
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Duyệt đơn nhập hàng thành công",
+#   "data": {
+#     "importOrderId": 1,
+#     "status": "Approved",
+#     "approvedBy": 1,
+#     "approvedByName": "Nguyễn Văn Admin",
+#     "approvedDate": "2025-11-10T10:30:00"
+#   }
+# }
+
+###
+
+### Approve Import Order - Not Found
+POST {{API_BASE}}/api/import-orders/99999/approve
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "note": "Duyệt đơn hàng"
+}
+
+# Response: 404 Not Found
+
+###
+
+### Approve Import Order - Already Approved
+POST {{API_BASE}}/api/import-orders/2/approve
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "note": "Duyệt đơn hàng"
+}
+
+# Response: 400 Bad Request
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Đơn nhập hàng đã được duyệt trước đó"
+# }
+
+###
+
+### Reject Import Order - Success
+POST {{API_BASE}}/api/import-orders/1/reject
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "reason": "Giá nhập không hợp lý, cần thương lượng lại với nhà cung cấp"
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Từ chối đơn nhập hàng thành công",
+#   "data": {
+#     "importOrderId": 1,
+#     "status": "Rejected",
+#     "rejectedBy": 1,
+#     "rejectedByName": "Nguyễn Văn Admin",
+#     "rejectedDate": "2025-11-10T10:35:00",
+#     "rejectionReason": "Giá nhập không hợp lý, cần thương lượng lại với nhà cung cấp"
+#   }
+# }
+
+###
+
+### Complete Import Order - Success (Mark as received)
+POST {{API_BASE}}/api/import-orders/2/complete
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "receivedDate": "2025-11-10",
+  "note": "Đã nhận đủ hàng, kiểm tra chất lượng OK"
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Hoàn thành đơn nhập hàng thành công",
+#   "data": {
+#     "importOrderId": 2,
+#     "status": "Completed",
+#     "completedBy": 1,
+#     "completedByName": "Nguyễn Văn Admin",
+#     "completedDate": "2025-11-10T11:00:00"
+#   }
+# }
+
+###
+
+### Complete Import Order - Not Yet Approved
+POST {{API_BASE}}/api/import-orders/1/complete
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "receivedDate": "2025-11-10"
+}
+
+# Response: 400 Bad Request
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Chỉ có thể hoàn thành đơn nhập hàng đã được duyệt"
+# }
+
+###
+
+##############################################
+# IMPORT ORDERS - STATISTICS & LOOKUP
+##############################################
+
+### Get Import Order Statuses - All with count
+GET {{API_BASE}}/api/import-orders/statuses
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 4,
+#   "data": [
+#     {
+#       "status": "Pending",
+#       "count": 25,
+#       "totalValue": 625000000
+#     },
+#     {
+#       "status": "Approved",
+#       "count": 42,
+#       "totalValue": 1890000000
+#     },
+#     {
+#       "status": "Rejected",
+#       "count": 8,
+#       "totalValue": 0
+#     },
+#     {
+#       "status": "Completed",
+#       "count": 50,
+#       "totalValue": 2100000000
+#     }
+#   ]
+# }
+
+###
+
+### Get Import Order Statuses - Search
+GET {{API_BASE}}/api/import-orders/statuses?q=Pending
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 1,
+#   "data": [
+#     {
+#       "status": "Pending",
+#       "count": 25,
+#       "totalValue": 625000000
+#     }
+#   ]
+# }
+
+###
+
+### Get Providers List - For Dropdown
+GET {{API_BASE}}/api/import-orders/providers
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 15,
+#   "data": [
+#     {
+#       "providerId": 1,
+#       "providerName": "Công ty TNHH ABC",
+#       "providerCode": "PROV-001",
+#       "phone": "0901234567",
+#       "email": "abc@example.com"
+#     },
+#     {
+#       "providerId": 2,
+#       "providerName": "Công ty Cổ phần XYZ",
+#       "providerCode": "PROV-002",
+#       "phone": "0902345678",
+#       "email": "xyz@example.com"
+#     }
+#   ]
+# }
+
+###
+
+### Get Providers List - Search by name
+GET {{API_BASE}}/api/import-orders/providers?q=ABC
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 1,
+#   "data": [
+#     {
+#       "providerId": 1,
+#       "providerName": "Công ty TNHH ABC",
+#       "providerCode": "PROV-001",
+#       "phone": "0901234567",
+#       "email": "abc@example.com"
+#     }
+#   ]
+# }
+
+###
+
+### Get Import Statistics - By Date Range
+GET {{API_BASE}}/api/import-orders/statistics?from=2025-11-01&to=2025-11-30
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "data": {
+#     "dateRange": {
+#       "from": "2025-11-01",
+#       "to": "2025-11-30"
+#     },
+#     "totalOrders": 45,
+#     "totalValue": 4615000000,
+#     "totalItems": 1250,
+#     "byStatus": [
+#       {
+#         "status": "Pending",
+#         "count": 10,
+#         "percentage": 22.2
+#       },
+#       {
+#         "status": "Approved",
+#         "count": 15,
+#         "percentage": 33.3
+#       },
+#       {
+#         "status": "Completed",
+#         "count": 20,
+#         "percentage": 44.4
+#       }
+#     ],
+#     "topProviders": [
+#       {
+#         "providerId": 5,
+#         "providerName": "Công ty TNHH ABC",
+#         "orderCount": 12,
+#         "totalValue": 1250000000
+#       },
+#       {
+#         "providerId": 8,
+#         "providerName": "Công ty Cổ phần XYZ",
+#         "orderCount": 10,
+#         "totalValue": 980000000
+#       }
+#     ],
+#     "topProducts": [
+#       {
+#         "productId": 100,
+#         "productName": "Laptop Dell XPS 15",
+#         "totalQuantity": 150,
+#         "totalValue": 3750000000
+#       },
+#       {
+#         "productId": 101,
+#         "productName": "Mouse Logitech MX Master 3",
+#         "totalQuantity": 500,
+#         "totalValue": 125000000
+#       }
+#     ]
+#   }
+# }
+
+###
+
+### Get Import Statistics - By Provider
+GET {{API_BASE}}/api/import-orders/statistics/provider/5?from=2025-11-01&to=2025-11-30
+Accept: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "data": {
+#     "provider": {
+#       "providerId": 5,
+#       "providerName": "Công ty TNHH ABC",
+#       "providerCode": "PROV-005"
+#     },
+#     "dateRange": {
+#       "from": "2025-11-01",
+#       "to": "2025-11-30"
+#     },
+#     "totalOrders": 12,
+#     "totalValue": 1250000000,
+#     "totalItems": 350,
+#     "averageOrderValue": 104166666,
+#     "orders": [
+#       {
+#         "importOrderId": 1,
+#         "invoiceNumber": "IMP-20251110-001",
+#         "orderDate": "2025-11-10",
+#         "status": "Completed",
+#         "totalValue": 280000000
+#       }
+#     ]
+#   }
+# }
+
+###
+
+##############################################
+# IMPORT ORDERS - BULK OPERATIONS
+##############################################
+
+### Bulk Approve Import Orders
+POST {{API_BASE}}/api/import-orders/bulk/approve
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "importOrderIds": [1, 2, 3],
+  "note": "Hàng loạt duyệt các đơn nhập hàng tháng 11"
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Duyệt 3 đơn nhập hàng thành công",
+#   "data": {
+#     "successCount": 3,
+#     "failedCount": 0,
+#     "results": [
+#       {
+#         "importOrderId": 1,
+#         "success": true
+#       },
+#       {
+#         "importOrderId": 2,
+#         "success": true
+#       },
+#       {
+#         "importOrderId": 3,
+#         "success": true
+#       }
+#     ]
+#   }
+# }
+
+###
+
+### Bulk Delete Import Orders
+POST {{API_BASE}}/api/import-orders/bulk/delete
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "importOrderIds": [4, 5, 6]
+}
+
+# Response: 200 OK
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Xóa 2/3 đơn nhập hàng thành công",
+#   "data": {
+#     "successCount": 2,
+#     "failedCount": 1,
+#     "results": [
+#       {
+#         "importOrderId": 4,
+#         "success": true
+#       },
+#       {
+#         "importOrderId": 5,
+#         "success": true
+#       },
+#       {
+#         "importOrderId": 6,
+#         "success": false,
+#         "error": "Không thể xóa đơn nhập hàng đã được duyệt"
+#       }
+#     ]
+#   }
+# }
+
+###
+
+##############################################
+# IMPORT ORDERS - EXPORT
+##############################################
+
+### Export Import Orders to Excel
+GET {{API_BASE}}/api/import-orders/export?from=2025-11-01&to=2025-11-30&status=Completed
+Accept: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+# Content-Disposition: attachment; filename="import-orders-2025-11-01-to-2025-11-30.xlsx"
+# Binary Excel file data
+
+###
+
+### Export Import Order Detail to PDF
+GET {{API_BASE}}/api/import-orders/1/export/pdf
+Accept: application/pdf
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Response: 200 OK
+# Content-Type: application/pdf
+# Content-Disposition: attachment; filename="import-order-IMP-20251110-001.pdf"
+# Binary PDF file data
+
+###
