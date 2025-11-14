@@ -143,7 +143,7 @@ namespace SWS.Services.Services.CycleCountServices
                                 StatusCode = StatusCodes.Status500InternalServerError
                             };
                         }
-                        //Transaction Logs
+                        //Action Logs
                         var actionLog = new ActionLog
                         {
                             UserId = userId,
