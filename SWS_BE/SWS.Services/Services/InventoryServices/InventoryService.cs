@@ -86,7 +86,7 @@ namespace SWS.Services.Services.InventoryServices
                 {
                     IsSuccess = false,
                     Message = $"Lỗi khi tìm sản phẩm trong kho: {e.Message}",
-                    StatusCode=StatusCodes.Status500InternalServerError
+                    StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
         }
@@ -106,7 +106,7 @@ namespace SWS.Services.Services.InventoryServices
                 }
                 var result = new InventoryResponse
                 {
-                    InventoryId=inventory.InventoryId,
+                    InventoryId = inventory.InventoryId,
                     ProductId = inventory.ProductId,
                     QuantityAvailable = inventory.QuantityAvailable,
                     AllocatedQuantity = inventory.AllocatedQuantity,
@@ -126,7 +126,7 @@ namespace SWS.Services.Services.InventoryServices
                 {
                     IsSuccess = false,
                     Message = $"Lỗi khi tìm sản phẩm trong kho: {e.Message}",
-                    StatusCode=StatusCodes.Status500InternalServerError
+                    StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
         }
@@ -196,10 +196,10 @@ namespace SWS.Services.Services.InventoryServices
                 //        StatusCode = StatusCodes.Status400BadRequest
                 //    };
                 //}
-                inventory.ProductId = updateInventory.ProductId;
-                inventory.QuantityAvailable = updateInventory.QuantityAvailable;
-                inventory.AllocatedQuantity = updateInventory.AllocatedQuantity;
-                inventory.LocationId = updateInventory.LocationId;
+                if (inventory.ProductId != updateInventory.ProductId) inventory.ProductId = updateInventory.ProductId;
+                if (inventory.QuantityAvailable != updateInventory.QuantityAvailable) inventory.QuantityAvailable = updateInventory.QuantityAvailable;
+                if (inventory.AllocatedQuantity != updateInventory.AllocatedQuantity) inventory.AllocatedQuantity = updateInventory.AllocatedQuantity;
+                if (inventory.LocationId != updateInventory.LocationId) inventory.LocationId = updateInventory.LocationId;
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
