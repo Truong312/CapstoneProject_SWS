@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace SWS.BusinessObjects.Models;
 
@@ -18,6 +19,10 @@ public partial class SmartWarehouseDbContext : DbContext
     public virtual DbSet<ActionLog> ActionLogs { get; set; }
 
     public virtual DbSet<BusinessPartner> BusinessPartners { get; set; }
+
+    public virtual DbSet<CycleCount> CycleCounts { get; set; }
+
+    public virtual DbSet<CycleCountDetail> CycleCountDetails { get; set; }
 
     public virtual DbSet<ExportDetail> ExportDetails { get; set; }
 
@@ -49,7 +54,8 @@ public partial class SmartWarehouseDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlServer("Data Source=localhost,1433;Initial Catalog=SmartWarehouseDB;Persist Security Info=True;User ID=sa;Password=123456789a@;Encrypt=True;Trust Server Certificate=True");
+            var ConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("DefaultConnection");
+            optionsBuilder.UseSqlServer(ConnectionString);
         }
     }
 
@@ -57,7 +63,7 @@ public partial class SmartWarehouseDbContext : DbContext
     {
         modelBuilder.Entity<ActionLog>(entity =>
         {
-            entity.HasKey(e => e.ActionId).HasName("PK__ActionLo__FFE3F4B99CCDB16A");
+            entity.HasKey(e => e.ActionId).HasName("PK__ActionLo__FFE3F4B95252482B");
 
             entity.ToTable("ActionLog");
 
@@ -78,7 +84,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<BusinessPartner>(entity =>
         {
-            entity.HasKey(e => e.PartnerId).HasName("PK__Business__39FD6332B4BB7E70");
+            entity.HasKey(e => e.PartnerId).HasName("PK__Business__39FD63324D0693B4");
 
             entity.ToTable("BusinessPartner");
 
@@ -90,9 +96,56 @@ public partial class SmartWarehouseDbContext : DbContext
             entity.Property(e => e.Type).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<CycleCount>(entity =>
+        {
+            entity.HasKey(e => e.CycleCountId).HasName("PK__CycleCou__A4189B51C1D19CDB");
+
+            entity.ToTable("CycleCount");
+
+            entity.Property(e => e.CycleCountId).HasColumnName("CycleCountID");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.CycleName).HasMaxLength(100);
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasDefaultValue("Pending");
+        });
+
+        modelBuilder.Entity<CycleCountDetail>(entity =>
+        {
+            entity.HasKey(e => e.DetailId).HasName("PK__CycleCou__135C314D899B9755");
+
+            entity.ToTable("CycleCountDetail");
+
+            entity.Property(e => e.DetailId).HasColumnName("DetailID");
+            entity.Property(e => e.CheckedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.CycleCountId).HasColumnName("CycleCountID");
+            entity.Property(e => e.Difference).HasComputedColumnSql("([CountedQuantity]-[SystemQuantity])", false);
+            entity.Property(e => e.Notes).HasMaxLength(255);
+            entity.Property(e => e.ProductId).HasColumnName("ProductID");
+
+            entity.HasOne(d => d.CheckedByNavigation).WithMany(p => p.CycleCountDetails)
+                .HasForeignKey(d => d.CheckedBy)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CycleCoun__Check__09A971A2");
+
+            entity.HasOne(d => d.CycleCount).WithMany(p => p.CycleCountDetails)
+                .HasForeignKey(d => d.CycleCountId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CycleCoun__Cycle__07C12930");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.CycleCountDetails)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__CycleCoun__Produ__08B54D69");
+        });
+
         modelBuilder.Entity<ExportDetail>(entity =>
         {
-            entity.HasKey(e => e.ExportDetailId).HasName("PK__ExportDe__07C903593B71807C");
+            entity.HasKey(e => e.ExportDetailId).HasName("PK__ExportDe__07C903598CFEC015");
 
             entity.ToTable("ExportDetail");
 
@@ -114,7 +167,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<ExportOrder>(entity =>
         {
-            entity.HasKey(e => e.ExportOrderId).HasName("PK__ExportOr__618D04DEE3154923");
+            entity.HasKey(e => e.ExportOrderId).HasName("PK__ExportOr__618D04DEB462B526");
 
             entity.ToTable("ExportOrder");
 
@@ -141,7 +194,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<ImportDetail>(entity =>
         {
-            entity.HasKey(e => e.ImportDetailId).HasName("PK__ImportDe__CDFBBA51B46C934D");
+            entity.HasKey(e => e.ImportDetailId).HasName("PK__ImportDe__CDFBBA51482A60DC");
 
             entity.ToTable("ImportDetail");
 
@@ -163,7 +216,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<ImportOrder>(entity =>
         {
-            entity.HasKey(e => e.ImportOrderId).HasName("PK__ImportOr__EAFFE315B675763C");
+            entity.HasKey(e => e.ImportOrderId).HasName("PK__ImportOr__EAFFE3151D8202F1");
 
             entity.ToTable("ImportOrder");
 
@@ -184,7 +237,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<Inventory>(entity =>
         {
-            entity.HasKey(e => e.InventoryId).HasName("PK__Inventor__F5FDE6D309535C66");
+            entity.HasKey(e => e.InventoryId).HasName("PK__Inventor__F5FDE6D3CF9EDED3");
 
             entity.ToTable("Inventory");
 
@@ -205,7 +258,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<Location>(entity =>
         {
-            entity.HasKey(e => e.LocationId).HasName("PK__Location__E7FEA477D7617922");
+            entity.HasKey(e => e.LocationId).HasName("PK__Location__E7FEA477F338D051");
 
             entity.ToTable("Location");
 
@@ -219,7 +272,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.HasKey(e => e.ProductId).HasName("PK__Product__B40CC6ED54146263");
+            entity.HasKey(e => e.ProductId).HasName("PK__Product__B40CC6ED4329EB44");
 
             entity.ToTable("Product");
 
@@ -236,7 +289,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<ReturnAction>(entity =>
         {
-            entity.HasKey(e => e.ActionId).HasName("PK__ReturnAc__FFE3F4B9CF7781B0");
+            entity.HasKey(e => e.ActionId).HasName("PK__ReturnAc__FFE3F4B957EB09FD");
 
             entity.ToTable("ReturnAction");
 
@@ -247,7 +300,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<ReturnOrder>(entity =>
         {
-            entity.HasKey(e => e.ReturnOrderId).HasName("PK__ReturnOr__4DBF556330CEAA6C");
+            entity.HasKey(e => e.ReturnOrderId).HasName("PK__ReturnOr__4DBF556378E06DEC");
 
             entity.ToTable("ReturnOrder");
 
@@ -272,7 +325,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<ReturnOrderDetail>(entity =>
         {
-            entity.HasKey(e => e.ReturnDetailId).HasName("PK__ReturnOr__8B89C9EA015F21E8");
+            entity.HasKey(e => e.ReturnDetailId).HasName("PK__ReturnOr__8B89C9EAC4864254");
 
             entity.ToTable("ReturnOrderDetail");
 
@@ -309,7 +362,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<ReturnReason>(entity =>
         {
-            entity.HasKey(e => e.ReasonId).HasName("PK__ReturnRe__A4F8C0C7333F6FD6");
+            entity.HasKey(e => e.ReasonId).HasName("PK__ReturnRe__A4F8C0C7D482E53D");
 
             entity.ToTable("ReturnReason");
 
@@ -320,7 +373,7 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<TransactionLog>(entity =>
         {
-            entity.HasKey(e => e.TransactionId).HasName("PK__Transact__55433A4B28FD9381");
+            entity.HasKey(e => e.TransactionId).HasName("PK__Transact__55433A4B8F2EB147");
 
             entity.ToTable("TransactionLog");
 
@@ -344,11 +397,11 @@ public partial class SmartWarehouseDbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__User__1788CCAC9EDB8B52");
+            entity.HasKey(e => e.UserId).HasName("PK__User__1788CCAC8EA782E8");
 
             entity.ToTable("User");
 
-            entity.HasIndex(e => e.Email, "UQ__User__A9D10534DB2DDA05").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__User__A9D10534577EB67D").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.Address).HasMaxLength(255);

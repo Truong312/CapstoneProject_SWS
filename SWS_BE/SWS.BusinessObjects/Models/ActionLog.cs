@@ -9,9 +9,9 @@ public partial class ActionLog
 
     public int UserId { get; set; }
 
-    public string? ActionType { get; set; }
+    public string? ActionType { get; set; }//Create,Update,Delete,...
 
-    public string? EntityType { get; set; }
+    public string? EntityType { get; set; }//database table in which the data is changed
 
     public DateTime? Timestamp { get; set; }
 

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using SWS.BusinessObjects.Enums;
 using SWS.BusinessObjects.Models;
 using SWS.Repositories.UnitOfWork;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.ExportDetailModel;
 using SWS.Services.ApiModels.ExportOrderModel;
 

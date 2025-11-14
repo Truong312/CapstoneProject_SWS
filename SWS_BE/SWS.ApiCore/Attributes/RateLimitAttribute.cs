@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Threading.RateLimiting;
 using SWS.Services.RateLimiting;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 
 namespace AppBackend.Attributes
 {

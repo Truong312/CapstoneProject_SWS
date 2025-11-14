@@ -4,6 +4,7 @@ using SWS.Repositories.UnitOfWork;
 using SWS.Services;
 using SWS.Services.Helpers;
 using SWS.Services.RateLimiting;
+using SWS.Services.Services.CycleCountServices;
 using SWS.Services.Services.Email;
 using SWS.Services.Services.ExportOrderServices;
 using SWS.Services.Services.ProductServices;
@@ -36,8 +37,9 @@ public static class ServicesConfig
         services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IWarehouseAuthenticationService, WarehouseAuthenticationService>();
         services.AddScoped<IGoogleLoginService, GoogleLoginService>();
-        services.AddScoped<IProductService, WarehouseProductService>();
+        services.AddScoped<IWarehouseProductService, WarehouseProductService>();
         services.AddScoped<IExportOrderService, ExportOrderService>();
+        services.AddScoped<ICycleCountService, CycleCountService>();
         services.AddSingleton<RateLimiterStore>();
         services.AddScoped<ITextToSqlService, TextToSqlService_Gemini>();
         services.AddScoped<IWhisperService, WhisperService>();

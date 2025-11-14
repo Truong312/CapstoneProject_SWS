@@ -1,5 +1,5 @@
 using SWS.BusinessObjects.Dtos;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.WarehouseUserModel;
 
 namespace SWS.Services.Services.WarehouseAuthentication

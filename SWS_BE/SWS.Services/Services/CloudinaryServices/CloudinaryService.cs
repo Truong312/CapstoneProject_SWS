@@ -1,7 +1,7 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using SWS.BusinessObjects.Dtos;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 
 namespace SWS.Services;
 

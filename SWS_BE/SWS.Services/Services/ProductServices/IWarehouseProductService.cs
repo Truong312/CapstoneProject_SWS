@@ -1,5 +1,4 @@
-﻿using SWS.Services.ApiModels;
-using SWS.Services.ApiModels.ProductModel;
+﻿using SWS.Services.ApiModels.ProductModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,11 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using SWS.BusinessObjects.Dtos.Product;
 using SWS.BusinessObjects.Models;
+using SWS.Services.ApiModels.Commons;
 
 namespace SWS.Services.Services.ProductServices
 {
 
-    public interface IProductService
+    public interface IWarehouseProductService
     {
         /// <summary>
         /// Lấy danh sách tất cả sản phẩm
