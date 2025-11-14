@@ -3,6 +3,8 @@ using SWS.BusinessObjects.Models;
 using SWS.Repositories.UnitOfWork;
 using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.ProductModel;
+using System.Linq;
+using SWS.Services.ApiModels.Commons;
 
 namespace SWS.Services.Services.ProductServices
 {
@@ -113,7 +115,8 @@ namespace SWS.Services.Services.ProductServices
         /// <summary>
         /// Thêm mới sản phẩm
         /// </summary>
-        public async Task<ResultModel> AddProductAsync(CreateProductRequest request)
+        public async Task<ResultModel> AddProductAsync(CreateProductRequest request
+        )
         {
             try
             {
@@ -391,6 +394,73 @@ namespace SWS.Services.Services.ProductServices
                 {
                     IsSuccess = false,
                     Message = $"Lỗi khi tìm kiếm sản phẩm: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+
+        public async Task<ResultModel<SWS.Services.ApiModels.Commons.PagedResponseDto<ProductResponseDto>>> GetProductsPagedAsync(PagedRequestDto req)
+        {
+            try
+            {
+                // Normalize paging
+                var page = req?.Page >= 1 ? req.Page : 1;
+                var pageSize = req?.PageSize >= 1 ? Math.Min(req.PageSize, 100) : 20; // cap pageSize to 100
+
+                IEnumerable<Product> products;
+                if (!string.IsNullOrWhiteSpace(req?.Q))
+                {
+                    products = await _unitOfWork.Products.SearchAsync(req.Q!);
+                }
+                else
+                {
+                    products = await _unitOfWork.Products.GetAllAsync();
+                }
+
+                var list = products.ToList();
+                var total = list.Count;
+
+                var items = list
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new ProductResponseDto
+                    {
+                        ProductId = p.ProductId,
+                        SerialNumber = p.SerialNumber,
+                        Name = p.Name,
+                        ExpiredDate = p.ExpiredDate,
+                        Unit = p.Unit,
+                        UnitPrice = p.UnitPrice,
+                        ReceivedDate = p.ReceivedDate,
+                        PurchasedPrice = p.PurchasedPrice,
+                        ReorderPoint = p.ReorderPoint,
+                        Image = p.Image,
+                        Description = p.Description
+                    })
+                    .ToList();
+
+                var paged = new PagedResponseDto<ProductResponseDto>
+                {
+                    Total = total,
+                    Page = page,
+                    PageSize = pageSize,
+                    Items = items
+                };
+
+                return new ResultModel<PagedResponseDto<ProductResponseDto>>
+                {
+                    IsSuccess = true,
+                    Message = "Lấy danh sách sản phẩm theo phân trang thành công",
+                    Data = paged,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<PagedResponseDto<ProductResponseDto>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi lấy sản phẩm theo phân trang: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }

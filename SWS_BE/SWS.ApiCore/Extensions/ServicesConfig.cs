@@ -9,6 +9,9 @@ using SWS.Services.Services.Email;
 using SWS.Services.Services.ExportOrderServices;
 using SWS.Services.Services.ProductServices;
 using SWS.Services.Services.WarehouseAuthentication;
+using SWS.Services.ConvertSqlRawServices;
+using SWS.Services.Services.WhisperServices;
+using SWS.Services.Services.ConvertSqlRawServices;
 
 namespace SWS.ApiCore.Extensions;
 
@@ -18,6 +21,7 @@ public static class ServicesConfig
     {
         #region Generic Repository
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped<IDapperRepository, DapperRepository>();
         #endregion
 
         #region UnitOfWork
@@ -37,6 +41,8 @@ public static class ServicesConfig
         services.AddScoped<IExportOrderService, ExportOrderService>();
         services.AddScoped<ICycleCountService, CycleCountService>();
         services.AddSingleton<RateLimiterStore>();
+        services.AddScoped<ITextToSqlService, TextToSqlService_Gemini>();
+        services.AddScoped<IWhisperService, WhisperService>();
         #endregion
 
         #region Helpers

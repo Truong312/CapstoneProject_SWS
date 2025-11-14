@@ -1,0 +1,67 @@
+# Add API base variable (user provided)
+@API_BASE = http://localhost:8080
+
+### 1) Upload audio to WhisperController (VSCode REST Client / HTTP file)
+# Replace {{API_BASE}} with your API base (e.g. http://localhost:5000)
+# This request sends a file and expects the controller to return JSON shaped like:
+# { success: true, data: { Text: "...", Language: "...", ... }, fileName, fileSize }
+
+POST {{API_BASE}}/api/whisper/transcribe
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.wav"
+Content-Type: audio/wav
+
+< ./test.wav
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 2) Convert transcription text -> SQL (manual copy)
+# Copy the transcribed text from the previous response (response.data.Text) into the JSON below and send.
+
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "PASTE_TRANSCRIBED_TEXT_HERE"
+}
+
+### 3) Automated flow using curl + jq (run in terminal)
+# Replace API_BASE and AUDIO accordingly. This example will upload the audio, extract the transcription and then
+# POST it to /api/text-to-sql/query.
+
+# Example variables (bash/zsh):
+# API_BASE=http://localhost:5000
+# AUDIO=/path/to/test.wav
+
+# 1) Upload and extract the transcript into a shell variable using jq.
+# Note: the Whisper DTO property is `Text` (PascalCase). We provide fallbacks for other possible keys.
+# TRANSCRIPT=$(curl -s -F "file=@${AUDIO}" "${API_BASE}/api/whisper/transcribe" | jq -r '.data.Text // .data.text // .text // empty')
+
+# 2) Show transcript
+# echo "Transcript: $TRANSCRIPT"
+
+# 3) To avoid problems with quotes/newlines, write the JSON payload to a temp file then POST it.
+# TMP_JSON=$(mktemp)
+# jq -n --arg t "$TRANSCRIPT" '{ naturalLanguage: $t }' > "$TMP_JSON"
+# curl -s -X POST "${API_BASE}/api/text-to-sql/query" \
+#   -H "Content-Type: application/json" \
+#   --data-binary @"$TMP_JSON" | jq .
+# rm -f "$TMP_JSON"
+
+### 4) Quick alternative (single-line, may need escaping for complex transcripts)
+# TRANSCRIPT_ESCAPED=$(printf '%s' "$TRANSCRIPT" | sed 's/"/\\"/g')
+# curl -s -X POST "${API_BASE}/api/text-to-sql/query" -H "Content-Type: application/json" -d "{ \"naturalLanguage\": \"${TRANSCRIPT_ESCAPED}\" }" | jq .
+
+### Notes / tips
+# - Use the VSCode REST Client to run the multipart request directly from this .http file (it supports the `< ./path` syntax).
+# - The WhisperController returns an object where the transcription text is `data.Text` (PascalCase). The curl + jq examples include fallbacks.
+# - For very large or complex transcriptions use the tmp-file approach to avoid shell escaping issues.
+# - If your API runs on a different port (eg 5001, 10300, etc.) set the correct API base URL for `{{API_BASE}}`.
+
+### Troubleshooting
+# - 400 from whisper endpoint: check the file content-type and ensure the controller accepts the file size/format.
+# - 503/500: ensure your web API is running and the Whisper backend is reachable.
+# - If the TextToSql call fails: inspect the TextToSql service logs to see the generated SQL. The controller will return error details if the model output is invalid.
+
+# End of file

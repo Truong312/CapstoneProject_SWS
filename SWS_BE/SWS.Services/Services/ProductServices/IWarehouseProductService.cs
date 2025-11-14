@@ -57,6 +57,12 @@ namespace SWS.Services.Services.ProductServices
         /// Tìm kiếm sản phẩm theo tên hoặc số serial
         /// </summary>
         Task<ResultModel<IEnumerable<ProductResponseDto>>> SearchProductsAsync(string searchText);
+
+        /// <summary>
+        /// Lấy danh sách sản phẩm theo phân trang (common PagedRequestDto / PagedResponseDto)
+        /// </summary>
+        Task<ResultModel<SWS.Services.ApiModels.Commons.PagedResponseDto<ProductResponseDto>>> GetProductsPagedAsync(SWS.Services.ApiModels.Commons.PagedRequestDto req);
+
     }
 
 }

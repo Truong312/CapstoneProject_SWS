@@ -1,0 +1,593 @@
+### ========================================
+### TEST LUỒNG TEXT-TO-SQL API
+### Base URL: http://localhost:8080
+### ========================================
+
+@API_BASE = http://localhost:8080
+
+### ========================================
+### 1. TEST ĐƠN GIẢN - SINGLE QUERY
+### ========================================
+
+### 1.1. Đếm tổng số đơn nhập hàng
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Có bao nhiêu đơn nhập hàng?"
+}
+
+### 1.2. Đếm tổng số đơn xuất hàng
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Có bao nhiêu đơn xuất hàng?"
+}
+
+### 1.3. Liệt kê tất cả sản phẩm
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Cho tôi xem danh sách sản phẩm"
+}
+
+### 1.4. Tìm sản phẩm theo giá
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm nào có giá trên 20 triệu?"
+}
+
+### ========================================
+### 2. TÌM KIẾM LINH HOẠT - SINGLE QUERY
+### ========================================
+
+### 2.1. Tìm iPhone (nhiều cột)
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm sản phẩm iPhone"
+}
+
+### 2.2. Tìm Laptop (nhiều cột)
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm laptop"
+}
+
+### 2.3. Tìm Samsung (nhiều cột)
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm Samsung"
+}
+
+### 2.4. Tìm Dell (nhiều cột + JOIN)
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm sản phẩm Dell và số lượng tồn kho"
+}
+
+### ========================================
+### 3. TÌM KIẾM ĐA CHIỀU - MULTIPLE QUERIES
+### ========================================
+
+### 3.1. Tìm iPhone - Multiple queries (Product, Inventory, History)
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm tất cả thông tin về iPhone"
+}
+
+### 3.2. Tìm Laptop - Multiple queries
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Cho tôi xem toàn bộ thông tin về laptop"
+}
+
+### 3.3. Tìm Apple Watch - Multiple queries
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm Apple Watch"
+}
+
+### 3.4. Tìm tai nghe - Multiple queries
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm tai nghe"
+}
+
+### ========================================
+### 4. TRUY VẤN VỚI JOIN
+### ========================================
+
+### 4.1. Sản phẩm và vị trí kho
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm nào ở kệ A?"
+}
+
+### 4.2. Sản phẩm với số lượng tồn kho
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm nào còn ít hơn 20 cái?"
+}
+
+### 4.3. Sản phẩm sắp hết hạn
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm nào sắp hết hạn trong 6 tháng tới?"
+}
+
+### 4.4. Đơn nhập hàng với nhà cung cấp
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Đơn nhập hàng từ nhà cung cấp FPT"
+}
+
+### ========================================
+### 5. THỐNG KÊ VÀ AGGREGATE
+### ========================================
+
+### 5.1. Tổng giá trị tồn kho
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tổng giá trị tồn kho là bao nhiêu?"
+}
+
+### 5.2. Thống kê theo nhà cung cấp
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Thống kê số đơn nhập theo nhà cung cấp"
+}
+
+### 5.3. Top 10 sản phẩm tồn kho nhiều nhất
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Top 10 sản phẩm tồn kho nhiều nhất"
+}
+
+### 5.4. Sản phẩm bán chạy nhất
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm nào được xuất nhiều nhất?"
+}
+
+### 5.5. Thống kê theo tháng
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Thống kê nhập xuất hàng tháng này"
+}
+
+### ========================================
+### 6. TÌM KIẾM THEO NGƯỜI DÙNG/ĐỐI TÁC
+### ========================================
+
+### 6.1. Tìm khách hàng
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Danh sách khách hàng"
+}
+
+### 6.2. Tìm nhà cung cấp
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Danh sách nhà cung cấp"
+}
+
+### 6.3. Tìm nhân viên
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Danh sách nhân viên"
+}
+
+### 6.4. Đơn hàng của khách hàng cụ thể
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Đơn hàng của Thế Giới Di Động"
+}
+
+### ========================================
+### 7. TRẢ HÀNG (RETURN)
+### ========================================
+
+### 7.1. Danh sách đơn trả hàng
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Danh sách đơn trả hàng"
+}
+
+### 7.2. Lý do trả hàng
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Các lý do trả hàng phổ biến"
+}
+
+### 7.3. Sản phẩm bị trả nhiều nhất
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm nào bị trả hàng nhiều nhất?"
+}
+
+### ========================================
+### 8. TÌM KIẾM THEO NGÀY THÁNG
+### ========================================
+
+### 8.1. Đơn nhập hàng tháng này
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Đơn nhập hàng tháng này"
+}
+
+### 8.2. Đơn xuất hàng tuần này
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Đơn xuất hàng tuần này"
+}
+
+### 8.3. Sản phẩm nhập gần đây
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm nhập kho trong 7 ngày qua"
+}
+
+### ========================================
+### 9. TEST EDGE CASES
+### ========================================
+
+### 9.1. Tìm kiếm với ký tự đặc biệt
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm USB-C"
+}
+
+### 9.2. Tìm kiếm số
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm có giá 3500000"
+}
+
+### 9.3. Tìm kiếm với từ viết tắt
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm SSD"
+}
+
+### 9.4. Câu hỏi phức tạp
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Cho tôi biết sản phẩm nào có giá từ 10 triệu đến 30 triệu và còn tồn kho trên 20 cái"
+}
+
+### ========================================
+### 10. TEST SAI CHÍNH TẢ TÊN BẢNG
+### ========================================
+
+### 10.1. Test với "ImportOrders" (sai)
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tổng số ImportOrders"
+}
+
+### 10.2. Test với "Products" (sai)
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tổng số Products"
+}
+
+### 10.3. Test với tiếng Việt
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tổng số đơn nhập và đơn xuất"
+}
+
+### ========================================
+### 11. TEST LUỒNG VOICE -> TEXT -> SQL
+### ========================================
+
+### 11.1. Upload audio và transcribe
+POST {{API_BASE}}/api/whisper/transcribe
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.wav"
+Content-Type: audio/wav
+
+< ./test_audio.wav
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 11.2. Upload audio, transcribe VÀ execute SQL (All-in-one)
+POST {{API_BASE}}/api/whisper/transcribe-and-query
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.wav"
+Content-Type: audio/wav
+
+< ./test_audio.wav
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### ========================================
+### 12. TEST PERFORMANCE & STRESS
+### ========================================
+
+### 12.1. Query phức tạp với nhiều JOIN
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Cho tôi xem sản phẩm, số lượng tồn kho, vị trí kho, nhà cung cấp và lịch sử nhập xuất"
+}
+
+### 12.2. Query với nhiều điều kiện
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm laptop Dell có giá từ 20 đến 50 triệu, còn tồn kho, ở kệ A hoặc B"
+}
+
+### ========================================
+### 13. TEST VALIDATION & SECURITY
+### ========================================
+
+### 13.1. Test empty input
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": ""
+}
+
+### 13.2. Test SQL injection attempt (should be blocked)
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "DROP TABLE Product"
+}
+
+### 13.3. Test DELETE attempt (should be blocked)
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Xóa tất cả sản phẩm"
+}
+
+### 13.4. Test UPDATE attempt (should be blocked)
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Cập nhật giá sản phẩm"
+}
+
+### ========================================
+### 14. TEST RESPONSE FORMAT
+### ========================================
+
+### 14.1. Kiểm tra response với single query
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Có bao nhiêu sản phẩm?"
+}
+
+### Expected Response:
+# {
+#   "isSuccess": true,
+#   "responseCode": "success",
+#   "message": "200",
+#   "data": {
+#     "sql": "SELECT COUNT(*) AS Total FROM Product",
+#     "result": [{ "Total": 30 }]
+#   }
+# }
+
+### 14.2. Kiểm tra response với multiple queries
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Tìm toàn bộ thông tin iPad"
+}
+
+### Expected Response:
+# {
+#   "isSuccess": true,
+#   "message": "Executed 3 queries successfully",
+#   "data": {
+#     "sql": "SELECT ... ||| SELECT ... ||| SELECT ...",
+#     "result": {
+#       "queries": ["SELECT ...", "SELECT ...", "SELECT ..."],
+#       "totalQueries": 3,
+#       "results": [
+#         {
+#           "query": "SELECT ...",
+#           "data": [...],
+#           "rowCount": 5,
+#           "tableName": "Product"
+#         },
+#         {
+#           "query": "SELECT ...",
+#           "data": [...],
+#           "rowCount": 5,
+#           "tableName": "Inventory"
+#         }
+#       ]
+#     }
+#   }
+# }
+
+### ========================================
+### 15. TEST CÁC LOẠI TÌM KIẾM ĐẶC BIỆT
+### ========================================
+
+### 15.1. Tìm theo range giá
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm có giá từ 5 triệu đến 15 triệu"
+}
+
+### 15.2. Tìm theo kệ và tầng
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm ở kệ A tầng 3"
+}
+
+### 15.3. Tìm sản phẩm sắp hết
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm nào cần đặt hàng thêm?"
+}
+
+### 15.4. Tìm theo trạng thái
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Đơn hàng nào đang pending?"
+}
+
+### ========================================
+### 16. TEST CASE THỰC TẾ
+### ========================================
+
+### 16.1. Manager muốn xem báo cáo
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Báo cáo tổng quan kho hàng hôm nay"
+}
+
+### 16.2. Nhân viên tìm vị trí sản phẩm
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "iPhone 14 Pro Max ở đâu?"
+}
+
+### 16.3. Kiểm kê tồn kho
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm nào có số lượng không khớp với allocated?"
+}
+
+### 16.4. Cảnh báo hết hàng
+POST {{API_BASE}}/api/text-to-sql/query
+Content-Type: application/json
+
+{
+  "naturalLanguage": "Sản phẩm nào dưới reorder point?"
+}
+
+### ========================================
+### NOTES FOR DEVELOPERS
+### ========================================
+# 
+# 1. SINGLE QUERY vs MULTIPLE QUERIES:
+#    - Single: Trả về { sql: "...", result: [...] }
+#    - Multiple: Trả về { sql: "... ||| ...", result: { queries: [...], results: [...] } }
+#
+# 2. ERROR HANDLING:
+#    - 400: Invalid input
+#    - 500: Gemini API error hoặc SQL execution error
+#    - Mỗi query trong multiple queries có thể fail riêng (check result.data.error)
+#
+# 3. SECURITY:
+#    - Chỉ cho phép SELECT queries
+#    - Các từ khóa nguy hiểm (DELETE, UPDATE, DROP, etc.) bị block
+#
+# 4. PERFORMANCE:
+#    - Gemini có timeout 5 phút
+#    - Multiple queries execute tuần tự (không parallel)
+#    - Mỗi query giới hạn TOP 20-50 rows
+#
+# 5. TESTING TIPS:
+#    - Test với data đã seed (30 products)
+#    - Kiểm tra tên bảng đúng (ImportOrder không phải ImportOrders)
+#    - Test cả tiếng Việt có dấu
+#    - Verify response structure
+#
+### ========================================
+

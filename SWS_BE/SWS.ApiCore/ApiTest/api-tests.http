@@ -1,0 +1,324 @@
+# API Test Flows for ApiCore
+# Location: SWS.ApiCore/ApiTest/api-tests.http
+# Usage:
+# - Set environment variables at top of your HTTP client or replace placeholders:
+#   - {{API_BASE}} e.g. http://localhost:8080
+#   - {{AUTH_TOKEN}} Staff/Manager JWT if endpoint requires authorization
+# - Run requests individually or run the whole file in JetBrains HTTP client / VSCode REST Client.
+
+### Variables (example)
+@API_BASE = http://localhost:8080
+@AUTH_TOKEN = <paste_jwt_here>
+
+### 1) Import Orders - List (Staff)
+GET {{API_BASE}}/api/import-orders?q=sample&page=1&pageSize=10
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "total": 123,
+#   "page": 1,
+#   "pageSize": 10,
+#   "items": [
+#     {
+#       "importOrderId": 1,
+#       "invoiceNumber": "IMP-20251108-001",
+#       "orderDate": "2025-11-08",
+#       "providerName": "Provider A",
+#       "status": "Pending",
+#       "totalItems": 3,
+#       "createdByName": "Admin"
+#     }
+#   ]
+# }
+
+### 1.1) Import Orders - Detail
+GET {{API_BASE}}/api/import-orders/1
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "importOrderId": 1,
+#   "invoiceNumber": "IMP-20251108-001",
+#   "orderDate": "2025-11-08",
+#   "providerId": 5,
+#   "providerName": "Provider A",
+#   "status": "Pending",
+#   "createdDate": "2025-11-08",
+#   "createdBy": 2,
+#   "createdByName": "Admin",
+#   "items": [
+#     { "importDetailId": 10, "productId": 1, "productName": "Product A", "quantity": 10, "importPrice": 100.0 }
+#   ]
+# }
+
+### 1.2) Import Orders - Create (Staff role=1)
+POST {{API_BASE}}/api/import-orders
+Content-Type: application/json
+Authorization: Bearer {{AUTH_TOKEN}}
+
+{
+  "providerId": 1,
+  "orderDate": "2025-11-08",
+  "invoiceNumber": "IMP-20251108-002",
+  "items": [
+    { "productId": 1, "quantity": 10, "importPrice": 100.0 }
+  ]
+}
+
+### Example response (201 Created)
+# {
+#   "importOrderId": 42,
+#   "invoiceNumber": "IMP-20251108-002"
+# }
+
+### Order Import - List (paged)
+GET {{API_BASE}}/api/import-orders?q=&page=1&pageSize=10
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "total": 120,
+#   "page": 1,
+#   "pageSize": 10,
+#   "items": [
+#     {
+#       "importOrderId": 1,
+#       "invoiceNumber": "IMP-20251101-001",
+#       "orderDate": "2025-11-01",
+#       "providerName": "Tech Supplies Co., Ltd",
+#       "status": "Pending",
+#       "totalItems": 2,
+#       "createdByName": "Lê Văn Hùng"
+#     },
+#     {
+#       "importOrderId": 3,
+#       "invoiceNumber": "IMP-LARGE-20251108-1",
+#       "orderDate": "2025-10-28",
+#       "providerName": "Nhà Cung Cấp Linh Kiện Điện Tử ABC",
+#       "status": "Completed",
+#       "totalItems": 3,
+#       "createdByName": "Phạm Thị Mai"
+#     }
+#   ]
+# }
+
+### Order Import - Detail
+GET {{API_BASE}}/api/import-orders/1
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "importOrderId": 1,
+#   "invoiceNumber": "IMP-20251101-001",
+#   "orderDate": "2025-11-01",
+#   "providerId": 1,
+#   "providerName": "Tech Supplies Co., Ltd",
+#   "status": "Pending",
+#   "createdDate": "2025-11-01",
+#   "createdBy": 3,
+#   "createdByName": "Lê Văn Hùng",
+#   "items": [
+#     { "importDetailId": 1, "productId": 1, "productName": "iPhone 14 Pro Max", "quantity": 10, "importPrice": 28000000.00 },
+#     { "importDetailId": 2, "productId": 2, "productName": "Samsung Galaxy S23 Ultra", "quantity": 20, "importPrice": 24000000.00 }
+#   ]
+# }
+
+### 2) Export Orders - List (All)
+GET {{API_BASE}}/api/ExportOrder/All
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# [
+#   {
+#     "exportOrderId": 1,
+#     "invoiceNumber": "EXP-20251105-001",
+#     "orderDate": "2025-11-05",
+#     "customerId": 3,
+#     "currency": "VND",
+#     "status": "Shipped",
+#     "totalPayment": 13125000.00
+#   },
+#   {
+#     "exportOrderId": 5,
+#     "invoiceNumber": "EXP-LARGE-20251108-3",
+#     "orderDate": "2025-10-15",
+#     "customerId": 4,
+#     "currency": "USD",
+#     "status": "Pending",
+#     "totalPayment": 450000.00
+#   }
+# ]
+
+### Order Export - Detail
+GET {{API_BASE}}/api/ExportOrder/1Details
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "exportOrderId": 1,
+#   "invoiceNumber": "EXP-20251105-001",
+#   "orderDate": "2025-11-05",
+#   "customerId": 3,
+#   "currency": "VND",
+#   "createdDate": "2025-11-05",
+#   "shippedDate": "2025-11-07",
+#   "shippedAddress": "123 Customer St",
+#   "taxRate": 0.05,
+#   "taxAmount": 625000.00,
+#   "totalPayment": 13125000.00,
+#   "description": "Order to Retail Chain A",
+#   "status": "Shipped",
+#   "createdBy": 2,
+#   "details": [
+#     { "exportDetailId": 1, "productId": 2, "productName": "Logitech MX Master 3", "quantity": 5, "totalPrice": 12500000.00 }
+#   ]
+# }
+
+### 3) Return Reason List + Search
+# Get all reasons
+GET {{API_BASE}}/api/returns/reasons
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 10,
+#   "data": [
+#     { "reasonId": 1, "reasonCode": "HONG_HAO", "description": "Sản phẩm bị hỏng hóc" },
+#     { "reasonId": 4, "reasonCode": "HET_HAN", "description": "Sản phẩm hết hạn" }
+#   ]
+# }
+
+# Search reasons by keyword
+GET {{API_BASE}}/api/returns/reasons?q=damaged
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 4) Return Status List + Search
+GET {{API_BASE}}/api/returns/statuses
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "total": 4,
+#   "data": [
+#     { "status": "Pending", "count": 24 },
+#     { "status": "Processed", "count": 37 }
+#   ]
+# }
+
+GET {{API_BASE}}/api/returns/statuses?q=Pending
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 5) Return Orders - List and Detail
+# List (with example filters)
+GET {{API_BASE}}/api/returns/orders?from=2025-01-01&to=2025-12-31&status=Pending
+Authorization: Bearer {{AUTH_TOKEN}}
+
+# Detail
+GET {{API_BASE}}/api/returns/orders/1
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### 6) Manager Dashboard (route may vary)
+# NOTE: There's no exact dashboard route found in code search. If your project exposes a manager dashboard endpoint,
+# replace the route below with the real one (e.g. /api/manager/dashboard or /api/dashboard).
+GET {{API_BASE}}/api/manager/dashboard
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "totalImportOrders": 153,
+#   "totalExportOrders": 164,
+#   "totalReturnOrders": 42,
+#   "productsNearExpired": 8,
+#   "lowStockProducts": 12,
+#   "recentlyCreatedOrders": [
+#     { "type": "import", "id": 120, "invoice": "IMP-LARGE-20251108-20", "date": "2025-11-07" },
+#     { "type": "export", "id": 159, "invoice": "EXP-LARGE-20251108-34", "date": "2025-11-06" }
+#   ]
+# }
+
+### Products - Paged API (common)
+GET {{API_BASE}}/api/product/paged?page=1&pageSize=10&q=
+Authorization: Bearer {{AUTH_TOKEN}}
+
+### Example response (200)
+# {
+#   "total": 60,
+#   "page": 1,
+#   "pageSize": 10,
+#   "items": [
+#     { "productId": 1, "serialNumber": "DT-IP14-001", "name": "Điện thoại iPhone 14 Pro Max 256GB", "expiredDate": "2026-12-31", "unit": "Cái", "unitPrice": 32000000.00, "reorderPoint": 10 },
+#     { "productId": 2, "serialNumber": "DT-SS-002", "name": "Samsung Galaxy S23 Ultra 512GB", "expiredDate": "2026-12-31", "unit": "Cái", "unitPrice": 28000000.00, "reorderPoint": 15 }
+#   ]
+# }
+
+### 8) Auth (Register / Login / Google login)
+
+### 8.1) Register
+POST {{API_BASE}}/api/warehouse/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Nguyen Van A",
+  "email": "nv.a[at]example.com",
+  "password": "P@ssw0rd",
+  "phone": "0123456789",
+  "address": "Hanoi, Vietnam",
+  "role": 0
+}
+
+### Example response (201)
+# {
+#   "isSuccess": true,
+#   "message": "Đăng ký thành công",
+#   "data": {
+#     "user": { "userId": 12, "fullName": "Nguyen Van A", "email": "nv.a[at]example.com", "phone": "0123456789", "address": "Hanoi, Vietnam", "role": 0 },
+#     "token": "<jwt_token>"
+#   }
+# }
+
+### 8.2) Login
+POST {{API_BASE}}/api/warehouse/auth/login
+Content-Type: application/json
+
+{
+  "email": "nv.a[at]example.com",
+  "password": "P@ssw0rd"
+}
+
+### Example response (200)
+# {
+#   "isSuccess": true,
+#   "message": "Đăng nhập thành công",
+#   "data": { "user": { "userId": 12, "fullName": "Nguyen Van A", "email": "nv.a[at]example.com", "role": 0 }, "token": "<jwt_token>" },
+#   "statusCode": 200
+# }
+
+### 8.3) Google Login (mobile/spa flow)
+POST {{API_BASE}}/api/warehouse/auth/google-login
+Content-Type: application/json
+
+{
+  "code": "<authorization_code_from_google>"
+}
+
+### Example response (200)
+# {
+#   "isSuccess": true,
+#   "message": "Đăng nhập bằng Google thành công",
+#   "data": { "userId": 20, "fullName": "Google User", "email": "g.user[at]example.com", "role": 0, "token": "<jwt>", "isNewUser": false },
+#   "statusCode": 200
+# }
+
+### 9) Helpful quick checks
+# Health (if exists)
+GET {{API_BASE}}/health
+
+# Swagger UI page
+GET {{API_BASE}}/swagger/index.html
+
+# End of file
