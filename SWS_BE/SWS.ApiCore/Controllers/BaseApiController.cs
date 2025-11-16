@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 using System.Security.Claims;
 
 namespace SWS.ApiCore.Controllers

@@ -1,6 +1,5 @@
 using SWS.BusinessObjects.Models;
 using SWS.Repositories.UnitOfWork;
-using SWS.Services.ApiModels;
 using SWS.Services.ApiModels.WarehouseUserModel;
 using SWS.Services.Helpers;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +10,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using AutoMapper;
 using SWS.BusinessObjects.Dtos;
+using SWS.Services.ApiModels.Commons;
 
 namespace SWS.Services.Services.WarehouseAuthentication
 {
