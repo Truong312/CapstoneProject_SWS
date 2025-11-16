@@ -14,6 +14,7 @@ using SWS.Repositories.Repositories.ReturnRepo;
 using SWS.Repositories.Repositories.CycleCountRepo;
 using SWS.Repositories.Repositories.CycleCountDetailRepo;
 using SWS.Repositories.Repositories.InventoryRepo;
+using SWS.Repositories.Repositories.LocationRepo;
 
 namespace SWS.Repositories.UnitOfWork
 {
@@ -26,6 +27,7 @@ namespace SWS.Repositories.UnitOfWork
         private IUserRepository? _userRepository;
         private IProductRepository? _productRepository;
         private IInventoryRepository? _inventoryRepository;
+        private ILocationRepository? _locationRepository;
 
         // Import
         private IImportOrderQueryRepository? _importOrderQueryRepository;
@@ -57,6 +59,7 @@ namespace SWS.Repositories.UnitOfWork
         public IUserRepository Users => _userRepository ??= new UserRepository(_context);
         public IProductRepository Products => _productRepository ??= new ProductRepository(_context);
         public IInventoryRepository Inventories => _inventoryRepository ??= new InventoryRepository(_context);
+        public ILocationRepository Locations => _locationRepository ??= new LocationRepository(_context);
         public IExportOrderRepository ExportOrders => _exportOrderRepository ??= new ExportOrderRepository(_context);
         public IExportDetailRepository ExportDetails => _exportDetailRepository ??= new ExportDetailRepository(_context);
 
