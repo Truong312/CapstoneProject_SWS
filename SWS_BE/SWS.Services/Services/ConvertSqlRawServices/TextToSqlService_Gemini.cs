@@ -6,7 +6,7 @@ using SWS.BusinessObjects.AppSettings;
 using SWS.Services.ApiModels.SqlConverts;
 using SWS.BusinessObjects.Exceptions;
 using SWS.Repositories.Generic;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 using SWS.Services.ConvertSqlRawServices;
 using System.Text.RegularExpressions;
 

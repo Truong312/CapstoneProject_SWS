@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.SqlConverts;
 using SWS.Services.ConvertSqlRawServices;
 
