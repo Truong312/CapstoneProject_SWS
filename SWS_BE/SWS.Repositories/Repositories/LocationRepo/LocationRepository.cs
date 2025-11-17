@@ -16,6 +16,18 @@ namespace SWS.Repositories.Repositories.LocationRepo
             _context = context;
         }
 
+        public async Task<IEnumerable<Location>> GetByProductId(int productId)
+        {
+            var inventories = await _context.Inventories.Where(i => i.ProductId == productId).ToListAsync();
+            var locations = new List<Location>();
+            foreach(var inventory in inventories)
+            {
+                var location = await GetSingleAsync(l => l.LocationId == inventory.LocationId);
+                if(location!=null) locations.Add(location);
+            }
+            return locations;
+        }
+
         public async Task<IEnumerable<Location>> GetLayoutAsync(string? shelfId, int? productId)
         {
             var query = _context.Locations

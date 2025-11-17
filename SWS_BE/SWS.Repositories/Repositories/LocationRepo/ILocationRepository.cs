@@ -13,5 +13,6 @@ namespace SWS.Repositories.Repositories.LocationRepo
         /// Nếu truyền productId => chỉ lấy các ô có sản phẩm đó
         /// </summary>
         Task<IEnumerable<Location>> GetLayoutAsync(string? shelfId, int? productId);
+        Task<IEnumerable<Location>> GetByProductId(int productId);
     }
 }

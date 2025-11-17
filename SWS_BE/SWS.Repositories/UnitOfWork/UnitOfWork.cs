@@ -12,6 +12,9 @@ using SWS.Repositories.Repositories.UserRepo;
 using SWS.Repositories.Repositories.ImportOrders;
 using SWS.Repositories.Repositories.ReturnRepo;
 using SWS.Repositories.Repositories.LocationRepo;
+using SWS.Repositories.Repositories.InventoryRepo;
+using SWS.Repositories.Repositories.CycleCountRepo;
+using SWS.Repositories.Repositories.CycleCountDetailRepo;
 namespace SWS.Repositories.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
@@ -87,11 +90,12 @@ namespace SWS.Repositories.UnitOfWork
         // ➕ Return (command) — dùng cho Review
         public IReturnOrderCommandRepository ReturnOrdersCommand =>
             _returnOrderCommandRepository ??= new ReturnOrderCommandRepository(_context);
-        private ILocationRepository? _locationRepository;
 
         public ICycleCountRepository CycleCounts => _cycleCountRepository ??= new CycleCountRepository(_context);
 
         public ICycleCountDetailRepository CycleCountDetails => _cycleCountDetailRepository ??= new CycleCountDetailRepository(_context);
+
+        public IInventoryRepository Inventories => _inventoryRepository ??= new InventoryRepository(_context);
 
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
 

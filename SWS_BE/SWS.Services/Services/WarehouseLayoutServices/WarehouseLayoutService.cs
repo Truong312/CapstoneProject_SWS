@@ -6,7 +6,7 @@ using SWS.BusinessObjects.Dtos.WarehouseLayout;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 
 namespace SWS.Services.Services.WarehouseLayoutServices
 {
