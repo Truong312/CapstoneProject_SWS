@@ -1,5 +1,5 @@
 ﻿using SWS.BusinessObjects.Dtos.WarehouseLayout;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 using SWS.BusinessObjects.Dtos.WarehouseLayout;
 using System.Threading.Tasks;
 
