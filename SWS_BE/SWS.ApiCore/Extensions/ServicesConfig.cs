@@ -11,7 +11,7 @@ using SWS.Services.Services.WarehouseAuthentication;
 using SWS.Services.ConvertSqlRawServices;
 using SWS.Services.Services.WhisperServices;
 using SWS.Services.Services.ConvertSqlRawServices;
-
+using SWS.Services.Services.WarehouseLayoutServices;
 namespace SWS.ApiCore.Extensions;
 
 public static class ServicesConfig
@@ -41,6 +41,7 @@ public static class ServicesConfig
         services.AddSingleton<RateLimiterStore>();
         services.AddScoped<ITextToSqlService, TextToSqlService_Gemini>();
         services.AddScoped<IWhisperService, WhisperService>();
+        services.AddScoped<IWarehouseLayoutService, WarehouseLayoutService>();
         #endregion
 
         #region Helpers

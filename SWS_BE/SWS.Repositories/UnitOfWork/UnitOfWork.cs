@@ -11,7 +11,7 @@ using SWS.Repositories.Repositories.UserRepo;
 
 using SWS.Repositories.Repositories.ImportOrders;
 using SWS.Repositories.Repositories.ReturnRepo;
-
+using SWS.Repositories.Repositories.LocationRepo;
 namespace SWS.Repositories.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
@@ -53,7 +53,8 @@ namespace SWS.Repositories.UnitOfWork
 
         public IProductRepository Products =>
             _productRepository ??= new ProductRepository(_context);
-
+        public ILocationRepository Locations =>
+    _locationRepository ??= new LocationRepository(_context);
         public IExportOrderRepository ExportOrders =>
             _exportOrderRepository ??= new ExportOrderRepository(_context);
 
@@ -80,6 +81,7 @@ namespace SWS.Repositories.UnitOfWork
         // ➕ Return (command) — dùng cho Review
         public IReturnOrderCommandRepository ReturnOrdersCommand =>
             _returnOrderCommandRepository ??= new ReturnOrderCommandRepository(_context);
+        private ILocationRepository? _locationRepository;
 
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
 
