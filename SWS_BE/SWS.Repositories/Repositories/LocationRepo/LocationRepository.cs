@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SWS.BusinessObjects.Models;
@@ -12,25 +10,35 @@ namespace SWS.Repositories.Repositories.LocationRepo
     public class LocationRepository : GenericRepository<Location>, ILocationRepository
     {
         private readonly SmartWarehouseDbContext _context;
+
         public LocationRepository(SmartWarehouseDbContext context) : base(context)
         {
             _context = context;
         }
 
-        //get all location that currently has the product with the productId
-        public async Task<IEnumerable<Location>> GetByProductId(int productId)
+        public async Task<IEnumerable<Location>> GetLayoutAsync(string? shelfId, int? productId)
         {
-            var inventories = await _context.Inventories.Where(i => i.ProductId == productId).ToListAsync();
-            var locations = new List<Location>();
-            foreach (var inventory in inventories)
+            var query = _context.Locations
+                .Include(l => l.Inventories)
+                    .ThenInclude(inv => inv.Product)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(shelfId))
             {
-                var location = GetSingleAsync(l => l.LocationId == inventory.LocationId);
-                if (location.Result!=null)
-                {
-                    locations.Add(location.Result);
-                }
+                query = query.Where(l => l.ShelfId != null && l.ShelfId == shelfId);
             }
-            return locations;
+
+            if (productId.HasValue)
+            {
+                query = query.Where(l => l.Inventories
+                    .Any(inv => inv.ProductId == productId.Value));
+            }
+
+            return await query
+                .OrderBy(l => l.ShelfId)
+                .ThenBy(l => l.RowNumber)
+                .ThenBy(l => l.ColumnNumber)
+                .ToListAsync();
         }
     }
 }
