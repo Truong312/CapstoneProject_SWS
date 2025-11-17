@@ -11,11 +11,7 @@ using SWS.Repositories.Repositories.UserRepo;
 
 using SWS.Repositories.Repositories.ImportOrders;
 using SWS.Repositories.Repositories.ReturnRepo;
-using SWS.Repositories.Repositories.CycleCountRepo;
-using SWS.Repositories.Repositories.CycleCountDetailRepo;
-using SWS.Repositories.Repositories.InventoryRepo;
 using SWS.Repositories.Repositories.LocationRepo;
-
 namespace SWS.Repositories.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
@@ -55,13 +51,21 @@ namespace SWS.Repositories.UnitOfWork
         }
 
         // Sẵn có
-        public IAccountRepository Accounts => _accountRepository ??= new AccountRepository(_context);
-        public IUserRepository Users => _userRepository ??= new UserRepository(_context);
-        public IProductRepository Products => _productRepository ??= new ProductRepository(_context);
-        public IInventoryRepository Inventories => _inventoryRepository ??= new InventoryRepository(_context);
-        public ILocationRepository Locations => _locationRepository ??= new LocationRepository(_context);
-        public IExportOrderRepository ExportOrders => _exportOrderRepository ??= new ExportOrderRepository(_context);
-        public IExportDetailRepository ExportDetails => _exportDetailRepository ??= new ExportDetailRepository(_context);
+        public IAccountRepository Accounts =>
+            _accountRepository ??= new AccountRepository(_context);
+
+        public IUserRepository Users =>
+            _userRepository ??= new UserRepository(_context);
+
+        public IProductRepository Products =>
+            _productRepository ??= new ProductRepository(_context);
+        public ILocationRepository Locations =>
+    _locationRepository ??= new LocationRepository(_context);
+        public IExportOrderRepository ExportOrders =>
+            _exportOrderRepository ??= new ExportOrderRepository(_context);
+
+        public IExportDetailRepository ExportDetails =>
+            _exportDetailRepository ??= new ExportDetailRepository(_context);
 
         // Import
         public IImportOrderQueryRepository ImportOrdersQuery =>
@@ -83,6 +87,7 @@ namespace SWS.Repositories.UnitOfWork
         // ➕ Return (command) — dùng cho Review
         public IReturnOrderCommandRepository ReturnOrdersCommand =>
             _returnOrderCommandRepository ??= new ReturnOrderCommandRepository(_context);
+        private ILocationRepository? _locationRepository;
 
         public ICycleCountRepository CycleCounts => _cycleCountRepository ??= new CycleCountRepository(_context);
 

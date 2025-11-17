@@ -1,6 +1,7 @@
 ﻿// File: SWS.Repositories/UnitOfWork/IUnitOfWork.cs
 using System;
 using System.Threading.Tasks;
+using SWS.Repositories.Repositories.LocationRepo;
 
 using SWS.Repositories.Repositories.AccountRepo;
 using SWS.Repositories.Repositories.ExportDetailRepo;
@@ -40,9 +41,8 @@ namespace SWS.Repositories.UnitOfWork
         // Export
         IExportOrderRepository ExportOrders { get; }
         IExportDetailRepository ExportDetails { get; }
-
-        ICycleCountRepository CycleCounts { get; }
-        ICycleCountDetailRepository CycleCountDetails { get; }
+        // Location / Warehouse layout
+        ILocationRepository Locations { get; }
         Task<int> SaveChangesAsync();
     }
 }
