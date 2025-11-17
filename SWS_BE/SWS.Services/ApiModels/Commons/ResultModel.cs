@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SWS.Services.ApiModels
+namespace SWS.Services.ApiModels.Commons
 {
     public class ResultModel<T>
     {

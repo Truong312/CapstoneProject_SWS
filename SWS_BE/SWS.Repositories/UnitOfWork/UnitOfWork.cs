@@ -22,6 +22,8 @@ namespace SWS.Repositories.UnitOfWork
         private IAccountRepository? _accountRepository;
         private IUserRepository? _userRepository;
         private IProductRepository? _productRepository;
+        private IInventoryRepository? _inventoryRepository;
+        private ILocationRepository? _locationRepository;
 
         // Import
         private IImportOrderQueryRepository? _importOrderQueryRepository;
@@ -38,6 +40,10 @@ namespace SWS.Repositories.UnitOfWork
         // Export
         private IExportOrderRepository? _exportOrderRepository;
         private IExportDetailRepository? _exportDetailRepository;
+
+        private ICycleCountRepository? _cycleCountRepository;
+        private ICycleCountDetailRepository? _cycleCountDetailRepository;
+
 
         public UnitOfWork(SmartWarehouseDbContext context)
         {
@@ -82,6 +88,10 @@ namespace SWS.Repositories.UnitOfWork
         public IReturnOrderCommandRepository ReturnOrdersCommand =>
             _returnOrderCommandRepository ??= new ReturnOrderCommandRepository(_context);
         private ILocationRepository? _locationRepository;
+
+        public ICycleCountRepository CycleCounts => _cycleCountRepository ??= new CycleCountRepository(_context);
+
+        public ICycleCountDetailRepository CycleCountDetails => _cycleCountDetailRepository ??= new CycleCountDetailRepository(_context);
 
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
 

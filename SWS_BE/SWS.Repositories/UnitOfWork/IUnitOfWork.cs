@@ -10,6 +10,10 @@ using SWS.Repositories.Repositories.ProductRepo;
 using SWS.Repositories.Repositories.UserRepo;
 using SWS.Repositories.Repositories.ImportOrders;
 using SWS.Repositories.Repositories.ReturnRepo;
+using SWS.Repositories.Repositories.CycleCountRepo;
+using SWS.Repositories.Repositories.CycleCountDetailRepo;
+using SWS.Repositories.Repositories.InventoryRepo;
+using SWS.Repositories.Repositories.LocationRepo;
 
 namespace SWS.Repositories.UnitOfWork
 {
@@ -19,6 +23,8 @@ namespace SWS.Repositories.UnitOfWork
         IAccountRepository Accounts { get; }
         IUserRepository Users { get; }
         IProductRepository Products { get; }
+        IInventoryRepository Inventories { get; }
+        ILocationRepository Locations { get; }
 
         // Import
         IImportOrderQueryRepository ImportOrdersQuery { get; }
