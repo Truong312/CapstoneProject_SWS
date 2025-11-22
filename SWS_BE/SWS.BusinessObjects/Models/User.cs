@@ -21,6 +21,8 @@ public partial class User
 
     public virtual ICollection<ActionLog> ActionLogs { get; set; } = new List<ActionLog>();
 
+    public virtual ICollection<CycleCountDetail> CycleCountDetails { get; set; } = new List<CycleCountDetail>();
+
     public virtual ICollection<ExportOrder> ExportOrders { get; set; } = new List<ExportOrder>();
 
     public virtual ICollection<ImportOrder> ImportOrders { get; set; } = new List<ImportOrder>();

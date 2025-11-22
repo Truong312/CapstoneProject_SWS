@@ -6,14 +6,15 @@ using SWS.Services;
 using SWS.Services.ConvertSqlRawServices;
 using SWS.Services.Helpers;
 using SWS.Services.RateLimiting;
-using SWS.Services.Services.ConvertSqlRawServices;
+using SWS.Services.Services.CycleCountServices;
 using SWS.Services.Services.Email;
 using SWS.Services.Services.ExportOrderServices;
 using SWS.Services.Services.InventoryServices;
 using SWS.Services.Services.ProductServices;
 using SWS.Services.Services.WarehouseAuthentication;
 using SWS.Services.Services.WhisperServices;
-
+using SWS.Services.Services.ConvertSqlRawServices;
+using SWS.Services.Services.WarehouseLayoutServices;
 namespace SWS.ApiCore.Extensions;
 
 public static class ServicesConfig
@@ -38,13 +39,13 @@ public static class ServicesConfig
         services.AddScoped<ICloudinaryService, CloudinaryService>();
         services.AddScoped<IWarehouseAuthenticationService, WarehouseAuthenticationService>();
         services.AddScoped<IGoogleLoginService, GoogleLoginService>();
-        services.AddScoped<IProductService, WarehouseProductService>();
+        services.AddScoped<IWarehouseProductService, WarehouseProductService>();
         services.AddScoped<IExportOrderService, ExportOrderService>();
+        services.AddScoped<ICycleCountService, CycleCountService>();
         services.AddSingleton<RateLimiterStore>();
         services.AddScoped<ITextToSqlService, TextToSqlService_Gemini>();
         services.AddScoped<IWhisperService, WhisperService>();
-        services.AddScoped<IInventoryDashboardRepository, InventoryDashboardRepository>();
-        services.AddScoped<IInventoryDashboardService, InventoryDashboardService>();
+        services.AddScoped<IWarehouseLayoutService, WarehouseLayoutService>();
         #endregion
 
         #region Helpers

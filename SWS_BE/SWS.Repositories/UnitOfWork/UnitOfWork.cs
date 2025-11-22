@@ -1,13 +1,20 @@
-﻿using SWS.BusinessObjects.Models;
+﻿// File: SWS.Repositories/UnitOfWork/UnitOfWork.cs
+using System.Threading.Tasks;
+
+using SWS.BusinessObjects.Models;
+
 using SWS.Repositories.Repositories.AccountRepo;
 using SWS.Repositories.Repositories.ExportDetailRepo;
 using SWS.Repositories.Repositories.ExportRepo;
 using SWS.Repositories.Repositories.ProductRepo;
 using SWS.Repositories.Repositories.UserRepo;
+
 using SWS.Repositories.Repositories.ImportOrders;
 using SWS.Repositories.Repositories.ReturnRepo;
+using SWS.Repositories.Repositories.LocationRepo;
 using SWS.Repositories.Repositories.InventoryRepo;
-
+using SWS.Repositories.Repositories.CycleCountRepo;
+using SWS.Repositories.Repositories.CycleCountDetailRepo;
 namespace SWS.Repositories.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
@@ -18,41 +25,59 @@ namespace SWS.Repositories.UnitOfWork
         private IAccountRepository? _accountRepository;
         private IUserRepository? _userRepository;
         private IProductRepository? _productRepository;
+        private IInventoryRepository? _inventoryRepository;
+        private ILocationRepository? _locationRepository;
 
-        // ➕ Import repos
+        // Import
         private IImportOrderQueryRepository? _importOrderQueryRepository;
         private IImportOrderCommandRepository? _importOrderCommandRepository;
 
-        // ➕ Return repos
+        // Return
         private IReturnReasonRepository? _returnReasonRepository;
         private IReturnStatusRepository? _returnStatusRepository;
         private IReturnOrderQueryRepository? _returnOrderQueryRepository;
 
+        // ➕ Return (command) — mới thêm
+        private IReturnOrderCommandRepository? _returnOrderCommandRepository;
+
+        // Export
         private IExportOrderRepository? _exportOrderRepository;
         private IExportDetailRepository? _exportDetailRepository;
-        private IInventoryRepository? _inventoryRepository;
-        private IInventoryDashboardRepository? _inventoryDashboardRepository;
+
+        private ICycleCountRepository? _cycleCountRepository;
+        private ICycleCountDetailRepository? _cycleCountDetailRepository;
+
+
         public UnitOfWork(SmartWarehouseDbContext context)
         {
             _context = context;
         }
 
         // Sẵn có
-        public IAccountRepository Accounts => _accountRepository ??= new AccountRepository(_context);
-        public IUserRepository Users => _userRepository ??= new UserRepository(_context);
-        public IProductRepository Products => _productRepository ??= new ProductRepository(_context);
-        public IExportOrderRepository ExportOrders => _exportOrderRepository ??= new ExportOrderRepository(_context);
-        public IExportDetailRepository ExportDetails => _exportDetailRepository ??= new ExportDetailRepository(_context);
-         public IInventoryRepository Inventory => _inventoryRepository ??= new InventoryRepository(_context);
-        public IInventoryDashboardRepository InventoryDashboard => _inventoryDashboardRepository ??= new InventoryDashboardRepository(_context);
-        // ➕ Import
+        public IAccountRepository Accounts =>
+            _accountRepository ??= new AccountRepository(_context);
+
+        public IUserRepository Users =>
+            _userRepository ??= new UserRepository(_context);
+
+        public IProductRepository Products =>
+            _productRepository ??= new ProductRepository(_context);
+        public ILocationRepository Locations =>
+    _locationRepository ??= new LocationRepository(_context);
+        public IExportOrderRepository ExportOrders =>
+            _exportOrderRepository ??= new ExportOrderRepository(_context);
+
+        public IExportDetailRepository ExportDetails =>
+            _exportDetailRepository ??= new ExportDetailRepository(_context);
+
+        // Import
         public IImportOrderQueryRepository ImportOrdersQuery =>
             _importOrderQueryRepository ??= new ImportOrderQueryRepository(_context);
 
         public IImportOrderCommandRepository ImportOrdersCommand =>
             _importOrderCommandRepository ??= new ImportOrderCommandRepository(_context);
 
-        // ➕ Return
+        // Return
         public IReturnReasonRepository ReturnReasons =>
             _returnReasonRepository ??= new ReturnReasonRepository(_context);
 
@@ -61,6 +86,16 @@ namespace SWS.Repositories.UnitOfWork
 
         public IReturnOrderQueryRepository ReturnOrdersQuery =>
             _returnOrderQueryRepository ??= new ReturnOrderQueryRepository(_context);
+
+        // ➕ Return (command) — dùng cho Review
+        public IReturnOrderCommandRepository ReturnOrdersCommand =>
+            _returnOrderCommandRepository ??= new ReturnOrderCommandRepository(_context);
+
+        public ICycleCountRepository CycleCounts => _cycleCountRepository ??= new CycleCountRepository(_context);
+
+        public ICycleCountDetailRepository CycleCountDetails => _cycleCountDetailRepository ??= new CycleCountDetailRepository(_context);
+
+        public IInventoryRepository Inventories => _inventoryRepository ??= new InventoryRepository(_context);
 
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
 

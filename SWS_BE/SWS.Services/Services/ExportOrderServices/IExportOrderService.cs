@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SWS.BusinessObjects.Enums;
 using SWS.BusinessObjects.Models;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.ExportDetailModel;
 using SWS.Services.ApiModels.ExportOrderModel;
 

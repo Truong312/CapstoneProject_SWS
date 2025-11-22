@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.ProductModel;
@@ -6,13 +7,14 @@ using SWS.Services.Services.ProductServices;
 
 namespace SWS.ApiCore.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductController : BaseApiController
     {
-        private readonly IProductService _productService;
+        private readonly IWarehouseProductService _productService;
 
-        public ProductController(IProductService productService)
+        public ProductController(IWarehouseProductService productService)
         {
             _productService = productService;
         }
@@ -25,7 +27,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/{id}
@@ -36,7 +38,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // POST: api/product
@@ -50,10 +52,11 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // PUT: api/product/{id}
+        [Authorize(Roles ="2")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductRequest request)
         {
@@ -64,10 +67,11 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // DELETE: api/product/{id}
+        [Authorize(Roles = "2")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
@@ -75,7 +79,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/near-expired
@@ -86,7 +90,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/expired
@@ -97,7 +101,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/low-stock
@@ -108,7 +112,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return NotFound(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/search?text=abc
@@ -119,7 +123,7 @@ namespace SWS.ApiCore.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
 
-            return Ok(result.Data);
+            return Ok(result);
         }
 
         // GET: api/product/paged?page=1&pageSize=20&q=keyword

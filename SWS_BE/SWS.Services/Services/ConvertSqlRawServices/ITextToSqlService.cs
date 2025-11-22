@@ -1,5 +1,5 @@
 using SWS.Services.ApiModels.SqlConverts;
-using SWS.Services.ApiModels;
+using SWS.Services.ApiModels.Commons;
 
 namespace SWS.Services.ConvertSqlRawServices;
 

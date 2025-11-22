@@ -21,7 +21,7 @@ public class ImportOrdersController : ControllerBase
 
     /// <summary>Danh sách Import Orders (filter + paging)</summary>
     [HttpGet]
-    [Authorize] // cần đăng nhập (role nào cũng được)
+   /* [Authorize]*/ // cần đăng nhập (role nào cũng được)
     public async Task<IActionResult> GetList(
         [FromQuery] string? q,
         [FromQuery] int? providerId,
@@ -48,7 +48,7 @@ public class ImportOrdersController : ControllerBase
 
     /// <summary>Tạo Import Order (Staff role=1)</summary>
     [HttpPost]
-    [Authorize(Roles = "1")]
+    //[Authorize(Roles = "1")]
     public async Task<IActionResult> Create([FromBody] CreateImportOrderRequest req, CancellationToken ct = default)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);

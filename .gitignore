@@ -408,7 +408,7 @@ SWS_BE/.DS_Store
 SWS_BE/WhisperVoice/venv/*
 SWS_BE/WhisperVoice/.idea/*
 SWS_FE/.DS_Store
-*.DS_Store
+SWS_FE/src/.DS_Store
 SWS_BE/WhisperVoice/venv/*
 SWS_BE/WhisperVoice/.idea/*
 .DS_Store
