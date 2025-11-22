@@ -1,26 +1,23 @@
-using System.Text.Json.Serialization;
+using AppBackend.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Authorization;
-using SWS.Repositories.UnitOfWork;
-
-using SWS.ApiCore.Extensions;
-using AppBackend.Extensions;
-using SWS.BusinessObjects.AppSettings;
-using SWS.BusinessObjects.Extensions;
-
-// Return lookups / orders
-using SWS.Repositories.Repositories.ReturnRepo;
-using SWS.Services.ReturnLookups;
-using SWS.Services.ReturnOrders;
-using SWS.Services.Services.ProductServices;
-
-// Import Orders
-using SWS.Repositories.Repositories.ImportOrders;
-using SWS.Services.ImportOrders;
-
 // DateOnly converters
 using SWS.ApiCore.Converters;
+using SWS.ApiCore.Extensions;
+using SWS.BusinessObjects.AppSettings;
+using SWS.BusinessObjects.Extensions;
+// Import Orders
+using SWS.Repositories.Repositories.ImportOrders;
+// Return lookups / orders
+using SWS.Repositories.Repositories.ReturnRepo;
+using SWS.Repositories.UnitOfWork;
+using SWS.Services.ImportOrders;
+using SWS.Services.ReturnLookups;
+using SWS.Services.ReturnOrders;
+using SWS.Services.Services.InventoryServices;
+using SWS.Services.Services.ProductServices;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,7 +85,7 @@ builder.Services.AddScoped<IImportOrderQueryRepository, ImportOrderQueryReposito
 builder.Services.AddScoped<IImportOrderCommandRepository, ImportOrderCommandRepository>();
 builder.Services.AddScoped<IImportOrderQueryService, ImportOrderQueryService>();
 builder.Services.AddScoped<IImportOrderCommandService, ImportOrderCommandService>();
-
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 // ================== Build App ==================
 var app = builder.Build();
 

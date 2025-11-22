@@ -10,11 +10,6 @@ namespace SWS.BusinessObjects.Enums
     {
     }
 
-    public enum RoomType
-    {
-        Standard,
-        Deluxe
-    }
     public enum Status
     {
         Active,
@@ -29,39 +24,6 @@ namespace SWS.BusinessObjects.Enums
         Manager,
         Staff
     }
-    public enum TaskType
-    {
-        Cleaning,
-        Maintenance
-    }
-    public enum FeedbackType
-    {
-        Complaint,
-        Suggestion,
-        Praise
-    }
-    public enum NotificationType
-    {
-        System,
-        Booking,
-        Promotion
-    }
-    public enum BookingType
-    {
-        Online,
-        Walkin
-    }
-    public enum DepositStatus
-    {
-        Paid,
-        Unpaid
-    }
-    public enum PaymentMethod
-    {
-        Cash,
-        Card,
-        Bank
-    }
     public enum StatusEnums
     {
         Pending,
@@ -69,4 +31,12 @@ namespace SWS.BusinessObjects.Enums
         Completed,
         Canceled
     }
+    public enum InventoryStatus
+    {
+        Available = 1,
+        Allocated = 2,
+        Damaged = 3,
+        InTransit = 4
+    }
+
 }

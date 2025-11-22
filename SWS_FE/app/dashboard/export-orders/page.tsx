@@ -26,7 +26,6 @@ import { useToast } from '@/hooks/use-toast'
 import { 
   getAllExportOrders, 
   getExportOrdersByStatus,
-  getExportOrderStatuses,
   ExportOrderStatusStats 
 } from '@/services/api/export-orders.api'
 import type { ExportOrderListItem } from '@/lib/types'
@@ -96,25 +95,25 @@ export default function ExportOrdersPage() {
     setFilteredOrders(filtered)
   }
 
-  const getStatusBadge = (status: number | null) => {
-    // Handle null or undefined status
+  const getStatusBadge = (status: string | null) => {
     if (status === null || status === undefined) {
-      return <Badge variant="outline">Chưa xác định</Badge>
+        return <Badge variant="outline">Chưa xác định</Badge>;
     }
 
-    const statusConfig: Record<number, { variant: 'default' | 'secondary' | 'destructive' | 'outline', label: string }> = {
-      0: { variant: 'outline', label: 'Chờ duyệt' },
-      1: { variant: 'secondary', label: 'Đã duyệt' },
-      2: { variant: 'default', label: 'Hoàn thành' },
-    }
+    const statusConfig: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline', label: string }> = {
+        "pending": { variant: 'outline', label: 'Chờ duyệt' },
+        "approved": { variant: 'secondary', label: 'Đã duyệt' },
+        "completed": { variant: 'default', label: 'Hoàn thành' },
+        "cancle": { variant: 'destructive', label: 'Hủy' },
+    };
 
-    const config = statusConfig[status]
+    const config = statusConfig[status.toLowerCase()]; // Chuyển trạng thái thành chữ thường
     if (!config) {
-      return <Badge variant="outline">Không xác định</Badge>
+        return <Badge variant="outline">Không xác định</Badge>;
     }
 
-    return <Badge variant={config.variant}>{config.label}</Badge>
-  }
+    return <Badge variant={config.variant}>{config.label}</Badge>;
+}
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -177,7 +176,7 @@ export default function ExportOrdersPage() {
               <SelectContent>
                 <SelectItem value="all">Tất cả trạng thái</SelectItem>
                 {exportStatuses.map((item) => (
-                  <SelectItem key={item.status} value={item.status}>
+                  <SelectItem key={item.value} value={item.value.toString()}>
                     {item.label}
                   </SelectItem>
                 ))}

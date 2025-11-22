@@ -6,6 +6,7 @@ using SWS.Repositories.Repositories.ProductRepo;
 using SWS.Repositories.Repositories.UserRepo;
 using SWS.Repositories.Repositories.ImportOrders;
 using SWS.Repositories.Repositories.ReturnRepo;
+using SWS.Repositories.Repositories.InventoryRepo;
 
 namespace SWS.Repositories.UnitOfWork
 {
@@ -29,7 +30,8 @@ namespace SWS.Repositories.UnitOfWork
 
         private IExportOrderRepository? _exportOrderRepository;
         private IExportDetailRepository? _exportDetailRepository;
-
+        private IInventoryRepository? _inventoryRepository;
+        private IInventoryDashboardRepository? _inventoryDashboardRepository;
         public UnitOfWork(SmartWarehouseDbContext context)
         {
             _context = context;
@@ -41,7 +43,8 @@ namespace SWS.Repositories.UnitOfWork
         public IProductRepository Products => _productRepository ??= new ProductRepository(_context);
         public IExportOrderRepository ExportOrders => _exportOrderRepository ??= new ExportOrderRepository(_context);
         public IExportDetailRepository ExportDetails => _exportDetailRepository ??= new ExportDetailRepository(_context);
-
+         public IInventoryRepository Inventory => _inventoryRepository ??= new InventoryRepository(_context);
+        public IInventoryDashboardRepository InventoryDashboard => _inventoryDashboardRepository ??= new InventoryDashboardRepository(_context);
         // ➕ Import
         public IImportOrderQueryRepository ImportOrdersQuery =>
             _importOrderQueryRepository ??= new ImportOrderQueryRepository(_context);

@@ -5,6 +5,7 @@ using SWS.Repositories.Repositories.ProductRepo;
 using SWS.Repositories.Repositories.UserRepo;
 using SWS.Repositories.Repositories.ImportOrders;
 using SWS.Repositories.Repositories.ReturnRepo;
+using SWS.Repositories.Repositories.InventoryRepo;
 
 namespace SWS.Repositories.UnitOfWork
 {
@@ -26,6 +27,9 @@ namespace SWS.Repositories.UnitOfWork
 
         IExportOrderRepository ExportOrders { get; }
         IExportDetailRepository ExportDetails { get; }
+
+        IInventoryRepository Inventory { get; }
+        IInventoryDashboardRepository InventoryDashboard { get; }
         Task<int> SaveChangesAsync();
     }
 }

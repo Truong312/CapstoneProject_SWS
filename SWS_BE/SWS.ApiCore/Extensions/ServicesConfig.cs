@@ -1,16 +1,18 @@
 using SWS.BusinessObjects.Models;
 using SWS.Repositories.Generic;
+using SWS.Repositories.Repositories.InventoryRepo;
 using SWS.Repositories.UnitOfWork;
 using SWS.Services;
+using SWS.Services.ConvertSqlRawServices;
 using SWS.Services.Helpers;
 using SWS.Services.RateLimiting;
+using SWS.Services.Services.ConvertSqlRawServices;
 using SWS.Services.Services.Email;
 using SWS.Services.Services.ExportOrderServices;
+using SWS.Services.Services.InventoryServices;
 using SWS.Services.Services.ProductServices;
 using SWS.Services.Services.WarehouseAuthentication;
-using SWS.Services.ConvertSqlRawServices;
 using SWS.Services.Services.WhisperServices;
-using SWS.Services.Services.ConvertSqlRawServices;
 
 namespace SWS.ApiCore.Extensions;
 
@@ -41,6 +43,8 @@ public static class ServicesConfig
         services.AddSingleton<RateLimiterStore>();
         services.AddScoped<ITextToSqlService, TextToSqlService_Gemini>();
         services.AddScoped<IWhisperService, WhisperService>();
+        services.AddScoped<IInventoryDashboardRepository, InventoryDashboardRepository>();
+        services.AddScoped<IInventoryDashboardService, InventoryDashboardService>();
         #endregion
 
         #region Helpers
