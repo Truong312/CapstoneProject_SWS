@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using SWS.BusinessObjects.Dtos;
+using SWS.BusinessObjects.Enums;
+using SWS.BusinessObjects.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,5 +26,19 @@ namespace SWS.Repositories.Repositories.InventoryRepo
         {
             return await GetSingleAsync(i=>i.ProductId==productId);
         }
+        //public async Task<List<ProductInventoryDto>> GetProductInventoryByLocationAsync(int locationId)
+        //{
+        //    return await _db.Inventories
+        //        .Where(x => x.LocationId == locationId)
+        //        .GroupBy(x => x.Product)
+        //        .Select(g => new ProductInventoryDto(
+        //            g.Key.ProductId,
+        //            g.Key.Name,
+        //            g.Sum(x => x.QuantityAvailable)
+        //        ))
+        //        .ToListAsync();
+        //}
+
+
     }
 }

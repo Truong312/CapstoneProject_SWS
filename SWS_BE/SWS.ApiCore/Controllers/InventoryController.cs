@@ -8,7 +8,6 @@ namespace SWS.ApiCore.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class InventoryController : BaseApiController
     {
         private readonly IInventoryService _inventoryService;
