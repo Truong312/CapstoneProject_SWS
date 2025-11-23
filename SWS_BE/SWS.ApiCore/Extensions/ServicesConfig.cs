@@ -14,7 +14,6 @@ using SWS.Services.Services.WhisperServices;
 using SWS.Services.Services.ConvertSqlRawServices;
 using SWS.Services.Services.WarehouseLayoutServices;
 namespace SWS.ApiCore.Extensions;
-using SWS.Services.Services.WarehouseUserServices;
 
 public static class ServicesConfig
 {
@@ -45,8 +44,6 @@ public static class ServicesConfig
         services.AddScoped<ITextToSqlService, TextToSqlService_Gemini>();
         services.AddScoped<IWhisperService, WhisperService>();
         services.AddScoped<IWarehouseLayoutService, WarehouseLayoutService>();
-        services.AddScoped<IWarehouseUserAdminService, WarehouseUserAdminService>();
-
         #endregion
 
         #region Helpers
