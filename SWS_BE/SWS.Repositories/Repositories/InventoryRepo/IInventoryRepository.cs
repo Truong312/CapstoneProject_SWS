@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SWS.BusinessObjects.Dtos;
+using SWS.BusinessObjects.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,4 +14,5 @@ namespace SWS.Repositories.Repositories.InventoryRepo
     {
         Task<Inventory> GetByProductId(int productId);
     }
+
 }
