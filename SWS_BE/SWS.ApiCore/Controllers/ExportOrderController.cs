@@ -119,5 +119,15 @@ namespace SWS.ApiCore.Controllers
             }
             return Ok(result);
         }
+        [HttpGet("Date")]
+        public async Task<IActionResult> GetExportOrderByDate(DateOnly startDate,DateOnly endDate)
+        {
+            var result = await _exportOrderService.GetExportOrderByDate(startDate, endDate);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
     }
 }

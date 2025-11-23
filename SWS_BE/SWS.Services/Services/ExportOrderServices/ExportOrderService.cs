@@ -184,7 +184,7 @@ namespace SWS.Services.Services.ExportOrderServices
                 {
                     IsSuccess = true,
                     Message = "Hóa đơn xuất hàng: ",
-                    Data=result,
+                    Data = result,
                     StatusCode = StatusCodes.Status200OK
                 };
             }
@@ -503,6 +503,59 @@ namespace SWS.Services.Services.ExportOrderServices
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
+        }
+
+        public async Task<ResultModel<IEnumerable<ExportOrderResponse>>> GetExportOrderByDate(DateOnly startDate, DateOnly endDate)
+        {
+            try
+            {
+                var now = DateOnly.FromDateTime(DateTime.Now);
+                if (startDate >= now)
+                {
+                    return new ResultModel<IEnumerable<ExportOrderResponse>>
+                    {
+                        IsSuccess = false,
+                        Message = $"startDate vượt quá thời gian hiện tại: startDate={startDate}, thời gian hiện tại = {now}",
+                        StatusCode = StatusCodes.Status400BadRequest
+                    };
+                }
+                if (endDate <=now) endDate = now;
+                var exportOrders = await _unitOfWork.ExportOrders.GetExportOrderByDate(startDate, endDate);
+                var result = exportOrders.Select(e => new ExportOrderResponse
+                {
+                    ExportOrderId = e.ExportOrderId,
+                    InvoiceNumber = e.InvoiceNumber,
+                    OrderDate = e.OrderDate,
+                    CustomerId = e.CustomerId,
+                    Currency = e.Currency,
+                    CreatedDate = e.CreatedDate,
+                    ShippedDate = e.ShippedDate,
+                    ShippedAddress = e.ShippedAddress,
+                    TaxRate = e.TaxRate,
+                    TaxAmount = e.TaxAmount,
+                    TotalPayment = e.TotalPayment,
+                    Description = e.Description,
+                    Status = ParseStatus(e.Status),
+                    CreatedBy = e.CreatedBy
+                });
+                return new ResultModel<IEnumerable<ExportOrderResponse>>
+                {
+                    IsSuccess=true,
+                    Message=$"Danh sách đơn xuất hàng từ ngày{startDate} đến ngày{endDate}",
+                    Data=result,
+                    StatusCode=StatusCodes.Status200OK
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<IEnumerable<ExportOrderResponse>>
+                {
+                    IsSuccess = true,
+                    Message = $"Lỗi xảy ra khi lấy đơn xuất hàng từ ngày{startDate} đến ngày{endDate}: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+
         }
     }
 }

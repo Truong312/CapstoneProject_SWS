@@ -18,6 +18,7 @@ namespace SWS.Services.Services.ExportOrderServices
         Task<ResultModel<IEnumerable<ExportDetailResponse>>> GetExportDetails(int exportOrderId);
         Task<ResultModel<ExportOrderResponse>> GetExportOrderByIdAsync(int exportOrderId);
         Task<ResultModel<ExportDetailResponse>> GetExportDetailByIdAsync(int exportDetailId);
+        Task<ResultModel<IEnumerable<ExportOrderResponse>>> GetExportOrderByDate(DateOnly startDate, DateOnly endDate); 
         Task<ResultModel> AddExportOrderAsync(CreateExportOrder createExportOrder);
         Task<ResultModel> AddExportDetailAsync(int exportOrderId, CreateExportDetail createExportDetail);
         Task<ResultModel> UpdateExportOrderAsync(int exportOrderId, UpdateExportOrder updateExportOrder);
