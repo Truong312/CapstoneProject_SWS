@@ -304,6 +304,16 @@ namespace SWS.Services.Services.WarehouseAuthentication
                     };
                 }
 
+                if (oldPassword == newPassword)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = "Mật khẩu mới không được trùng với mật khẩu cũ",
+                        StatusCode = StatusCodes.Status400BadRequest
+                    };
+                }
+
                 // Hash and update new password
                 user.Password = PasswordHelper.HashPassword(newPassword);
                 await _unitOfWork.Users.UpdateAsync(user);
@@ -327,7 +337,7 @@ namespace SWS.Services.Services.WarehouseAuthentication
             }
         }
 
-        
+
         public async Task<ResultModel<GoogleLoginResponseDto>> LoginWithGoogleAsync(string code)
         {
             try
