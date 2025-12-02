@@ -13,15 +13,28 @@ using SWS.BusinessObjects.Models;
 using SWS.Repositories.UnitOfWork;
 using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.InventoryModel;
+using System.Security.Claims;
+using SWS.BusinessObjects.Enums;
 
 namespace SWS.Services.Services.InventoryServices
 {
     public class InventoryService : IInventoryService
     {
         private IUnitOfWork _unitOfWork;
-        public InventoryService(IUnitOfWork unitOfWork)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public InventoryService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
+        }
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                throw new Exception("User is not authenticated.");
+            }
+            return int.Parse(userIdClaim);
         }
         public async Task<ResultModel<IEnumerable<InventoryResponse>>> GetAllInventoriesAsync()
         {
@@ -156,6 +169,15 @@ namespace SWS.Services.Services.InventoryServices
                     LocationId = addInventory.LocationId
                 };
                 await _unitOfWork.Inventories.AddAsync(inventory);
+                var actionLog = new ActionLog
+                {
+                    UserId = GetCurrentUserId(),
+                    ActionType = ActionType.Create.ToString(),
+                    EntityType="Inventory",
+                    Timestamp=DateTime.Now,
+                    Description=$"Add inventory"
+                };
+                await _unitOfWork.ActionLogs.AddAsync(actionLog);
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -190,16 +212,16 @@ namespace SWS.Services.Services.InventoryServices
                         StatusCode = StatusCodes.Status400BadRequest
                     };
                 }
-                //var location = await _unitOfWork.Locations.GetByIdAsync(updateInventory.LocationId);
-                //if (inventory == null)
-                //{
-                //    return new ResultModel
-                //    {
-                //        IsSuccess = false,
-                //        Message = $"Không tìm thấy vị trí kho hàng với id = {updateInventory.LocationId}",
-                //        StatusCode = StatusCodes.Status400BadRequest
-                //    };
-                //}
+                var location = await _unitOfWork.Locations.GetByIdAsync(updateInventory.LocationId);
+                if (inventory == null)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = $"Không tìm thấy vị trí kho hàng với id = {updateInventory.LocationId}",
+                        StatusCode = StatusCodes.Status400BadRequest
+                    };
+                }
                 if (inventory.ProductId != updateInventory.ProductId) inventory.ProductId = updateInventory.ProductId;
                 if (inventory.QuantityAvailable != updateInventory.QuantityAvailable) inventory.QuantityAvailable = updateInventory.QuantityAvailable;
                 if (inventory.AllocatedQuantity != updateInventory.AllocatedQuantity) inventory.AllocatedQuantity = updateInventory.AllocatedQuantity;

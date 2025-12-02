@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -8,24 +9,48 @@ using SWS.BusinessObjects.Enums;
 using SWS.BusinessObjects.Models;
 using SWS.Repositories.UnitOfWork;
 using SWS.Services.ApiModels.Commons;
+using SWS.Services.Services.LogServices;
 
 namespace SWS.Services.Services.CycleCountServices
 {
     public class CycleCountService : ICycleCountService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IActionLogService _actionLogService;
 
-        public CycleCountService(IUnitOfWork unitOfWork)
+        public CycleCountService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor,IActionLogService actionLogService)
         {
             _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
+            _actionLogService = actionLogService;
         }
-
-        public async Task<ResultModel> StartCycleCountAsync(int userId)
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                throw new Exception("User is not authenticated.");
+            }
+            return int.Parse(userIdClaim);
+        }
+        public async Task<ResultModel> StartCycleCountAsync()
         {
             try
             {
+                var userId= GetCurrentUserId();
                 var now = DateOnly.FromDateTime(DateTime.Now);
                 var cycleName = $"Q{((now.Month) - 1) / 3 + 1}_{now.Year}";
+                var cycleCheck = await _unitOfWork.CycleCounts.GetByName(cycleName);
+                if (cycleCheck != null)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = $"Đã tồn tại cycle count trong quý này:{cycleName}",
+                        StatusCode = StatusCodes.Status400BadRequest
+                    };
+                }
                 var start = new DateOnly(now.Year, ((now.Month - 1) / 3) * 3 + 1, 1);//example now = 27/07/2025 -> start = 01/06/2025
                 var end = start.AddMonths(3).AddDays(-1);//example start = 01/06/2025 -> end = 31/08/2025
 
@@ -53,6 +78,7 @@ namespace SWS.Services.Services.CycleCountServices
                     };
                     await _unitOfWork.CycleCountDetails.AddAsync(detail);
                 }
+                await _actionLogService.CreateActionLogAsync(ActionType.Create,"CycleCount",$"Đã tạo cycle count mới với tên {cycle.CycleName}");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -76,6 +102,7 @@ namespace SWS.Services.Services.CycleCountServices
         {
             try
             {
+                var userId = GetCurrentUserId();
                 var detail = await _unitOfWork.CycleCountDetails.GetByIdAsync(detailId);
                 if (detail == null)
                 {
@@ -88,6 +115,7 @@ namespace SWS.Services.Services.CycleCountServices
                 }
                 detail.CountedQuantity = countedQuantity;
                 detail.CheckedDate = DateTime.Now;
+                await  _actionLogService.CreateActionLogAsync(ActionType.Update, "CycleCountDetail", $"Update Cycle count detail id{detail.DetailId}");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -107,7 +135,7 @@ namespace SWS.Services.Services.CycleCountServices
             }
         }
 
-        public async Task<ResultModel> FinalizeCycleCountAsync(int cycleCountId, int userId)
+        public async Task<ResultModel> FinalizeCycleCountAsync(int cycleCountId)
         {
             try
             {
@@ -143,19 +171,12 @@ namespace SWS.Services.Services.CycleCountServices
                                 StatusCode = StatusCodes.Status500InternalServerError
                             };
                         }
-                        //Action Logs
-                        var actionLog = new ActionLog
-                        {
-                            UserId = userId,
-                            ActionType = "CycleCount",
-                            EntityType = "CycleCount",
-                            Timestamp = DateTime.Now,
-                            Description = $"Adjust quantity of {product.SerialNumber}"
-                        };
+                        await _actionLogService.CreateActionLogAsync(ActionType.Update, "CycleCountDetail", $"Adjust quantity of {product.SerialNumber}");
                     }
                 }
                 //CycleCount Task has been completed
                 cycle.Status = StatusEnums.Completed.ToString();
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "CycleCountDetail", $"Finalize Cycle count{cycle.CycleCountId}");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -175,7 +196,7 @@ namespace SWS.Services.Services.CycleCountServices
             }
         }
 
-        public async Task<ResultModel> FinalizeCycleCountAsync(string cycleCountName, int userId)
+        public async Task<ResultModel> FinalizeCycleCountAsync(string cycleCountName)
         {
             try
             {
@@ -211,19 +232,13 @@ namespace SWS.Services.Services.CycleCountServices
                                 StatusCode = StatusCodes.Status500InternalServerError
                             };
                         }
-                        //Transaction Logs
-                        var actionLog = new ActionLog
-                        {
-                            UserId = userId,
-                            ActionType = "CycleCount",
-                            EntityType = "CycleCount",
-                            Timestamp = DateTime.Now,
-                            Description = $"Adjust quantity of {product.SerialNumber}"
-                        };
+                        //Action Logs
+                        await _actionLogService.CreateActionLogAsync(ActionType.Update, "CycleCountDetail", $"Adjust quantity of {product.SerialNumber}");
                     }
                 }
                 //CycleCount Task has been completed
                 cycle.Status = StatusEnums.Completed.ToString();
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "CycleCountDetail", $"Finalize Cycle count{cycle.CycleName}");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {

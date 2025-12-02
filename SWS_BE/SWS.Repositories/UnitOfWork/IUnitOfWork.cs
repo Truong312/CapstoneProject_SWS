@@ -12,6 +12,7 @@ using SWS.Repositories.Repositories.ReturnRepo;
 using SWS.Repositories.Repositories.CycleCountRepo;
 using SWS.Repositories.Repositories.CycleCountDetailRepo;
 using SWS.Repositories.Repositories.InventoryRepo;
+using SWS.Repositories.Repositories.ActionLogRepo;
 
 namespace SWS.Repositories.UnitOfWork
 {
@@ -42,6 +43,7 @@ namespace SWS.Repositories.UnitOfWork
         IExportDetailRepository ExportDetails { get; }
         ICycleCountRepository CycleCounts { get; }
         ICycleCountDetailRepository CycleCountDetails { get; }
+        IActionLogRepository ActionLogs { get; }
         Task<int> SaveChangesAsync();
     }
 }
