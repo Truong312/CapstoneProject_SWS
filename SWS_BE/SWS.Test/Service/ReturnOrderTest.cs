@@ -1,22 +1,14 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
-using Moq;
+﻿using Moq;
 using NUnit.Framework;
 using SWS.BusinessObjects.Constants;
 using SWS.BusinessObjects.DTOs;
 using SWS.BusinessObjects.Models;
 using SWS.Repositories.Repositories.ExportRepo;
 using SWS.Repositories.Repositories.ReturnRepo;
-using SWS.Repositories.Repositories.UserRepo;
 using SWS.Repositories.UnitOfWork;
 using SWS.Services.ReturnLookups;
 using SWS.Services.ReturnOrders;
-using SWS.Services.Services.WarehouseAuthentication;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SWS.Test.Service
 {
@@ -67,6 +59,8 @@ namespace SWS.Test.Service
                 _mockUnitOfWork.Object
             );
 
+            _lservice = new ReturnLookupService(_mockUnitOfWork.Object);
+
 
         }
 
@@ -113,7 +107,7 @@ namespace SWS.Test.Service
             var result = await _lservice.GetStatusesAsync(query);
 
             Assert.That(result.Count, Is.EqualTo(2));
-            Assert.That(result[0].Status, Is.EqualTo(1));
+            //Assert.That(result[0].Status, Is.EqualTo(1));
             Assert.That(result[0].Status, Is.EqualTo("PENDING"));
 
             _statusRepoMock.Verify(s => s.SearchAsync(query), Times.Once);
