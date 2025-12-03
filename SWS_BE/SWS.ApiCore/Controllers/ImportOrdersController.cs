@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using SWS.ApiCore.Auth; // ClaimUtils
 using SWS.BusinessObjects.DTOs;
+using SWS.Services.ApiModels.ImportOrders;
 using SWS.Services.ImportOrders;
+// nếu ReviewImportOrderRequest nằm namespace khác thì thêm using tương ứng
 
 namespace SWS.ApiCore.Controllers;
 
@@ -21,7 +23,7 @@ public class ImportOrdersController : ControllerBase
 
     /// <summary>Danh sách Import Orders (filter + paging)</summary>
     [HttpGet]
-   /* [Authorize]*/ // cần đăng nhập (role nào cũng được)
+     [Authorize] // cần đăng nhập (role nào cũng được)
     public async Task<IActionResult> GetList(
         [FromQuery] string? q,
         [FromQuery] int? providerId,
@@ -56,5 +58,32 @@ public class ImportOrdersController : ControllerBase
         var uid = ClaimUtils.GetUserIdOrThrow(User); // đã có helper bạn gửi
         var result = await _cmd.CreateAsync(uid, req, ct);
         return CreatedAtAction(nameof(GetDetail), new { id = result.ImportOrderId }, result);
+    }
+
+    /// <summary>
+    /// Review Import Order:
+    /// - approve = true  => Pending -> Completed (cộng tồn kho)
+    /// - approve = false => Pending -> Canceled  (không cộng tồn)
+    /// </summary>
+    [HttpPut("{id:int}/review")]
+    [Authorize(Roles = "2")] //chỉ manager được duyệt
+    public async Task<IActionResult> Review(
+        [FromRoute] int id,
+        [FromBody] ReviewImportOrderRequest req,
+        CancellationToken ct = default)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        var uid = ClaimUtils.GetUserIdOrThrow(User);
+
+        var result = await _cmd.ReviewAsync(id, uid, req, ct);
+
+        if (!result.IsSuccess)
+        {
+            // trả đúng status code + body từ service
+            return StatusCode(result.StatusCode, result);
+        }
+
+        return Ok(result);
     }
 }
