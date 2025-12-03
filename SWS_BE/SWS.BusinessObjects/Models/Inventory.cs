@@ -20,5 +20,5 @@ public partial class Inventory
 
     public virtual Product Product { get; set; } = null!;
 
-    public InventoryStatus Status { get; set; }
+   
 }
