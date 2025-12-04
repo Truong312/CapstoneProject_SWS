@@ -15,26 +15,18 @@ using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.InventoryModel;
 using System.Security.Claims;
 using SWS.BusinessObjects.Enums;
+using SWS.Services.Services.LogServices;
 
 namespace SWS.Services.Services.InventoryServices
 {
     public class InventoryService : IInventoryService
     {
-        private IUnitOfWork _unitOfWork;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        public InventoryService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IActionLogService _actionLogService;
+        public InventoryService(IUnitOfWork unitOfWork, IActionLogService actionLogService)
         {
             _unitOfWork = unitOfWork;
-            _httpContextAccessor = httpContextAccessor;
-        }
-        private int GetCurrentUserId()
-        {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim))
-            {
-                throw new Exception("User is not authenticated.");
-            }
-            return int.Parse(userIdClaim);
+            _actionLogService = actionLogService;
         }
         public async Task<ResultModel<IEnumerable<InventoryResponse>>> GetAllInventoriesAsync()
         {
@@ -169,15 +161,7 @@ namespace SWS.Services.Services.InventoryServices
                     LocationId = addInventory.LocationId
                 };
                 await _unitOfWork.Inventories.AddAsync(inventory);
-                var actionLog = new ActionLog
-                {
-                    UserId = GetCurrentUserId(),
-                    ActionType = ActionType.Create.ToString(),
-                    EntityType="Inventory",
-                    Timestamp=DateTime.Now,
-                    Description=$"Add inventory"
-                };
-                await _unitOfWork.ActionLogs.AddAsync(actionLog);
+                await _actionLogService.CreateActionLogAsync(ActionType.Create, "Inventory", "Thêm sản phẩm vào kho");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -226,6 +210,8 @@ namespace SWS.Services.Services.InventoryServices
                 if (inventory.QuantityAvailable != updateInventory.QuantityAvailable) inventory.QuantityAvailable = updateInventory.QuantityAvailable;
                 if (inventory.AllocatedQuantity != updateInventory.AllocatedQuantity) inventory.AllocatedQuantity = updateInventory.AllocatedQuantity;
                 if (inventory.LocationId != updateInventory.LocationId) inventory.LocationId = updateInventory.LocationId;
+
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "Inventory", "Cập nhật sản phẩm trong kho");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -259,6 +245,7 @@ namespace SWS.Services.Services.InventoryServices
                     };
                 }
                 await _unitOfWork.Inventories.DeleteByIdAsync(inventoryId);
+                await _actionLogService.CreateActionLogAsync(ActionType.Delete, "Inventory", "Thêm sản phẩm vào kho");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
