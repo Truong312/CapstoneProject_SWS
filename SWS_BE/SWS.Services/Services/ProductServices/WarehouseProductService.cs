@@ -4,17 +4,31 @@ using SWS.Repositories.UnitOfWork;
 using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.ProductModel;
 using System.Linq;
-using SWS.Services.ApiModels.Commons;
+using SWS.Services.Services.LogServices;
+using System.Security.Claims;
+using SWS.BusinessObjects.Enums;
 
 namespace SWS.Services.Services.ProductServices
 {
     public class WarehouseProductService : IWarehouseProductService
     {
         private readonly IUnitOfWork _unitOfWork;
-
-        public WarehouseProductService(IUnitOfWork unitOfWork)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IActionLogService _actionLogService;
+        public WarehouseProductService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IActionLogService actionLogService)
         {
             _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
+            _actionLogService = actionLogService;
+        }
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                throw new Exception("User is not authenticated.");
+            }
+            return int.Parse(userIdClaim);
         }
 
         /// <summary>
@@ -135,6 +149,7 @@ namespace SWS.Services.Services.ProductServices
                 };
 
                 await _unitOfWork.Products.AddAsync(product);
+                await _actionLogService.CreateActionLogAsync(ActionType.Create, "Product", "Thêm sản phẩm mới");
                 await _unitOfWork.SaveChangesAsync();
 
                 return new ResultModel
@@ -184,7 +199,8 @@ namespace SWS.Services.Services.ProductServices
                 if (!string.IsNullOrEmpty(request.Image)) product.Image = request.Image;
                 if (!string.IsNullOrEmpty(request.Description)) product.Description = request.Description;
 
-                _unitOfWork.Products.UpdateAsync(product);
+                await _unitOfWork.Products.UpdateAsync(product);
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "Product", "Cập nhật sản phẩm");
                 await _unitOfWork.SaveChangesAsync();
 
                 return new ResultModel
@@ -223,7 +239,8 @@ namespace SWS.Services.Services.ProductServices
                     };
                 }
 
-                _unitOfWork.Products.DeleteAsync(product);
+                await _unitOfWork.Products.DeleteAsync(product);
+                await _actionLogService.CreateActionLogAsync(ActionType.Delete, "Product", "Xoá sản phẩm");
                 await _unitOfWork.SaveChangesAsync();
 
                 return new ResultModel
