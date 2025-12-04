@@ -361,22 +361,25 @@ namespace SWS.Services.Services.ExportOrderServices
                 if (updateExportOrder.TaxAmount.HasValue) exportOrder.TaxAmount = updateExportOrder.TaxAmount.Value;
                 if (updateExportOrder.TotalPayment.HasValue) exportOrder.TotalPayment = updateExportOrder.TotalPayment.Value;
                 if (!string.IsNullOrEmpty(updateExportOrder.Description)) exportOrder.Description = updateExportOrder.Description;
-                if (!string.IsNullOrEmpty(updateExportOrder.Status))
-                {
-                    if (Enum.TryParse<StatusEnums>(updateExportOrder.Status, true, out var validStatus))
-                    {
-                        exportOrder.Status = validStatus.ToString();
-                    }
-                    else
-                    {
-                        return new ResultModel
-                        {
-                            IsSuccess = false,
-                            Message = $"Trạng thái '{updateExportOrder.Status}' không hợp lệ. Vui lòng dùng: {string.Join(", ", Enum.GetNames(typeof(StatusEnums)))}",
-                            StatusCode = StatusCodes.Status400BadRequest
-                        };
-                    }
-                }
+
+                //Chuyển cập nhật status sang ReviewExportOrder
+
+                //if (!string.IsNullOrEmpty(updateExportOrder.Status))
+                //{
+                //    if (Enum.TryParse<StatusEnums>(updateExportOrder.Status, true, out var validStatus))
+                //    {
+                //        exportOrder.Status = validStatus.ToString();
+                //    }
+                //    else
+                //    {
+                //        return new ResultModel
+                //        {
+                //            IsSuccess = false,
+                //            Message = $"Trạng thái '{updateExportOrder.Status}' không hợp lệ. Vui lòng dùng: {string.Join(", ", Enum.GetNames(typeof(StatusEnums)))}",
+                //            StatusCode = StatusCodes.Status400BadRequest
+                //        };
+                //    }
+                //}
                 //update CreateBy ko hợp lý, không update
                 //if (updateExportOrder.CreatedBy.HasValue) exportOrder.CreatedBy = updateExportOrder.CreatedBy.Value;
                 await _actionLogService.CreateActionLogAsync(ActionType.Update, "ExportOrder", "Cập nhật đơn xuất");
@@ -471,7 +474,7 @@ namespace SWS.Services.Services.ExportOrderServices
                     await _actionLogService.CreateActionLogAsync(ActionType.Delete, "ExportDetail", "Xóa chi tiết đơn xuất hàng");
                 }
                 await _unitOfWork.ExportOrders.DeleteAsync(exportOrder);
-                await _actionLogService.CreateActionLogAsync(ActionType.Delete, "ExportOrder","Xóa đơn xuất hàng");
+                await _actionLogService.CreateActionLogAsync(ActionType.Delete, "ExportOrder", "Xóa đơn xuất hàng");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -541,7 +544,7 @@ namespace SWS.Services.Services.ExportOrderServices
                         StatusCode = StatusCodes.Status400BadRequest
                     };
                 }
-                if (endDate <=now) endDate = now;
+                if (endDate <= now) endDate = now;
                 var exportOrders = await _unitOfWork.ExportOrders.GetExportOrderByDate(startDate, endDate);
                 var result = exportOrders.Select(e => new ExportOrderResponse
                 {
@@ -562,10 +565,10 @@ namespace SWS.Services.Services.ExportOrderServices
                 });
                 return new ResultModel<IEnumerable<ExportOrderResponse>>
                 {
-                    IsSuccess=true,
-                    Message=$"Danh sách đơn xuất hàng từ ngày{startDate} đến ngày{endDate}",
-                    Data=result,
-                    StatusCode=StatusCodes.Status200OK
+                    IsSuccess = true,
+                    Message = $"Danh sách đơn xuất hàng từ ngày{startDate} đến ngày{endDate}",
+                    Data = result,
+                    StatusCode = StatusCodes.Status200OK
                 };
             }
             catch (Exception e)
@@ -578,6 +581,71 @@ namespace SWS.Services.Services.ExportOrderServices
                 };
             }
 
+        }
+        /// <summary>
+        /// Manager cập nhật ExportOrder status (example: Pending=> Completed)
+        /// </summary>
+        /// <param name="exportOrderId"></param>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        public async Task<ResultModel> ReviewExportOrder(int exportOrderId, string status)
+        {
+            try
+            {
+                
+                var exportOrder = await _unitOfWork.ExportOrders.GetByIdAsync(exportOrderId);
+                if (exportOrder == null)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = $"Không tìm thấy ExportOrder với id={exportOrderId}",
+                        StatusCode = StatusCodes.Status400BadRequest
+                    };
+                }
+                if (exportOrder.Status == status.ToString())
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = $"ExportOrder này đã có status là {exportOrder.Status}",
+                        StatusCode = StatusCodes.Status400BadRequest
+                    };
+                }
+                if (!string.IsNullOrEmpty(status))
+                {
+                    if (Enum.TryParse<StatusEnums>(status, true, out var validStatus))
+                    {
+                        exportOrder.Status = validStatus.ToString();
+                    }
+                    else
+                    {
+                        return new ResultModel
+                        {
+                            IsSuccess = false,
+                            Message = $"Trạng thái '{status}' không hợp lệ. Vui lòng dùng: {string.Join(", ", Enum.GetNames(typeof(StatusEnums)))}",
+                            StatusCode = StatusCodes.Status400BadRequest
+                        };
+                    }
+                }
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "ExportOrder", "Chốt đơn xuất hàng");
+                await _unitOfWork.SaveChangesAsync();
+                return new ResultModel
+                {
+                    IsSuccess=true,
+                    Message=$"Chốt đươn xuất hàng thành công, ExportOrder id={exportOrder.ExportOrderId} status =>{exportOrder.Status.ToString()}",
+                    StatusCode=StatusCodes.Status200OK
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi xảy ra khi chốt đơn xuất hàng: {e.Message}",
+                    StatusCode = StatusCodes.Status400BadRequest
+                };
+            }
         }
     }
 }
