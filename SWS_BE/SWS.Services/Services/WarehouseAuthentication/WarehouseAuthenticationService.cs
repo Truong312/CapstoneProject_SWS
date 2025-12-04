@@ -11,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using AutoMapper;
 using SWS.BusinessObjects.Dtos;
 using SWS.Services.ApiModels.Commons;
+using SWS.Services.Services.LogServices;
+using SWS.BusinessObjects.Enums;
 
 namespace SWS.Services.Services.WarehouseAuthentication
 {
@@ -20,17 +22,20 @@ namespace SWS.Services.Services.WarehouseAuthentication
         private readonly IConfiguration _configuration;
         private readonly IGoogleLoginService _googleLoginService;
         private readonly IMapper _mapper;
+        private readonly IActionLogService _actionLogService;
 
         public WarehouseAuthenticationService(
             IUnitOfWork unitOfWork, 
             IConfiguration configuration,
             IGoogleLoginService googleLoginService,
-            IMapper mapper)
+            IMapper mapper,
+            IActionLogService actionLogService)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _googleLoginService = googleLoginService;
             _mapper = mapper;
+            _actionLogService = actionLogService;
         }
 
         public async Task<ResultModel> RegisterAsync(RegisterWarehouseRequest request)
@@ -64,6 +69,7 @@ namespace SWS.Services.Services.WarehouseAuthentication
                 };
 
                 await _unitOfWork.Users.AddAsync(newUser);
+                await _actionLogService.CreateActionLogAsync(ActionType.Create, "User", "Thêm tài khoản mới");
                 await _unitOfWork.SaveChangesAsync();
 
                 // Generate JWT token
@@ -247,6 +253,7 @@ namespace SWS.Services.Services.WarehouseAuthentication
                 user.Role = request.Role;
 
                 await _unitOfWork.Users.UpdateAsync(user);
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "User", $"Cập nhật thông tin tài khoản{user.UserId}");
                 await _unitOfWork.SaveChangesAsync();
 
                 var userResponse = new UserResponseDto
@@ -317,6 +324,7 @@ namespace SWS.Services.Services.WarehouseAuthentication
                 // Hash and update new password
                 user.Password = PasswordHelper.HashPassword(newPassword);
                 await _unitOfWork.Users.UpdateAsync(user);
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "User", $"Cập nhật mật khẩu tài khoản id={user.UserId}");
                 await _unitOfWork.SaveChangesAsync();
 
                 return new ResultModel

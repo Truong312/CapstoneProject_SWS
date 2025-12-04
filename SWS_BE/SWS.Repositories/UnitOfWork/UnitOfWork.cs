@@ -15,6 +15,7 @@ using SWS.Repositories.Repositories.LocationRepo;
 using SWS.Repositories.Repositories.InventoryRepo;
 using SWS.Repositories.Repositories.CycleCountRepo;
 using SWS.Repositories.Repositories.CycleCountDetailRepo;
+using SWS.Repositories.Repositories.ActionLogRepo;
 namespace SWS.Repositories.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
@@ -46,7 +47,7 @@ namespace SWS.Repositories.UnitOfWork
 
         private ICycleCountRepository? _cycleCountRepository;
         private ICycleCountDetailRepository? _cycleCountDetailRepository;
-
+        private IActionLogRepository? _actionLogRepository;
 
         public UnitOfWork(SmartWarehouseDbContext context)
         {
@@ -96,6 +97,7 @@ namespace SWS.Repositories.UnitOfWork
         public ICycleCountDetailRepository CycleCountDetails => _cycleCountDetailRepository ??= new CycleCountDetailRepository(_context);
 
         public IInventoryRepository Inventories => _inventoryRepository ??= new InventoryRepository(_context);
+        public IActionLogRepository ActionLogs => _actionLogRepository ??= new ActionLogRepository(_context);
 
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
 

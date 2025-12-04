@@ -119,5 +119,26 @@ namespace SWS.ApiCore.Controllers
             }
             return Ok(result);
         }
+        [HttpGet("Date")]
+        public async Task<IActionResult> GetExportOrderByDate(DateOnly startDate,DateOnly endDate)
+        {
+            var result = await _exportOrderService.GetExportOrderByDate(startDate, endDate);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+        [HttpPut("Review")]
+        [Authorize(Roles ="2")]
+        public async Task<IActionResult> ReivewExportOrder(int exportOrderId,StatusEnums status)
+        {
+            var result = await _exportOrderService.ReviewExportOrder(exportOrderId, status.ToString());
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
     }
 }

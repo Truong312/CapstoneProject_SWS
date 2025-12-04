@@ -14,5 +14,6 @@ namespace SWS.Repositories.Repositories.ExportRepo
         Task<IEnumerable<ExportOrder>> GetShippedExportOrder();
         Task<IEnumerable<ExportOrder>> GetByStaff(int staffId);
         Task<IEnumerable<ExportDetail>> GetExportDetails(int exportOrderId);
+        Task<IEnumerable<ExportOrder>> GetExportOrderByDate(DateOnly startDate, DateOnly endDate);
     }
 }

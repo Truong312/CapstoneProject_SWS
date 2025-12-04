@@ -37,5 +37,10 @@ namespace SWS.Repositories.Repositories.ExportRepo
         {
             return await _context.ExportDetails.Where(e => e.ExportOrderId == exportOrderId).ToListAsync();
         }
+
+        public async Task<IEnumerable<ExportOrder>> GetExportOrderByDate(DateOnly startDate, DateOnly endDate)
+        {
+            return await _context.ExportOrders.Where(e => e.CreatedDate >= startDate && e.CreatedDate <= endDate).ToListAsync();
+        }
     }
 }

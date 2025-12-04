@@ -15,6 +15,7 @@ using SWS.Services.Services.WarehouseAuthentication;
 using SWS.Services.Services.WhisperServices;
 using SWS.Services.Services.ConvertSqlRawServices;
 using SWS.Services.Services.WarehouseLayoutServices;
+using SWS.Services.Services.LogServices;
 namespace SWS.ApiCore.Extensions;
 using SWS.Services.Services.WarehouseUserServices;
 
@@ -48,7 +49,8 @@ public static class ServicesConfig
         services.AddScoped<IWhisperService, WhisperService>();
         services.AddScoped<IWarehouseLayoutService, WarehouseLayoutService>();
         services.AddScoped<IWarehouseUserAdminService, WarehouseUserAdminService>();
-
+        services.AddScoped<IInventoryService, InventoryService>();
+        services.AddScoped<IActionLogService, ActionLogService>();
         #endregion
 
         #region Helpers
