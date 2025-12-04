@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -10,15 +11,29 @@ using SWS.Repositories.UnitOfWork;
 using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.ExportDetailModel;
 using SWS.Services.ApiModels.ExportOrderModel;
+using SWS.Services.Services.LogServices;
 
 namespace SWS.Services.Services.ExportOrderServices
 {
     public class ExportOrderService : IExportOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public ExportOrderService(IUnitOfWork unitOfWork)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IActionLogService _actionLogService;
+        public ExportOrderService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IActionLogService actionLogService)
         {
             _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
+            _actionLogService = actionLogService;
+        }
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                throw new Exception("User is not authenticated.");
+            }
+            return int.Parse(userIdClaim);
         }
         private StatusEnums? ParseStatus(string? status)
         {
@@ -257,9 +272,10 @@ namespace SWS.Services.Services.ExportOrderServices
                     TotalPayment = createExportOrder.TotalPayment,
                     Description = createExportOrder.Description,
                     Status = StatusEnums.Pending.ToString(),
-                    CreatedBy = createExportOrder.CreatedBy
+                    CreatedBy = GetCurrentUserId()
                 };
                 await _unitOfWork.ExportOrders.AddAsync(exportOrder);
+                await _actionLogService.CreateActionLogAsync(ActionType.Create, "ExportOrder", "Tạo đơn xuất mới");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -301,6 +317,7 @@ namespace SWS.Services.Services.ExportOrderServices
 
                 };
                 await _unitOfWork.ExportDetails.AddAsync(exportDetail);
+                await _actionLogService.CreateActionLogAsync(ActionType.Create, "ExportDetail", "Tạo chi tiết đơn xuất mới");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -360,7 +377,9 @@ namespace SWS.Services.Services.ExportOrderServices
                         };
                     }
                 }
-                if (updateExportOrder.CreatedBy.HasValue) exportOrder.CreatedBy = updateExportOrder.CreatedBy.Value;
+                //update CreateBy ko hợp lý, không update
+                //if (updateExportOrder.CreatedBy.HasValue) exportOrder.CreatedBy = updateExportOrder.CreatedBy.Value;
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "ExportOrder", "Cập nhật đơn xuất");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -389,7 +408,7 @@ namespace SWS.Services.Services.ExportOrderServices
                     return new ResultModel
                     {
                         IsSuccess = false,
-                        Message = "Không thể cập nhật thông tin chi tiết hoá đơn xuất hàng",
+                        Message = "Không thể cập nhật thông tin chi tiết đơn xuất hàng",
                         StatusCode = StatusCodes.Status404NotFound
                     };
                 }
@@ -412,12 +431,12 @@ namespace SWS.Services.Services.ExportOrderServices
                     }
                     exportDetail.TotalPrice = unitPrice * exportDetail.Quantity;
                 }
-
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "ExportDetail", "Cập nhật chi tiết đơn xuất");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
                     IsSuccess = true,
-                    Message = "Cập nhật thông tin chi tiết hoá đơn xuất hàng thành công",
+                    Message = "Cập nhật thông tin chi tiết đơn xuất hàng thành công",
                     StatusCode = StatusCodes.Status200OK
                 };
             }
@@ -426,7 +445,7 @@ namespace SWS.Services.Services.ExportOrderServices
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi cập nhật thông tin chi tiết hoá đơn xuất hàng: {e.Message}",
+                    Message = $"Lỗi khi cập nhật thông tin chi tiết đơn xuất hàng: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -441,7 +460,7 @@ namespace SWS.Services.Services.ExportOrderServices
                     return new ResultModel
                     {
                         IsSuccess = false,
-                        Message = "Không tìm thấy hoá đơn xuất hàng để xóa",
+                        Message = "Không tìm thấy đơn xuất hàng để xóa",
                         StatusCode = StatusCodes.Status404NotFound
                     };
                 }
@@ -449,13 +468,15 @@ namespace SWS.Services.Services.ExportOrderServices
                 foreach (var exportDetail in exportDetails)
                 {
                     await _unitOfWork.ExportDetails.DeleteAsync(exportDetail);
+                    await _actionLogService.CreateActionLogAsync(ActionType.Delete, "ExportDetail", "Xóa chi tiết đơn xuất hàng");
                 }
                 await _unitOfWork.ExportOrders.DeleteAsync(exportOrder);
+                await _actionLogService.CreateActionLogAsync(ActionType.Delete, "ExportOrder","Xóa đơn xuất hàng");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
                     IsSuccess = true,
-                    Message = "Xóa hoá đơn xuất hàng thành công",
+                    Message = "Xóa đơn xuất hàng thành công",
                     StatusCode = StatusCodes.Status200OK
                 };
             }
@@ -464,7 +485,7 @@ namespace SWS.Services.Services.ExportOrderServices
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi xóa hoá đơn xuất hàng: {e.Message}",
+                    Message = $"Lỗi khi xóa đơn xuất hàng: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
@@ -479,18 +500,19 @@ namespace SWS.Services.Services.ExportOrderServices
                     return new ResultModel
                     {
                         IsSuccess = false,
-                        Message = "Không tìm thấy thông tin chi tiết hoá đơn xuất hàng để xóa",
+                        Message = "Không tìm thấy thông tin chi tiết đơn xuất hàng để xóa",
                         StatusCode = StatusCodes.Status404NotFound
                     };
                 }
 
                 await _unitOfWork.ExportDetails.DeleteAsync(exportDetail);
+                await _actionLogService.CreateActionLogAsync(ActionType.Delete, "ExportDetail", "Xóa chi tiết đơn xuất hàng");
                 await _unitOfWork.SaveChangesAsync();
 
                 return new ResultModel
                 {
                     IsSuccess = true,
-                    Message = "Xóa thông tin chi tiết hoá đơn xuất hàng thành công",
+                    Message = "Xóa thông tin chi tiết đơn xuất hàng thành công",
                     StatusCode = StatusCodes.Status200OK
                 };
             }
@@ -499,7 +521,7 @@ namespace SWS.Services.Services.ExportOrderServices
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi xóa thông tin chi tiết hoá đơn xuất hàng: {e.Message}",
+                    Message = $"Lỗi khi xóa thông tin chi tiết đơn xuất hàng: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
