@@ -28,9 +28,20 @@ namespace SWS.ApiCore.Controllers
         }
         [Authorize(Roles = "2,3")]
         [HttpPut("{cycleCountDetailId:int}/update")]
-        public async Task<IActionResult> UpdateCycleCountRecordedQuantity(int cycleCountDetailId, int recordedQuantity)
+        public async Task<IActionResult> UpdateCycleCountRecordedQuantity(int cycleCountId, int productId, int countedQuantity)
         {
-            var result = await _cycleCountService.UpdateCountedQuantityAsync(cycleCountDetailId, recordedQuantity);
+            var result = await _cycleCountService.UpdateCountedQuantityAsync(cycleCountId, productId, countedQuantity);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+        [Authorize(Roles = "2,3")]
+        [HttpPut("{cycleCountDetailName}/update")]
+        public async Task<IActionResult> UpdateCycleCountRecordedQuantity(string cycleCountName, int productId, int countedQuantity)
+        {
+            var result = await _cycleCountService.UpdateCountedQuantityAsync(cycleCountName, productId, countedQuantity);
             if (!result.IsSuccess)
             {
                 return BadRequest(result);
