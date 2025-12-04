@@ -19,7 +19,7 @@ namespace SWS.Services.Services.CycleCountServices
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IActionLogService _actionLogService;
 
-        public CycleCountService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor,IActionLogService actionLogService)
+        public CycleCountService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IActionLogService actionLogService)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
@@ -34,11 +34,15 @@ namespace SWS.Services.Services.CycleCountServices
             }
             return int.Parse(userIdClaim);
         }
+        /// <summary>
+        /// Tạo Cycle Count mới
+        /// </summary>
+        /// <returns></returns>
         public async Task<ResultModel> StartCycleCountAsync()
         {
             try
             {
-                var userId= GetCurrentUserId();
+                var userId = GetCurrentUserId();
                 var now = DateOnly.FromDateTime(DateTime.Now);
                 var cycleName = $"Q{((now.Month) - 1) / 3 + 1}_{now.Year}";
                 var cycleCheck = await _unitOfWork.CycleCounts.GetByName(cycleName);
@@ -78,7 +82,7 @@ namespace SWS.Services.Services.CycleCountServices
                     };
                     await _unitOfWork.CycleCountDetails.AddAsync(detail);
                 }
-                await _actionLogService.CreateActionLogAsync(ActionType.Create,"CycleCount",$"Đã tạo cycle count mới với tên {cycle.CycleName}");
+                await _actionLogService.CreateActionLogAsync(ActionType.Create, "CycleCount", $"Đã tạo cycle count mới với tên {cycle.CycleName}");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -98,12 +102,22 @@ namespace SWS.Services.Services.CycleCountServices
             }
         }
 
-        public async Task<ResultModel> UpdateCountedQuantityAsync(int detailId, int countedQuantity)
+        /// <summary>
+        /// Staff Update CycleCountDetail
+        /// </summary>
+        /// <param name="cycleCountId"></param>
+        /// <param name="productId"></param>
+        /// <param name="countedQuantity"></param>
+        /// <returns></returns>
+
+        public async Task<ResultModel> UpdateCountedQuantityAsync(int cycleCountId, int productId, int countedQuantity)
         {
             try
             {
-                var userId = GetCurrentUserId();
-                var detail = await _unitOfWork.CycleCountDetails.GetByIdAsync(detailId);
+                var now = DateOnly.FromDateTime(DateTime.Now);
+                var cycleName = $"Q{((now.Month) - 1) / 3 + 1}_{now.Year}";
+                var cycleCheck = await _unitOfWork.CycleCounts.GetByName(cycleName);
+                var detail = await _unitOfWork.CycleCountDetails.GetByCycleCountIdAndProductId(cycleCountId, productId);
                 if (detail == null)
                 {
                     return new ResultModel
@@ -115,7 +129,7 @@ namespace SWS.Services.Services.CycleCountServices
                 }
                 detail.CountedQuantity = countedQuantity;
                 detail.CheckedDate = DateTime.Now;
-                await  _actionLogService.CreateActionLogAsync(ActionType.Update, "CycleCountDetail", $"Update Cycle count detail id{detail.DetailId}");
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "CycleCountDetail", $"Update Cycle count with product{productId}");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -134,7 +148,57 @@ namespace SWS.Services.Services.CycleCountServices
                 };
             }
         }
+        /// <summary>
+        /// Staff Update CycleCountDetail
+        /// </summary>
+        /// <param name="cycleCountName"></param>
+        /// <param name="productId"></param>
+        /// <param name="countedQuantity"></param>
+        /// <returns></returns>
 
+        public async Task<ResultModel> UpdateCountedQuantityAsync(string cycleCountName, int productId, int countedQuantity)
+        {
+            try
+            {
+                var now = DateOnly.FromDateTime(DateTime.Now);
+                var cycleName = $"Q{((now.Month) - 1) / 3 + 1}_{now.Year}";
+                var cycleCheck = await _unitOfWork.CycleCounts.GetByName(cycleName);
+                var detail = await _unitOfWork.CycleCountDetails.GetByCycleCountNameAndProductId(cycleCountName, productId);
+                if (detail == null)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = "Không tìm thấy cycle count detail",
+                        StatusCode = StatusCodes.Status500InternalServerError
+                    };
+                }
+                detail.CountedQuantity = countedQuantity;
+                detail.CheckedDate = DateTime.Now;
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "CycleCountDetail", $"Update Cycle count with product{productId}");
+                await _unitOfWork.SaveChangesAsync();
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Message = "Đã cập nhật cycle count quantity",
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi xảy ra khi cập nhật cycle count quantity: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
+        /// <summary>
+        /// Tổng kết CycleCount(Status Pending => Completed), Update inventory quantity nếu cần(difference!=0)
+        /// </summary>
+        /// <param name="cycleCountId"></param>
+        /// <returns></returns>
         public async Task<ResultModel> FinalizeCycleCountAsync(int cycleCountId)
         {
             try
@@ -171,7 +235,7 @@ namespace SWS.Services.Services.CycleCountServices
                                 StatusCode = StatusCodes.Status500InternalServerError
                             };
                         }
-                        await _actionLogService.CreateActionLogAsync(ActionType.Update, "CycleCountDetail", $"Adjust quantity of {product.SerialNumber}");
+                        await _actionLogService.CreateActionLogAsync(ActionType.Update, "Inventory", $"Adjust quantity of {product.SerialNumber}");
                     }
                 }
                 //CycleCount Task has been completed
@@ -195,7 +259,11 @@ namespace SWS.Services.Services.CycleCountServices
                 };
             }
         }
-
+        /// <summary>
+        /// Tổng kết CycleCount(Status Pending => Completed), Update inventory quantity nếu cần(difference!=0)
+        /// </summary>
+        /// <param name="cycleCountName"></param>
+        /// <returns></returns>
         public async Task<ResultModel> FinalizeCycleCountAsync(string cycleCountName)
         {
             try
