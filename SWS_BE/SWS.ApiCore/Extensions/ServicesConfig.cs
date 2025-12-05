@@ -54,6 +54,7 @@ public static class ServicesConfig
         services.AddScoped<IInventoryService, InventoryService>();
         services.AddScoped<IActionLogService, ActionLogService>();
         services.AddScoped<ITransactionLogService, TransactionLogService>();
+        services.AddScoped<IDashboardService, DashboardService>();
         #endregion
 
         #region Helpers

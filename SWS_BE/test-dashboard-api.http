@@ -3,7 +3,7 @@
 ### ============================================
 ### Base URL và Authentication
 @baseUrl = http://localhost:8080/api
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6IkFkbWluIiwicm9sZSI6IjIiLCJleHAiOjE3MzM1MjAwMDB9.xxxxx
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiIxIiwibmJmIjoxNzY0OTUyNzM1LCJleHAiOjE3NjQ5NTQ1MzUsImlzcyI6IkFwcEJhY2tlbmQiLCJhdWQiOiJBcHBCYWNrZW5kVXNlcnMifQ.r-K8Dm8ftQ2LTT96N9J5jjAdHxi1A6kes938h8Jl0Q4
 
 ### ============================================
 ### 1. TÀI CHÍNH & HIỆU QUẢ (Giám đốc, Kế toán trưởng)

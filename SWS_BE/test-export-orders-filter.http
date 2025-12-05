@@ -1,0 +1,64 @@
+### Biến môi trường
+@baseUrl = http://localhost:8080
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiIxIiwibmJmIjoxNzY0OTUyNzM1LCJleHAiOjE3NjQ5NTQ1MzUsImlzcyI6IkFwcEJhY2tlbmQiLCJhdWQiOiJBcHBCYWNrZW5kVXNlcnMifQ.r-K8Dm8ftQ2LTT96N9J5jjAdHxi1A6kes938h8Jl0Q4
+
+### 1. Lấy tất cả ExportOrder với filter đầy đủ - Không có filter (trang 1, 10 items)
+GET {{baseUrl}}/api/ExportOrder/Filter
+Authorization: Bearer {{token}}
+
+### 2. Filter theo ngày (từ ngày đến ngày)
+GET {{baseUrl}}/api/ExportOrder/Filter?from=2024-01-01&to=2024-12-31
+Authorization: Bearer {{token}}
+
+### 3. Filter theo trạng thái (Pending)
+GET {{baseUrl}}/api/ExportOrder/Filter?status=Pending
+Authorization: Bearer {{token}}
+
+### 4. Filter theo trạng thái (Completed)
+GET {{baseUrl}}/api/ExportOrder/Filter?status=Completed
+Authorization: Bearer {{token}}
+
+### 5. Filter theo CustomerId
+GET {{baseUrl}}/api/ExportOrder/Filter?customerId=1
+Authorization: Bearer {{token}}
+
+### 6. Filter theo CreatedBy (người tạo)
+GET {{baseUrl}}/api/ExportOrder/Filter?createdBy=1
+Authorization: Bearer {{token}}
+
+### 7. Filter theo InvoiceNumber (partial match)
+GET {{baseUrl}}/api/ExportOrder/Filter?invoiceNumber=INV
+Authorization: Bearer {{token}}
+
+### 8. Filter kết hợp: Ngày + Trạng thái + CustomerId
+GET {{baseUrl}}/api/ExportOrder/Filter?from=2024-01-01&to=2024-12-31&status=Pending&customerId=1
+Authorization: Bearer {{token}}
+
+### 9. Filter kết hợp đầy đủ tất cả tham số
+GET {{baseUrl}}/api/ExportOrder/Filter?from=2024-01-01&to=2024-12-31&status=Pending&customerId=1&createdBy=1&invoiceNumber=INV-001
+Authorization: Bearer {{token}}
+
+### 10. Phân trang - Trang 1, mỗi trang 5 items
+GET {{baseUrl}}/api/ExportOrder/Filter?pageNumber=1&pageSize=5
+Authorization: Bearer {{token}}
+
+### 11. Phân trang - Trang 2, mỗi trang 5 items
+GET {{baseUrl}}/api/ExportOrder/Filter?pageNumber=2&pageSize=5
+Authorization: Bearer {{token}}
+
+### 12. Phân trang với filter - Trang 1, 20 items, chỉ lấy status=Completed
+GET {{baseUrl}}/api/ExportOrder/Filter?status=Completed&pageNumber=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### 13. Filter theo khoảng thời gian gần đây (30 ngày qua) + Phân trang
+GET {{baseUrl}}/api/ExportOrder/Filter?from=2024-11-01&to=2024-12-06&pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### 14. Lấy trang với pageSize lớn nhất (100 items - giới hạn tối đa)
+GET {{baseUrl}}/api/ExportOrder/Filter?pageSize=100
+Authorization: Bearer {{token}}
+
+### 15. Filter theo CustomerId + Phân trang
+GET {{baseUrl}}/api/ExportOrder/Filter?customerId=1&pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+

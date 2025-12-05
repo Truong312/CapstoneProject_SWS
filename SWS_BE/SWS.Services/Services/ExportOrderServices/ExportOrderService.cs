@@ -657,5 +657,116 @@ namespace SWS.Services.Services.ExportOrderServices
                 };
             }
         }
+
+        /// <summary>
+        /// Lấy danh sách ExportOrder với filter đầy đủ và phân trang
+        /// </summary>
+        public async Task<ResultModel<PagedResponseDto<ExportOrderResponse>>> GetExportOrdersWithFilterAsync(
+            DateOnly? fromDate,
+            DateOnly? toDate,
+            string? status,
+            int? customerId,
+            int? createdBy,
+            string? invoiceNumber,
+            int pageNumber = 1,
+            int pageSize = 10)
+        {
+            try
+            {
+                // Validate pagination parameters
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize < 1) pageSize = 10;
+                if (pageSize > 100) pageSize = 100; // Giới hạn tối đa
+
+                // Lấy tất cả export orders
+                var exportOrders = await _unitOfWork.ExportOrders.GetAllAsync();
+                var query = exportOrders.AsQueryable();
+
+                // Apply filters
+                if (fromDate.HasValue)
+                {
+                    query = query.Where(e => e.OrderDate >= fromDate.Value);
+                }
+
+                if (toDate.HasValue)
+                {
+                    query = query.Where(e => e.OrderDate <= toDate.Value);
+                }
+
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    query = query.Where(e => string.Equals(e.Status, status, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (customerId.HasValue)
+                {
+                    query = query.Where(e => e.CustomerId == customerId.Value);
+                }
+
+                if (createdBy.HasValue)
+                {
+                    query = query.Where(e => e.CreatedBy == createdBy.Value);
+                }
+
+                if (!string.IsNullOrWhiteSpace(invoiceNumber))
+                {
+                    query = query.Where(e => e.InvoiceNumber != null && 
+                        e.InvoiceNumber.Contains(invoiceNumber, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // Get total count before pagination
+                var totalCount = query.Count();
+
+                // Apply pagination
+                var pagedData = query
+                    .OrderByDescending(e => e.OrderDate)
+                    .ThenByDescending(e => e.ExportOrderId)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(e => new ExportOrderResponse
+                    {
+                        ExportOrderId = e.ExportOrderId,
+                        InvoiceNumber = e.InvoiceNumber,
+                        OrderDate = e.OrderDate,
+                        CustomerId = e.CustomerId,
+                        Currency = e.Currency,
+                        CreatedDate = e.CreatedDate,
+                        ShippedDate = e.ShippedDate,
+                        ShippedAddress = e.ShippedAddress,
+                        TaxRate = e.TaxRate,
+                        TaxAmount = e.TaxAmount,
+                        TotalPayment = e.TotalPayment,
+                        Description = e.Description,
+                        Status = ParseStatus(e.Status),
+                        CreatedBy = e.CreatedBy
+                    })
+                    .ToList();
+
+                var pagedResult = new PagedResponseDto<ExportOrderResponse>
+                {
+                    Total = totalCount,
+                    Page = pageNumber,
+                    PageSize = pageSize,
+                    Items = pagedData
+                };
+
+                return new ResultModel<PagedResponseDto<ExportOrderResponse>>
+                {
+                    IsSuccess = true,
+                    Message = $"Lấy danh sách ExportOrder thành công. Trang {pageNumber}/{Math.Ceiling((double)totalCount / pageSize)}",
+                    Data = pagedResult,
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<PagedResponseDto<ExportOrderResponse>>
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi khi lấy danh sách ExportOrder: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+        }
     }
 }

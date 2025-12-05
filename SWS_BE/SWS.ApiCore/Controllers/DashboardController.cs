@@ -31,7 +31,6 @@ namespace SWS.ApiCore.Controllers
         /// <param name="endDate">Ngày kết thúc (format: yyyy-MM-dd)</param>
         /// <returns>Xu hướng nhập/xuất/tồn kho theo thời gian</returns>
         [HttpGet("finance/trend-analysis")]
-        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> GetTrendAnalysis(
             [FromQuery] DateOnly startDate, 
             [FromQuery] DateOnly endDate)
@@ -50,7 +49,6 @@ namespace SWS.ApiCore.Controllers
         /// <param name="count">Số kỳ cần so sánh (mặc định 6)</param>
         /// <returns>So sánh tăng trưởng và cảnh báo ứ đọng vốn</returns>
         [HttpGet("finance/period-comparison")]
-        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> GetPeriodComparison(
             [FromQuery] string periodType = "month", 
             [FromQuery] int count = 6)
@@ -67,7 +65,6 @@ namespace SWS.ApiCore.Controllers
         /// </summary>
         /// <returns>Phân tích giá trị (cho KT) và số lượng (cho Thủ kho)</returns>
         [HttpGet("finance/value-vs-quantity")]
-        [Authorize(Policy = "StaffOrManager")]
         public async Task<IActionResult> GetValueVsQuantityAnalysis()
         {
             var result = await _dashboardService.GetValueVsQuantityAnalysisAsync();
@@ -101,7 +98,6 @@ namespace SWS.ApiCore.Controllers
         /// </summary>
         /// <returns>Phân tích công suất và đề xuất điều chuyển hàng</returns>
         [HttpGet("operations/warehouse-balance")]
-        [Authorize(Policy = "StaffOrManager")]
         public async Task<IActionResult> GetWarehouseBalanceAnalysis()
         {
             var result = await _dashboardService.GetWarehouseBalanceAnalysisAsync();
@@ -120,7 +116,6 @@ namespace SWS.ApiCore.Controllers
         /// </summary>
         /// <returns>Danh sách cảnh báo thiếu hàng và gợi ý đặt hàng</returns>
         [HttpGet("risk/minimum-stock-alerts")]
-        [Authorize(Policy = "StaffOrManager")]
         public async Task<IActionResult> GetMinimumStockAlerts()
         {
             var result = await _dashboardService.GetMinimumStockAlertsAsync();
@@ -136,7 +131,6 @@ namespace SWS.ApiCore.Controllers
         /// <param name="daysThreshold">Ngưỡng cảnh báo (số ngày, mặc định 30)</param>
         /// <returns>Danh sách sản phẩm sắp hết hạn với ưu tiên xuất kho</returns>
         [HttpGet("risk/expiry-analysis")]
-        [Authorize(Policy = "StaffOrManager")]
         public async Task<IActionResult> GetExpiryDateAnalysis([FromQuery] int daysThreshold = 30)
         {
             var result = await _dashboardService.GetExpiryDateAnalysisAsync(daysThreshold);
@@ -151,7 +145,6 @@ namespace SWS.ApiCore.Controllers
         /// </summary>
         /// <returns>Báo cáo chi tiết hàng quá hạn với tổng thiệt hại</returns>
         [HttpGet("risk/dead-stock-report")]
-        [Authorize(Policy = "ManagerOnly")]
         public async Task<IActionResult> GetDeadStockReport()
         {
             var result = await _dashboardService.GetDeadStockReportAsync();
@@ -170,7 +163,6 @@ namespace SWS.ApiCore.Controllers
         /// </summary>
         /// <returns>Tổng hợp các chỉ số: Tài chính, Vận hành, Rủi ro</returns>
         [HttpGet("overview")]
-        [Authorize(Policy = "StaffOrManager")]
         public async Task<IActionResult> GetDashboardOverview()
         {
             var result = await _dashboardService.GetDashboardOverviewAsync();

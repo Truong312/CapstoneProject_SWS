@@ -32,5 +32,17 @@ namespace SWS.Services.Services.ExportOrderServices
         Task<ResultModel> UpdateExportDetailAsync(int exportDetailId, UpdateExportDetail updateExportDetail);
         Task<ResultModel> DeleteExportOrderAsync(int exportOrderId);
         Task<ResultModel> DeleteExportDetailAsync(int exportDetailId);
+        /// <summary>
+        /// Lấy danh sách ExportOrder với filter đầy đủ và phân trang
+        /// </summary>
+        Task<ResultModel<PagedResponseDto<ExportOrderResponse>>> GetExportOrdersWithFilterAsync(
+            DateOnly? fromDate, 
+            DateOnly? toDate, 
+            string? status, 
+            int? customerId, 
+            int? createdBy,
+            string? invoiceNumber,
+            int pageNumber = 1, 
+            int pageSize = 10);
     }
 }
