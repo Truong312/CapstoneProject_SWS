@@ -13,6 +13,7 @@ namespace SWS.Repositories.Repositories.InventoryRepo
     public interface IInventoryRepository: IGenericRepository<Inventory>
     {
         Task<Inventory> GetByProductId(int productId);
+        Task UpdateQuantity(int productId, int quantity);
     }
 
 }

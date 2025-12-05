@@ -65,7 +65,7 @@ namespace SWS.Services.Services.LogServices
                 return new ResultModel
                 {
                     IsSuccess = false,
-                    Message = $"Lỗi khi tạo action log",
+                    Message = $"Lỗi khi tạo action log: {e.Message}",
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
