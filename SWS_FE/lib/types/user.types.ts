@@ -12,6 +12,36 @@ export interface User {
   role: UserRole;
 }
 
+// User Profile (from API)
+export interface UserProfile {
+  userId: number;
+  username: string;
+  email: string;
+  fullName: string;
+  phoneNumber?: string;
+  address?: string;
+  roleId: number;
+  roleName: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+// Update Profile Request
+export interface UpdateProfileRequest {
+  username?: string;
+  email: string;
+  fullName: string;
+  phoneNumber?: string;
+  address?: string;
+  roleId?: number;
+}
+
+// Change Password Request
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
 // Role enum
 export enum UserRole {
   User = 0,

@@ -7,6 +7,14 @@ export enum OrderStatus {
   Cancelled = 'Cancelled',
 }
 
+// Export Order Status Enum (as per backend)
+export enum ExportOrderStatus {
+  Pending = 0,
+  Shipped = 1,
+  Completed = 2,
+  Canceled = 3,
+}
+
 // Import Order Types
 export interface ImportOrderItem {
   importDetailId?: number;
@@ -66,11 +74,13 @@ export interface CreateImportOrderResponse {
 
 // Export Order Types
 export interface ExportOrderItem {
-  exportDetailId?: number;
+  exportDetailId: number;
   productId: number;
   productName?: string;
   quantity: number;
+  unitPrice?: number;
   exportPrice?: number;
+  totalPrice?: number;
 }
 
 export interface ExportOrder {
@@ -103,9 +113,8 @@ export interface ExportOrderListItem {
   totalPayment?: number;
 }
 
-export interface ExportOrderDetail extends ExportOrder {
-  items: ExportOrderItem[];
-}
+// ExportOrderDetail is same as ExportOrderItem - returned by /Details endpoint
+export type ExportOrderDetail = ExportOrderItem;
 
 export interface CreateExportOrderRequest {
   invoiceNumber: string;
@@ -279,4 +288,16 @@ export interface OrderQueryParams {
   to?: string;
   page?: number;
   pageSize?: number;
+}
+
+// Export Order Filter Params
+export interface ExportOrderFilterParams {
+  from?: string; // yyyy-MM-dd
+  to?: string; // yyyy-MM-dd
+  status?: string; // "Pending", "Shipped", "Completed", "Canceled"
+  customerId?: number;
+  createdBy?: number;
+  invoiceNumber?: string;
+  pageNumber?: number; // starts from 1
+  pageSize?: number; // max 100
 }
