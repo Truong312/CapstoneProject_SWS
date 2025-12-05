@@ -1,13 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SWS.BusinessObjects.DTOs;
 using SWS.BusinessObjects.Models;
+using SWS.Repositories.Generic;
 
 namespace SWS.Repositories.Repositories.ImportOrders;
 
-public class ImportOrderQueryRepository : IImportOrderQueryRepository
+public class ImportOrderQueryRepository : GenericRepository<ImportOrder>, IImportOrderQueryRepository
 {
     private readonly SmartWarehouseDbContext _ctx;
-    public ImportOrderQueryRepository(SmartWarehouseDbContext ctx) => _ctx = ctx;
+    
+    public ImportOrderQueryRepository(SmartWarehouseDbContext ctx) : base(ctx)
+    {
+        _ctx = ctx;
+    }
 
     public async Task<ImportOrderListResult> GetListAsync(ImportOrderListQuery q, CancellationToken ct = default)
     {

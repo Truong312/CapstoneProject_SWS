@@ -7,6 +7,7 @@ using SWS.Services.ConvertSqlRawServices;
 using SWS.Services.Helpers;
 using SWS.Services.RateLimiting;
 using SWS.Services.Services.CycleCountServices;
+using SWS.Services.Services.DashboardServices;
 using SWS.Services.Services.Email;
 using SWS.Services.Services.ExportOrderServices;
 using SWS.Services.Services.InventoryServices;
@@ -16,8 +17,9 @@ using SWS.Services.Services.WhisperServices;
 using SWS.Services.Services.ConvertSqlRawServices;
 using SWS.Services.Services.WarehouseLayoutServices;
 using SWS.Services.Services.LogServices;
-namespace SWS.ApiCore.Extensions;
 using SWS.Services.Services.WarehouseUserServices;
+
+namespace SWS.ApiCore.Extensions;
 
 public static class ServicesConfig
 {
@@ -51,6 +53,7 @@ public static class ServicesConfig
         services.AddScoped<IWarehouseUserAdminService, WarehouseUserAdminService>();
         services.AddScoped<IInventoryService, InventoryService>();
         services.AddScoped<IActionLogService, ActionLogService>();
+        services.AddScoped<ITransactionLogService, TransactionLogService>();
         #endregion
 
         #region Helpers
