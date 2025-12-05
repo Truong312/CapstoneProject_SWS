@@ -46,4 +46,9 @@ namespace SWS.BusinessObjects.Enums
         Login=4,
         Logout=5
     }
+    public enum TransactionType//for transactionLog
+    {
+        Export=1,
+        Import=2
+    }
 }

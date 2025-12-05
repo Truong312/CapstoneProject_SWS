@@ -20,11 +20,14 @@ namespace SWS.Services.Services.ExportOrderServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IActionLogService _actionLogService;
-        public ExportOrderService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IActionLogService actionLogService)
+        private readonly ITransactionLogService _transactionLogService;
+        public ExportOrderService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor,
+            IActionLogService actionLogService, ITransactionLogService transactionLogService)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
             _actionLogService = actionLogService;
+            _transactionLogService = transactionLogService;
         }
         private int GetCurrentUserId()
         {
@@ -318,6 +321,13 @@ namespace SWS.Services.Services.ExportOrderServices
                 };
                 await _unitOfWork.ExportDetails.AddAsync(exportDetail);
                 await _actionLogService.CreateActionLogAsync(ActionType.Create, "ExportDetail", "Tạo chi tiết đơn xuất mới");
+                await _unitOfWork.Inventories.UpdateQuantity(exportDetail.ProductId, -exportDetail.Quantity);
+                await _transactionLogService.CreateTransactionLogAsync(exportOrderId,
+                                                                       exportDetail.ProductId,
+                                                                       exportDetail.Quantity,
+                                                                       TransactionType.Export,
+                                                                       $"Shipment to {exportOrder.ShippedAddress}",
+                                                                       -exportDetail.Quantity);
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
