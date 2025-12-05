@@ -327,7 +327,7 @@ namespace SWS.Services.Services.ExportOrderServices
                                                                        exportDetail.Quantity,
                                                                        TransactionType.Export,
                                                                        $"Shipment to {exportOrder.ShippedAddress}",
-                                                                       exportDetail.Quantity);
+                                                                       -exportDetail.Quantity);
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
