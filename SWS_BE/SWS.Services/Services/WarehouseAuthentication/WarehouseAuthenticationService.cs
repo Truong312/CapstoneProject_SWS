@@ -147,7 +147,7 @@ namespace SWS.Services.Services.WarehouseAuthentication
                     Address = user.Address,
                     Role = user.Role
                 };
-
+                await _actionLogService.CreateActionLogAsync(ActionType.Login, "User", $"User {userResponse.UserId} đăng nhập vào lúc {DateTime.Now}");
                 return new ResultModel
                 {
                     IsSuccess = true,
@@ -447,6 +447,40 @@ namespace SWS.Services.Services.WarehouseAuthentication
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<ResultModel> LogoutAsync()
+        {
+            try
+            {
+                var userId = _actionLogService.GetCurrentUserId();
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = $"Không tìm thấy người dùng với Id={userId}",
+                        StatusCode = StatusCodes.Status400BadRequest
+                    };
+                }
+                await _actionLogService.CreateActionLogAsync(ActionType.Logout, "User", $"User {user.UserId} đã logout vào lúc {DateTime.Now}");
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Message = "Đăng xuất thành công",
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch(Exception e)
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Message = $"Lỗi xảy ra khi đăng xuất: {e.Message}",
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
         }
     }
 }

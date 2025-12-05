@@ -228,6 +228,22 @@ namespace SWS.ApiCore.Controllers
 
             return Ok(result);
         }
+        /// <summary>
+        /// Call Api này sẽ tạo actionLog người dùng đã logout
+        /// Chạy Api trên swagger sẽ không có tác dụng logout
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("Logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var result = await _authService.LogoutAsync();
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
     }
 
     public class ChangePasswordRequest
