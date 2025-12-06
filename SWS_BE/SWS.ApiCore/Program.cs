@@ -82,9 +82,11 @@ builder.Services.AddScoped<IReturnOrderQueryRepository, ReturnOrderQueryReposito
 builder.Services.AddScoped<IReturnLookupService, ReturnLookupService>();
 builder.Services.AddScoped<IReturnOrderQueryService, ReturnOrderQueryService>();
 
-// ➕ Return: Command (Review)
+// ➕ Return: Command (Review+Create)
 builder.Services.AddScoped<IReturnOrderCommandRepository, ReturnOrderCommandRepository>();
 builder.Services.AddScoped<IReturnOrderReviewService, ReturnOrderReviewService>();
+builder.Services.AddScoped<IReturnOrderCommandService, ReturnOrderCommandService>();
+
 
 // Import Orders
 builder.Services.AddScoped<IImportOrderQueryRepository, ImportOrderQueryRepository>();
