@@ -415,3 +415,5 @@ SWS_BE/WhisperVoice/.idea/*
 SWS_FE/dist/*
 SWS_FE/.next/*
 .DS_Store
+*/.DS_Store
+SWS_FE/.vscode/*

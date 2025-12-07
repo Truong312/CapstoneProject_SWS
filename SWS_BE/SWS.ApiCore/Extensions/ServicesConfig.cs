@@ -7,6 +7,7 @@ using SWS.Services.ConvertSqlRawServices;
 using SWS.Services.Helpers;
 using SWS.Services.RateLimiting;
 using SWS.Services.Services.CycleCountServices;
+using SWS.Services.Services.DashboardServices;
 using SWS.Services.Services.Email;
 using SWS.Services.Services.ExportOrderServices;
 using SWS.Services.Services.InventoryServices;
@@ -15,6 +16,9 @@ using SWS.Services.Services.WarehouseAuthentication;
 using SWS.Services.Services.WhisperServices;
 using SWS.Services.Services.ConvertSqlRawServices;
 using SWS.Services.Services.WarehouseLayoutServices;
+using SWS.Services.Services.LogServices;
+using SWS.Services.Services.WarehouseUserServices;
+
 using SWS.Services.Services.LocationServices;
 namespace SWS.ApiCore.Extensions;
 
@@ -47,6 +51,11 @@ public static class ServicesConfig
         services.AddScoped<ITextToSqlService, TextToSqlService_Gemini>();
         services.AddScoped<IWhisperService, WhisperService>();
         services.AddScoped<IWarehouseLayoutService, WarehouseLayoutService>();
+        services.AddScoped<IWarehouseUserAdminService, WarehouseUserAdminService>();
+        services.AddScoped<IInventoryService, InventoryService>();
+        services.AddScoped<IActionLogService, ActionLogService>();
+        services.AddScoped<ITransactionLogService, TransactionLogService>();
+        services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<ILocationService, LocationService>();
         #endregion
 

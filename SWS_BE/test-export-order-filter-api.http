@@ -1,0 +1,425 @@
+###############################################################################
+# API FILTER EXPORT ORDER - HƯỚNG DẪN CHI TIẾT CHO FRONTEND
+###############################################################################
+
+### BIẾN MÔI TRƯỜNG
+@baseUrl = http://localhost:8080
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiIxIiwibmJmIjoxNzY0OTUyNzM1LCJleHAiOjE3NjQ5NTQ1MzUsImlzcyI6IkFwcEJhY2tlbmQiLCJhdWQiOiJBcHBCYWNrZW5kVXNlcnMifQ.r-K8Dm8ftQ2LTT96N9J5jjAdHxi1A6kes938h8Jl0Q4
+
+###############################################################################
+# ĐỊNH NGHĨA API: GET /api/ExportOrder/Filter
+###############################################################################
+
+# ENDPOINT: GET {{baseUrl}}/api/ExportOrder/Filter
+# METHOD: GET
+# AUTHENTICATION: Required (Bearer Token)
+
+# ============================================================================
+# REQUEST PARAMETERS (Query String - TẤT CẢ ĐỀU OPTIONAL)
+# ============================================================================
+
+# 1. from (string, optional)
+#    - Mô tả: Lọc từ ngày
+#    - Format: yyyy-MM-dd (ví dụ: 2024-01-01)
+#    - Nullable: Yes
+#    - Ví dụ: ?from=2024-01-01
+
+# 2. to (string, optional)
+#    - Mô tả: Lọc đến ngày
+#    - Format: yyyy-MM-dd (ví dụ: 2024-12-31)
+#    - Nullable: Yes
+#    - Ví dụ: ?to=2024-12-31
+
+# 3. status (string, optional)
+#    - Mô tả: Lọc theo trạng thái (so khớp chính xác)
+#    - Các giá trị hợp lệ: "Pending", "Completed", "Cancelled"
+#    - Nullable: Yes
+#    - Case insensitive: Yes
+#    - Ví dụ: ?status=Pending
+
+# 4. customerId (integer, optional)
+#    - Mô tả: Lọc theo mã khách hàng
+#    - Kiểu dữ liệu: int
+#    - Nullable: Yes
+#    - Ví dụ: ?customerId=1
+
+# 5. createdBy (integer, optional)
+#    - Mô tả: Lọc theo UserID người tạo đơn
+#    - Kiểu dữ liệu: int
+#    - Nullable: Yes
+#    - Ví dụ: ?createdBy=1
+
+# 6. invoiceNumber (string, optional)
+#    - Mô tả: Tìm kiếm số hóa đơn (partial match, không phân biệt hoa thường)
+#    - Nullable: Yes
+#    - Ví dụ: ?invoiceNumber=INV (sẽ tìm được INV-001, INV-002, invoice-123...)
+
+# 7. pageNumber (integer, optional)
+#    - Mô tả: Số trang (bắt đầu từ 1)
+#    - Mặc định: 1
+#    - Giá trị tối thiểu: 1
+#    - Ví dụ: ?pageNumber=1
+
+# 8. pageSize (integer, optional)
+#    - Mô tả: Số lượng items trên mỗi trang
+#    - Mặc định: 10
+#    - Giá trị tối thiểu: 1
+#    - Giá trị tối đa: 100
+#    - Ví dụ: ?pageSize=20
+
+# ============================================================================
+# RESPONSE FORMAT (JSON)
+# ============================================================================
+
+# {
+#   "isSuccess": true,                    // boolean - Trạng thái thành công
+#   "statusCode": 200,                    // int - HTTP status code
+#   "message": "Lấy danh sách ExportOrder thành công. Trang 1/5",  // string
+#   "data": {
+#     "total": 48,                        // int - Tổng số bản ghi (sau khi filter)
+#     "page": 1,                          // int - Trang hiện tại
+#     "pageSize": 10,                     // int - Số items mỗi trang
+#     "items": [                          // array - Danh sách ExportOrder
+#       {
+#         "exportOrderId": 1,
+#         "invoiceNumber": "INV-001",
+#         "orderDate": "2024-01-15",
+#         "customerId": 1,
+#         "currency": "VND",
+#         "createdDate": "2024-01-15",
+#         "shippedDate": "2024-01-20",
+#         "shippedAddress": "123 Main St",
+#         "taxRate": 0.1,
+#         "taxAmount": 100000,
+#         "totalPayment": 1100000,
+#         "description": "Export order description",
+#         "status": 0,                    // enum: 0=Pending, 1=Completed, 2=Cancelled
+#         "createdBy": 1
+#       }
+#       // ... more items
+#     ]
+#   }
+# }
+
+# ============================================================================
+# ERROR RESPONSE FORMAT (JSON)
+# ============================================================================
+
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,                    // hoặc 500
+#   "message": "Lỗi khi lấy danh sách ExportOrder: ...",
+#   "data": null
+# }
+
+###############################################################################
+# EXAMPLES - CÁC VÍ DỤ SỬ DỤNG API
+###############################################################################
+
+### 1. CƠ BẢN - Lấy trang đầu tiên với mặc định 10 items
+GET {{baseUrl}}/api/ExportOrder/Filter
+Authorization: Bearer {{token}}
+
+### 2. PAGINATION - Lấy trang 2, mỗi trang 20 items
+GET {{baseUrl}}/api/ExportOrder/Filter?pageNumber=2&pageSize=20
+Authorization: Bearer {{token}}
+
+### 3. FILTER THEO NGÀY - Từ 01/01/2024 đến 31/12/2024
+GET {{baseUrl}}/api/ExportOrder/Filter?from=2024-01-01&to=2024-12-31
+Authorization: Bearer {{token}}
+
+### 4. FILTER THEO STATUS - Chỉ lấy đơn Pending
+GET {{baseUrl}}/api/ExportOrder/Filter?status=Pending
+Authorization: Bearer {{token}}
+
+### 5. FILTER THEO STATUS - Chỉ lấy đơn Completed
+GET {{baseUrl}}/api/ExportOrder/Filter?status=Completed
+Authorization: Bearer {{token}}
+
+### 6. FILTER THEO STATUS - Chỉ lấy đơn Cancelled
+GET {{baseUrl}}/api/ExportOrder/Filter?status=Cancelled
+Authorization: Bearer {{token}}
+
+### 7. FILTER THEO CUSTOMER ID
+GET {{baseUrl}}/api/ExportOrder/Filter?customerId=1
+Authorization: Bearer {{token}}
+
+### 8. FILTER THEO CREATED BY (Người tạo)
+GET {{baseUrl}}/api/ExportOrder/Filter?createdBy=1
+Authorization: Bearer {{token}}
+
+### 9. SEARCH THEO INVOICE NUMBER (Tìm kiếm partial)
+GET {{baseUrl}}/api/ExportOrder/Filter?invoiceNumber=INV
+Authorization: Bearer {{token}}
+
+### 10. KẾT HỢP: Ngày + Status
+GET {{baseUrl}}/api/ExportOrder/Filter?from=2024-01-01&to=2024-12-31&status=Pending
+Authorization: Bearer {{token}}
+
+### 11. KẾT HỢP: Ngày + Status + Customer
+GET {{baseUrl}}/api/ExportOrder/Filter?from=2024-01-01&to=2024-12-31&status=Completed&customerId=1
+Authorization: Bearer {{token}}
+
+### 12. KẾT HỢP: Tất cả filter + Pagination
+GET {{baseUrl}}/api/ExportOrder/Filter?from=2024-01-01&to=2024-12-31&status=Pending&customerId=1&createdBy=1&invoiceNumber=INV&pageNumber=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### 13. KẾT HỢP: Status + Pagination (Use case phổ biến)
+GET {{baseUrl}}/api/ExportOrder/Filter?status=Pending&pageNumber=1&pageSize=15
+Authorization: Bearer {{token}}
+
+### 14. KẾT HỢP: Ngày gần đây (30 ngày qua)
+GET {{baseUrl}}/api/ExportOrder/Filter?from=2024-11-06&to=2024-12-06&pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### 15. PAGINATION với pageSize lớn (Max = 100)
+GET {{baseUrl}}/api/ExportOrder/Filter?pageSize=100
+Authorization: Bearer {{token}}
+
+###############################################################################
+# CODE EXAMPLES CHO FRONTEND
+###############################################################################
+
+# ============================================================================
+# JAVASCRIPT/TYPESCRIPT - AXIOS
+# ============================================================================
+
+# const API_BASE_URL = 'http://localhost:8080';
+# const token = localStorage.getItem('token'); // hoặc từ state management
+# 
+# // Interface cho Request Parameters
+# interface ExportOrderFilterParams {
+#   from?: string;              // yyyy-MM-dd
+#   to?: string;                // yyyy-MM-dd
+#   status?: 'Pending' | 'Completed' | 'Cancelled';
+#   customerId?: number;
+#   createdBy?: number;
+#   invoiceNumber?: string;
+#   pageNumber?: number;        // default: 1
+#   pageSize?: number;          // default: 10, max: 100
+# }
+# 
+# // Interface cho Response
+# interface ExportOrderFilterResponse {
+#   isSuccess: boolean;
+#   statusCode: number;
+#   message: string;
+#   data: {
+#     total: number;
+#     page: number;
+#     pageSize: number;
+#     items: ExportOrder[];
+#   };
+# }
+# 
+# interface ExportOrder {
+#   exportOrderId: number;
+#   invoiceNumber: string;
+#   orderDate: string;          // yyyy-MM-dd
+#   customerId: number;
+#   currency: string;
+#   createdDate: string;
+#   shippedDate: string;
+#   shippedAddress: string;
+#   taxRate: number;
+#   taxAmount: number;
+#   totalPayment: number;
+#   description: string;
+#   status: 0 | 1 | 2;          // 0=Pending, 1=Completed, 2=Cancelled
+#   createdBy: number;
+# }
+# 
+# // Function để gọi API
+# async function getExportOrders(params: ExportOrderFilterParams) {
+#   try {
+#     const response = await axios.get<ExportOrderFilterResponse>(
+#       `${API_BASE_URL}/api/ExportOrder/Filter`,
+#       {
+#         headers: {
+#           'Authorization': `Bearer ${token}`
+#         },
+#         params: params  // axios tự động convert thành query string
+#       }
+#     );
+#     return response.data;
+#   } catch (error) {
+#     console.error('Error fetching export orders:', error);
+#     throw error;
+#   }
+# }
+# 
+# // Ví dụ sử dụng
+# const result = await getExportOrders({
+#   status: 'Pending',
+#   pageNumber: 1,
+#   pageSize: 20
+# });
+# 
+# console.log(`Total: ${result.data.total}`);
+# console.log(`Items:`, result.data.items);
+
+# ============================================================================
+# JAVASCRIPT - FETCH API
+# ============================================================================
+
+# async function getExportOrders(params) {
+#   const queryParams = new URLSearchParams();
+#   
+#   // Chỉ thêm params nếu có giá trị
+#   if (params.from) queryParams.append('from', params.from);
+#   if (params.to) queryParams.append('to', params.to);
+#   if (params.status) queryParams.append('status', params.status);
+#   if (params.customerId) queryParams.append('customerId', params.customerId.toString());
+#   if (params.createdBy) queryParams.append('createdBy', params.createdBy.toString());
+#   if (params.invoiceNumber) queryParams.append('invoiceNumber', params.invoiceNumber);
+#   if (params.pageNumber) queryParams.append('pageNumber', params.pageNumber.toString());
+#   if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+#   
+#   const url = `http://localhost:8080/api/ExportOrder/Filter?${queryParams.toString()}`;
+#   
+#   const response = await fetch(url, {
+#     method: 'GET',
+#     headers: {
+#       'Authorization': `Bearer ${token}`,
+#       'Content-Type': 'application/json'
+#     }
+#   });
+#   
+#   if (!response.ok) {
+#     throw new Error(`HTTP error! status: ${response.status}`);
+#   }
+#   
+#   return await response.json();
+# }
+
+# ============================================================================
+# REACT EXAMPLE - với useState và useEffect
+# ============================================================================
+
+# import { useState, useEffect } from 'react';
+# import axios from 'axios';
+# 
+# function ExportOrderList() {
+#   const [orders, setOrders] = useState([]);
+#   const [loading, setLoading] = useState(false);
+#   const [pagination, setPagination] = useState({
+#     page: 1,
+#     pageSize: 10,
+#     total: 0
+#   });
+#   const [filters, setFilters] = useState({
+#     status: '',
+#     from: '',
+#     to: '',
+#     customerId: null
+#   });
+# 
+#   useEffect(() => {
+#     fetchOrders();
+#   }, [pagination.page, pagination.pageSize, filters]);
+# 
+#   const fetchOrders = async () => {
+#     setLoading(true);
+#     try {
+#       const response = await axios.get('http://localhost:8080/api/ExportOrder/Filter', {
+#         headers: {
+#           'Authorization': `Bearer ${localStorage.getItem('token')}`
+#         },
+#         params: {
+#           ...filters,
+#           pageNumber: pagination.page,
+#           pageSize: pagination.pageSize
+#         }
+#       });
+#       
+#       if (response.data.isSuccess) {
+#         setOrders(response.data.data.items);
+#         setPagination(prev => ({
+#           ...prev,
+#           total: response.data.data.total
+#         }));
+#       }
+#     } catch (error) {
+#       console.error('Error:', error);
+#     } finally {
+#       setLoading(false);
+#     }
+#   };
+# 
+#   return (
+#     <div>
+#       {/* Filter UI */}
+#       {/* Table to display orders */}
+#       {/* Pagination controls */}
+#     </div>
+#   );
+# }
+
+###############################################################################
+# LƯU Ý QUAN TRỌNG CHO FRONTEND
+###############################################################################
+
+# 1. TẤT CẢ QUERY PARAMETERS ĐỀU OPTIONAL
+#    - Có thể gọi API không cần params nào
+#    - Có thể combine bất kỳ params nào
+#
+# 2. PAGINATION
+#    - pageNumber bắt đầu từ 1 (không phải 0)
+#    - pageSize tối đa là 100
+#    - Backend tự động validate và điều chỉnh nếu sai
+#
+# 3. DATE FORMAT
+#    - Phải dùng format: yyyy-MM-dd (ISO 8601)
+#    - Ví dụ đúng: 2024-01-01
+#    - Ví dụ SAI: 01/01/2024, 2024/01/01
+#
+# 4. STATUS VALUES
+#    - Chỉ chấp nhận: "Pending", "Completed", "Cancelled"
+#    - Không phân biệt hoa thường (pending cũng ok)
+#
+# 5. INVOICE NUMBER SEARCH
+#    - Là partial match (tìm kiếm chứa)
+#    - Không phân biệt hoa thường
+#    - "inv" sẽ tìm được "INV-001", "Invoice-123"
+#
+# 6. RESPONSE STATUS ENUM
+#    - 0 = Pending
+#    - 1 = Completed
+#    - 2 = Cancelled
+#
+# 7. AUTHENTICATION
+#    - Bắt buộc phải có Bearer Token trong header
+#    - Format: Authorization: Bearer {token}
+#
+# 8. ERROR HANDLING
+#    - Check isSuccess = false để xử lý lỗi
+#    - message sẽ chứa mô tả lỗi chi tiết
+
+###############################################################################
+# TEST CASES ĐỂ VERIFY API
+###############################################################################
+
+### TEST 1: API hoạt động không cần params
+GET {{baseUrl}}/api/ExportOrder/Filter
+Authorization: Bearer {{token}}
+
+### TEST 2: Pagination hoạt động đúng
+GET {{baseUrl}}/api/ExportOrder/Filter?pageNumber=1&pageSize=5
+Authorization: Bearer {{token}}
+
+### TEST 3: Filter theo status hoạt động
+GET {{baseUrl}}/api/ExportOrder/Filter?status=Pending
+Authorization: Bearer {{token}}
+
+### TEST 4: Filter theo ngày hoạt động
+GET {{baseUrl}}/api/ExportOrder/Filter?from=2024-01-01&to=2024-12-31
+Authorization: Bearer {{token}}
+
+### TEST 5: Combine filter hoạt động
+GET {{baseUrl}}/api/ExportOrder/Filter?status=Pending&customerId=1&pageNumber=1&pageSize=10
+Authorization: Bearer {{token}}
+
+###############################################################################
+# END OF API DOCUMENTATION
+###############################################################################
+

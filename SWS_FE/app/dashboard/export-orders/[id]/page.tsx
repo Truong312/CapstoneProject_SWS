@@ -13,11 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ArrowLeft, Edit, Trash2, Package } from 'lucide-react'
+import { ArrowLeft, Trash2, Package } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
   getExportOrderDetail,
-  deleteExportOrder,
   deleteExportDetail,
 } from '@/services/api/export-orders.api'
 import type { ExportOrderDetail } from '@/lib/types'
@@ -32,14 +31,18 @@ export default function ExportOrderDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetchOrderDetail()
+    fetchOrderDetails()
   }, [exportOrderId])
 
-  const fetchOrderDetail = async () => {
+  const fetchOrderDetails = async () => {
     try {
       setIsLoading(true)
-      const data = await getExportOrderDetail(exportOrderId)
-      setOrderDetails(Array.isArray(data) ? data : [])
+      const detailsResponse = await getExportOrderDetail(exportOrderId)
+      if (detailsResponse.isSuccess && detailsResponse.data) {
+        setOrderDetails(Array.isArray(detailsResponse.data) ? detailsResponse.data : [])
+      } else {
+        setOrderDetails([])
+      }
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -52,30 +55,8 @@ export default function ExportOrderDetailPage() {
     }
   }
 
-  const handleDelete = async () => {
-    if (!confirm('Bạn có chắc chắn muốn xóa đơn xuất hàng này?')) return
-
-    try {
-      const response = await deleteExportOrder(exportOrderId)
-      if (response.isSuccess) {
-        toast({
-          title: 'Thành công',
-          description: 'Đã xóa đơn xuất hàng',
-        })
-        router.push('/dashboard/export-orders')
-      }
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Lỗi',
-        description: error.response?.data?.message || 'Không thể xóa đơn xuất hàng',
-      })
-    }
-  }
-
   const handleDeleteDetail = async (exportDetailId: number) => {
     if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) return
-
     try {
       const response = await deleteExportDetail(exportDetailId)
       if (response.isSuccess) {
@@ -83,7 +64,7 @@ export default function ExportOrderDetailPage() {
           title: 'Thành công',
           description: 'Đã xóa sản phẩm',
         })
-        fetchOrderDetail()
+        fetchOrderDetails()
       }
     } catch (error: any) {
       toast({
@@ -121,54 +102,29 @@ export default function ExportOrderDetailPage() {
     )
   }
 
-  if (orderDetails.length === 0) {
+  if (!orderDetails.length) {
     return (
       <div className="text-center py-12">
         <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-        <p className="text-gray-500">Không tìm thấy chi tiết đơn xuất hàng</p>
+        <p className="text-gray-500">Không tìm thấy chi tiết sản phẩm</p>
       </div>
     )
   }
 
-  const firstItem = orderDetails[0]
-
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push('/dashboard/export-orders')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-teal-600 bg-clip-text text-transparent">
-              Chi Tiết Đơn Xuất #{exportOrderId}
-            </h1>
-            <p className="text-gray-500 mt-1">
-              Danh sách sản phẩm trong đơn xuất hàng
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/dashboard/export-orders/${exportOrderId}/edit`)}
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Chỉnh sửa
-          </Button>
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Xóa
-          </Button>
-        </div>
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push('/dashboard/export-orders')}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-teal-600 bg-clip-text text-transparent">
+          Chi Tiết Sản Phẩm Đơn Xuất #{exportOrderId}
+        </h1>
       </div>
-
-      {/* Products Table */}
       <Card>
         <CardHeader>
           <CardTitle>Danh Sách Sản Phẩm ({orderDetails.length})</CardTitle>
@@ -189,9 +145,7 @@ export default function ExportOrderDetailPage() {
                 {orderDetails.map((item, index) => (
                   <TableRow key={item.exportDetailId}>
                     <TableCell className="text-center">{index + 1}</TableCell>
-                    <TableCell className="font-medium">
-                      SP-{item.productId}
-                    </TableCell>
+                    <TableCell className="font-medium">SP-{item.productId}</TableCell>
                     <TableCell className="text-center">
                       <Badge variant="outline">{item.quantity}</Badge>
                     </TableCell>
@@ -202,7 +156,7 @@ export default function ExportOrderDetailPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteDetail(item.exportDetailId)}
+                        onClick={() => handleDeleteDetail(item.exportDetailId!)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-4 w-4" />

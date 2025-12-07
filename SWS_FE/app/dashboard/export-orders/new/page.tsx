@@ -143,15 +143,18 @@ export default function NewExportOrderPage() {
       console.log('Creating export order with data:', {
         customerId: Number(customerId),
         invoiceNumber: invoiceNumber || undefined,
-        status: 'Pending',
         note: note || undefined,
       })
 
       const orderResponse = await createExportOrder({
         customerId: Number(customerId),
-        invoiceNumber: invoiceNumber || undefined,
-        status: 'Pending',
-        note: note || undefined,
+        invoiceNumber: invoiceNumber || '',
+        orderDate: new Date().toISOString(),
+        currency: 'VND',
+        taxRate: 0,
+        taxAmount: 0,
+        totalPayment: calculateTotal(),
+        createdBy: 0,
       })
 
       console.log('Order response:', orderResponse)
@@ -178,7 +181,6 @@ export default function NewExportOrderPage() {
           addExportDetail(newExportOrderId, {
             productId: item.productId,
             quantity: item.quantity,
-            totalPrice: item.quantity * item.unitPrice,
           })
         )
 

@@ -12,5 +12,6 @@ namespace SWS.Services.Services.WarehouseAuthentication
         Task<ResultModel> GetUserByIdAsync(int userId);
         Task<ResultModel> UpdateUserAsync(int userId, RegisterWarehouseRequest request);
         Task<ResultModel> ChangePasswordAsync(int userId, string oldPassword, string newPassword);
+        Task<ResultModel> LogoutAsync();
     }
 }

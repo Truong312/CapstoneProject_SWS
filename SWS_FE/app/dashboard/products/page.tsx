@@ -20,9 +20,9 @@ import type { ProductNearExpired, ProductExpiry } from '@/lib/types'
 
 export default function ProductsPage() {
   const { toast } = useToast()
-  
-  const [nearExpiredProducts, setNearExpiredProducts] = useState<ProductNearExpired[]>([])
-  const [expiredProducts, setExpiredProducts] = useState<ProductExpiry[]>([])
+
+  const [nearExpiredProducts, setNearExpiredProducts] = useState<any[]>([])
+  const [expiredProducts, setExpiredProducts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -32,15 +32,23 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     try {
       setIsLoading(true)
-      
+
       const [nearExpiredData, expiredData] = await Promise.all([
         productApi.getNearExpired(),
         productApi.getExpired(),
       ])
-  console.log("Near Expired Data:", nearExpiredData);
-      // Backend returns array directly without ApiResponse wrapper
-      setNearExpiredProducts(nearExpiredData || [])
-      setExpiredProducts(expiredData || [])
+
+      // Handle both array and ApiResponse wrapper formats
+      const nearExpired = Array.isArray(nearExpiredData)
+        ? nearExpiredData
+        : (nearExpiredData?.data || [])
+
+      const expired = Array.isArray(expiredData)
+        ? expiredData
+        : (expiredData?.data || [])
+
+      setNearExpiredProducts(nearExpired)
+      setExpiredProducts(expired)
     } catch (error: any) {
       toast({
         variant: 'destructive',

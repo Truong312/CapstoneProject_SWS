@@ -212,11 +212,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
                     <User className="w-4 h-4 mr-2" />
                     Hồ sơ
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
                     <Settings className="w-4 h-4 mr-2" />
                     Cài đặt
                   </DropdownMenuItem>

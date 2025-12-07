@@ -13,15 +13,20 @@ using SWS.BusinessObjects.Models;
 using SWS.Repositories.UnitOfWork;
 using SWS.Services.ApiModels.Commons;
 using SWS.Services.ApiModels.InventoryModel;
+using System.Security.Claims;
+using SWS.BusinessObjects.Enums;
+using SWS.Services.Services.LogServices;
 
 namespace SWS.Services.Services.InventoryServices
 {
     public class InventoryService : IInventoryService
     {
-        private IUnitOfWork _unitOfWork;
-        public InventoryService(IUnitOfWork unitOfWork)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IActionLogService _actionLogService;
+        public InventoryService(IUnitOfWork unitOfWork, IActionLogService actionLogService)
         {
             _unitOfWork = unitOfWork;
+            _actionLogService = actionLogService;
         }
         public async Task<ResultModel<IEnumerable<InventoryResponse>>> GetAllInventoriesAsync()
         {
@@ -156,6 +161,7 @@ namespace SWS.Services.Services.InventoryServices
                     LocationId = addInventory.LocationId
                 };
                 await _unitOfWork.Inventories.AddAsync(inventory);
+                await _actionLogService.CreateActionLogAsync(ActionType.Create, "Inventory", "Thêm sản phẩm vào kho");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -190,20 +196,22 @@ namespace SWS.Services.Services.InventoryServices
                         StatusCode = StatusCodes.Status400BadRequest
                     };
                 }
-                //var location = await _unitOfWork.Locations.GetByIdAsync(updateInventory.LocationId);
-                //if (inventory == null)
-                //{
-                //    return new ResultModel
-                //    {
-                //        IsSuccess = false,
-                //        Message = $"Không tìm thấy vị trí kho hàng với id = {updateInventory.LocationId}",
-                //        StatusCode = StatusCodes.Status400BadRequest
-                //    };
-                //}
+                var location = await _unitOfWork.Locations.GetByIdAsync(updateInventory.LocationId);
+                if (inventory == null)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Message = $"Không tìm thấy vị trí kho hàng với id = {updateInventory.LocationId}",
+                        StatusCode = StatusCodes.Status400BadRequest
+                    };
+                }
                 if (inventory.ProductId != updateInventory.ProductId) inventory.ProductId = updateInventory.ProductId;
                 if (inventory.QuantityAvailable != updateInventory.QuantityAvailable) inventory.QuantityAvailable = updateInventory.QuantityAvailable;
                 if (inventory.AllocatedQuantity != updateInventory.AllocatedQuantity) inventory.AllocatedQuantity = updateInventory.AllocatedQuantity;
                 if (inventory.LocationId != updateInventory.LocationId) inventory.LocationId = updateInventory.LocationId;
+
+                await _actionLogService.CreateActionLogAsync(ActionType.Update, "Inventory", "Cập nhật sản phẩm trong kho");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {
@@ -237,6 +245,7 @@ namespace SWS.Services.Services.InventoryServices
                     };
                 }
                 await _unitOfWork.Inventories.DeleteByIdAsync(inventoryId);
+                await _actionLogService.CreateActionLogAsync(ActionType.Delete, "Inventory", "Thêm sản phẩm vào kho");
                 await _unitOfWork.SaveChangesAsync();
                 return new ResultModel
                 {

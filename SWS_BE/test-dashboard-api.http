@@ -1,0 +1,447 @@
+### ============================================
+### DASHBOARD API - TEST FILE
+### ============================================
+### Base URL và Authentication
+@baseUrl = http://localhost:8080/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiIxIiwibmJmIjoxNzY0OTUyNzM1LCJleHAiOjE3NjQ5NTQ1MzUsImlzcyI6IkFwcEJhY2tlbmQiLCJhdWQiOiJBcHBCYWNrZW5kVXNlcnMifQ.r-K8Dm8ftQ2LTT96N9J5jjAdHxi1A6kes938h8Jl0Q4
+
+### ============================================
+### 1. TÀI CHÍNH & HIỆU QUẢ (Giám đốc, Kế toán trưởng)
+### ============================================
+
+### 1.1 [TÀI CHÍNH] Phân tích Xu hướng - Nhìn thấy "mùa vụ" kinh doanh
+# @name getTrendAnalysis
+GET {{baseUrl}}/Dashboard/finance/trend-analysis?startDate=2024-11-01&endDate=2024-12-05
+Authorization: Bearer {{token}}
+
+### Response Example:
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Phân tích xu hướng thành công",
+#   "data": [
+#     {
+#       "date": "2024-11-01",
+#       "importValue": 50000000,
+#       "exportValue": 45000000,
+#       "stockValue": 120000000,
+#       "importQuantity": 500,
+#       "exportQuantity": 450,
+#       "stockQuantity": 1200
+#     }
+#   ]
+# }
+
+###
+
+### 1.2 [TÀI CHÍNH] So sánh Tăng trưởng theo tháng - 6 tháng gần nhất
+# @name getPeriodComparisonMonth
+GET {{baseUrl}}/Dashboard/finance/period-comparison?periodType=month&count=6
+Authorization: Bearer {{token}}
+
+### Response Example:
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "So sánh tăng trưởng theo kỳ thành công",
+#   "data": [
+#     {
+#       "periodName": "Tháng 6/2024",
+#       "startDate": "2024-06-01",
+#       "endDate": "2024-06-30",
+#       "openingStockValue": 100000000,
+#       "openingStockQuantity": 1000,
+#       "closingStockValue": 110000000,
+#       "closingStockQuantity": 1100,
+#       "valueGrowthPercent": 10.0,
+#       "quantityGrowthPercent": 10.0,
+#       "revenue": 50000000,
+#       "isCapitalStagnation": false,
+#       "warning": ""
+#     },
+#     {
+#       "periodName": "Tháng 11/2024",
+#       "startDate": "2024-11-01",
+#       "endDate": "2024-11-30",
+#       "openingStockValue": 150000000,
+#       "openingStockQuantity": 1500,
+#       "closingStockValue": 165000000,
+#       "closingStockQuantity": 1650,
+#       "valueGrowthPercent": 10.0,
+#       "quantityGrowthPercent": 10.0,
+#       "revenue": 0,
+#       "isCapitalStagnation": true,
+#       "warning": "⚠️ Tồn kho tăng nhưng doanh thu không tăng - Nguy cơ ứ đọng vốn!"
+#     }
+#   ]
+# }
+
+###
+
+### 1.3 [TÀI CHÍNH] So sánh Tăng trưởng theo quý - 4 quý gần nhất
+# @name getPeriodComparisonQuarter
+GET {{baseUrl}}/Dashboard/finance/period-comparison?periodType=quarter&count=4
+Authorization: Bearer {{token}}
+
+###
+
+### 1.4 [TÀI CHÍNH] Tách biệt Giá trị vs Số lượng
+# @name getValueVsQuantity
+GET {{baseUrl}}/Dashboard/finance/value-vs-quantity
+Authorization: Bearer {{token}}
+
+### Response Example:
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Phân tích Giá trị vs Số lượng thành công",
+#   "data": [
+#     {
+#       "productId": 1,
+#       "productName": "Laptop Dell XPS 13",
+#       "serialNumber": "DELL-XPS-001",
+#       "unitCost": 25000000,
+#       "totalValue": 250000000,
+#       "averageCost": 25000000,
+#       "totalQuantity": 10,
+#       "locationInfo": "A-01-01, B-02-03",
+#       "occupiedSpace": 1.0
+#     }
+#   ]
+# }
+
+###
+
+### ============================================
+### 2. VẬN HÀNH & TỐI ƯU (Thủ kho, Quản lý kho)
+### ============================================
+
+### 2.1 [VẬN HÀNH] Phân tích Cấu trúc Top 10 - Quy luật 80/20
+# @name getTop10Structure
+GET {{baseUrl}}/Dashboard/operations/top10-structure
+Authorization: Bearer {{token}}
+
+### Response Example:
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Phân tích cấu trúc Top 10 (Quy luật 80/20) thành công",
+#   "data": [
+#     {
+#       "productId": 5,
+#       "productName": "iPhone 15 Pro Max",
+#       "serialNumber": "IP15PM-001",
+#       "totalValue": 500000000,
+#       "totalQuantity": 20,
+#       "valuePercentage": 35.5,
+#       "cumulativePercentage": 35.5,
+#       "category": "A",
+#       "managementPriority": "🔴 CAO - Kiểm soát chặt chẽ, kiểm kê thường xuyên"
+#     },
+#     {
+#       "productId": 3,
+#       "productName": "MacBook Pro M3",
+#       "serialNumber": "MBP-M3-001",
+#       "totalValue": 400000000,
+#       "totalQuantity": 10,
+#       "valuePercentage": 28.4,
+#       "cumulativePercentage": 63.9,
+#       "category": "A",
+#       "managementPriority": "🔴 CAO - Kiểm soát chặt chẽ, kiểm kê thường xuyên"
+#     },
+#     {
+#       "productId": 8,
+#       "productName": "Samsung Galaxy S24",
+#       "serialNumber": "SGS24-001",
+#       "totalValue": 250000000,
+#       "totalQuantity": 15,
+#       "valuePercentage": 17.7,
+#       "cumulativePercentage": 81.6,
+#       "category": "B",
+#       "managementPriority": "🟡 TRUNG BÌNH - Kiểm soát định kỳ"
+#     }
+#   ]
+# }
+
+###
+
+### 2.2 [VẬN HÀNH] Phân tích Cân bằng Kho
+# @name getWarehouseBalance
+GET {{baseUrl}}/Dashboard/operations/warehouse-balance
+Authorization: Bearer {{token}}
+
+### Response Example:
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Phân tích cân bằng kho thành công",
+#   "data": [
+#     {
+#       "locationId": 1,
+#       "locationName": "Kho A-01",
+#       "shelfId": "A-01",
+#       "totalProducts": 25,
+#       "totalQuantity": 850,
+#       "totalValue": 450000000,
+#       "capacityUsed": 85.0,
+#       "isOverloaded": false,
+#       "isUnderUtilized": false,
+#       "transferSuggestions": []
+#     },
+#     {
+#       "locationId": 2,
+#       "locationName": "Kho A-02",
+#       "shelfId": "A-02",
+#       "totalProducts": 10,
+#       "totalQuantity": 200,
+#       "totalValue": 100000000,
+#       "capacityUsed": 20.0,
+#       "isOverloaded": false,
+#       "isUnderUtilized": true,
+#       "transferSuggestions": []
+#     },
+#     {
+#       "locationId": 3,
+#       "locationName": "Kho B-01",
+#       "shelfId": "B-01",
+#       "totalProducts": 35,
+#       "totalQuantity": 950,
+#       "totalValue": 550000000,
+#       "capacityUsed": 95.0,
+#       "isOverloaded": true,
+#       "isUnderUtilized": false,
+#       "transferSuggestions": []
+#     }
+#   ]
+# }
+
+###
+
+### ============================================
+### 3. QUẢN TRỊ RỦI RO (Kiểm soát nội bộ, Mua hàng)
+### ============================================
+
+### 3.1 [RỦI RO] Cảnh báo Tồn tối thiểu - Gợi ý đặt hàng
+# @name getMinimumStockAlerts
+GET {{baseUrl}}/Dashboard/risk/minimum-stock-alerts
+Authorization: Bearer {{token}}
+
+### Response Example:
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Tìm thấy 5 cảnh báo tồn kho tối thiểu",
+#   "data": [
+#     {
+#       "productId": 12,
+#       "productName": "Mouse Logitech MX Master 3",
+#       "serialNumber": "MX3-001",
+#       "currentStock": 3,
+#       "minimumStock": 5,
+#       "reorderPoint": 10,
+#       "shortageQuantity": 7,
+#       "alertLevel": "🔴 CRITICAL",
+#       "suggestedOrderQuantity": 20,
+#       "estimatedCost": 30000000,
+#       "leadTimeDays": 7,
+#       "suggestedOrderDate": "2024-11-28",
+#       "supplierId": 0,
+#       "supplierName": "Cần xác định"
+#     },
+#     {
+#       "productId": 15,
+#       "productName": "Keyboard Keychron K2",
+#       "serialNumber": "K2-001",
+#       "currentStock": 8,
+#       "minimumStock": 5,
+#       "reorderPoint": 10,
+#       "shortageQuantity": 2,
+#       "alertLevel": "🟡 WARNING",
+#       "suggestedOrderQuantity": 10,
+#       "estimatedCost": 20000000,
+#       "leadTimeDays": 7,
+#       "suggestedOrderDate": "2024-11-28",
+#       "supplierId": 0,
+#       "supplierName": "Cần xác định"
+#     }
+#   ]
+# }
+
+###
+
+### 3.2 [RỦI RO] Phân tích Hạn sử dụng (FEFO) - 30 ngày
+# @name getExpiryAnalysis30Days
+GET {{baseUrl}}/Dashboard/risk/expiry-analysis?daysThreshold=30
+Authorization: Bearer {{token}}
+
+### Response Example:
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Phân tích 8 sản phẩm theo hạn sử dụng (FEFO)",
+#   "data": [
+#     {
+#       "productId": 20,
+#       "productName": "Sữa Vinamilk 1L",
+#       "serialNumber": "MILK-001",
+#       "batchNumber": "N/A",
+#       "expiryDate": "2024-12-10",
+#       "daysUntilExpiry": 5,
+#       "quantity": 50,
+#       "value": 1500000,
+#       "locationInfo": "C-01-05",
+#       "expiryStatus": "🔴 CRITICAL",
+#       "fefoPriority": "HIGH",
+#       "actionSuggestions": [
+#         "Ưu tiên xuất kho ngay trong 7 ngày",
+#         "Cân nhắc khuyến mãi/giảm giá"
+#       ]
+#     },
+#     {
+#       "productId": 22,
+#       "productName": "Bánh mì sandwich",
+#       "serialNumber": "BREAD-001",
+#       "batchNumber": "N/A",
+#       "expiryDate": "2024-12-20",
+#       "daysUntilExpiry": 15,
+#       "quantity": 100,
+#       "value": 2000000,
+#       "locationInfo": "C-02-10",
+#       "expiryStatus": "🟡 NEAR_EXPIRY",
+#       "fefoPriority": "MEDIUM",
+#       "actionSuggestions": [
+#         "Sắp xếp ưu tiên xuất trước hàng khác"
+#       ]
+#     }
+#   ]
+# }
+
+###
+
+### 3.3 [RỦI RO] Phân tích Hạn sử dụng (FEFO) - 7 ngày (Cảnh báo gấp)
+# @name getExpiryAnalysis7Days
+GET {{baseUrl}}/Dashboard/risk/expiry-analysis?daysThreshold=7
+Authorization: Bearer {{token}}
+
+###
+
+### 3.4 [RỦI RO] Báo cáo Hàng quá hạn (Dead Stock)
+# @name getDeadStockReport
+GET {{baseUrl}}/Dashboard/risk/dead-stock-report
+Authorization: Bearer {{token}}
+
+### Response Example:
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "⚠️ Tìm thấy 3 sản phẩm quá hạn. Tổng thiệt hại: 45,000,000 VNĐ",
+#   "data": [
+#     {
+#       "productId": 25,
+#       "productName": "Sữa chua Vinamilk",
+#       "serialNumber": "YOG-001",
+#       "batchNumber": "N/A",
+#       "expiryDate": "2024-11-01",
+#       "daysOverdue": 34,
+#       "quantity": 200,
+#       "originalValue": 20000000,
+#       "liquidationValue": 2000000,
+#       "totalLoss": 18000000,
+#       "locationInfo": "C-03-15",
+#       "responsibleUserId": null,
+#       "responsibleUserName": "Cần điều tra",
+#       "responsibleRole": "N/A",
+#       "importDate": "2024-10-15",
+#       "importOrderId": 0,
+#       "disposalStatus": "Pending",
+#       "disposalMethod": "Cần quyết định"
+#     },
+#     {
+#       "productId": 28,
+#       "productName": "Bánh bao nhân thịt",
+#       "serialNumber": "BUN-001",
+#       "batchNumber": "N/A",
+#       "expiryDate": "2024-10-28",
+#       "daysOverdue": 38,
+#       "quantity": 150,
+#       "originalValue": 15000000,
+#       "liquidationValue": 1500000,
+#       "totalLoss": 13500000,
+#       "locationInfo": "C-04-20",
+#       "responsibleUserId": null,
+#       "responsibleUserName": "Cần điều tra",
+#       "responsibleRole": "N/A",
+#       "importDate": "2024-10-10",
+#       "importOrderId": 0,
+#       "disposalStatus": "Pending",
+#       "disposalMethod": "Cần quyết định"
+#     }
+#   ]
+# }
+
+###
+
+### ============================================
+### TỔNG QUAN
+### ============================================
+
+### [TỔNG QUAN] Dashboard - Tất cả chỉ số chính
+# @name getDashboardOverview
+GET {{baseUrl}}/Dashboard/overview
+Authorization: Bearer {{token}}
+
+### Response Example:
+# {
+#   "isSuccess": true,
+#   "statusCode": 200,
+#   "message": "Dashboard tổng quan",
+#   "data": {
+#     "totalStockValue": 1250000000,
+#     "monthlyRevenue": 350000000,
+#     "valueGrowthRate": 0,
+#     "totalProducts": 150,
+#     "totalLocations": 25,
+#     "averageCapacityUsage": 65,
+#     "lowStockAlertCount": 8,
+#     "nearExpiryCount": 12,
+#     "expiredStockCount": 3,
+#     "totalPotentialLoss": 45000000
+#   }
+# }
+
+###
+
+### ============================================
+### ERROR CASES
+### ============================================
+
+### Test unauthorized access (no token)
+GET {{baseUrl}}/Dashboard/overview
+
+### Response:
+# {
+#   "statusCode": 401,
+#   "message": "Unauthorized"
+# }
+
+###
+
+### Test wrong date format
+GET {{baseUrl}}/Dashboard/finance/trend-analysis?startDate=01-11-2024&endDate=05-12-2024
+Authorization: Bearer {{token}}
+
+### Response:
+# {
+#   "isSuccess": false,
+#   "statusCode": 400,
+#   "message": "Invalid date format. Use yyyy-MM-dd"
+# }
+
+###
+
+### Test invalid period type
+GET {{baseUrl}}/Dashboard/finance/period-comparison?periodType=year&count=5
+Authorization: Bearer {{token}}
+
+###
+

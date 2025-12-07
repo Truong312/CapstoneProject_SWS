@@ -18,11 +18,31 @@ namespace SWS.Services.Services.ExportOrderServices
         Task<ResultModel<IEnumerable<ExportDetailResponse>>> GetExportDetails(int exportOrderId);
         Task<ResultModel<ExportOrderResponse>> GetExportOrderByIdAsync(int exportOrderId);
         Task<ResultModel<ExportDetailResponse>> GetExportDetailByIdAsync(int exportDetailId);
+        Task<ResultModel<IEnumerable<ExportOrderResponse>>> GetExportOrderByDate(DateOnly startDate, DateOnly endDate);
+        /// <summary>
+        /// Manager cập nhật ExportOrder status (example: Pending=> Completed)
+        /// </summary>
+        /// <param name="exportOrderId"></param>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        Task<ResultModel> ReviewExportOrder(int exportOrderId,string status);
         Task<ResultModel> AddExportOrderAsync(CreateExportOrder createExportOrder);
         Task<ResultModel> AddExportDetailAsync(int exportOrderId, CreateExportDetail createExportDetail);
         Task<ResultModel> UpdateExportOrderAsync(int exportOrderId, UpdateExportOrder updateExportOrder);
         Task<ResultModel> UpdateExportDetailAsync(int exportDetailId, UpdateExportDetail updateExportDetail);
         Task<ResultModel> DeleteExportOrderAsync(int exportOrderId);
         Task<ResultModel> DeleteExportDetailAsync(int exportDetailId);
+        /// <summary>
+        /// Lấy danh sách ExportOrder với filter đầy đủ và phân trang
+        /// </summary>
+        Task<ResultModel<PagedResponseDto<ExportOrderResponse>>> GetExportOrdersWithFilterAsync(
+            DateOnly? fromDate, 
+            DateOnly? toDate, 
+            string? status, 
+            int? customerId, 
+            int? createdBy,
+            string? invoiceNumber,
+            int pageNumber = 1, 
+            int pageSize = 10);
     }
 }

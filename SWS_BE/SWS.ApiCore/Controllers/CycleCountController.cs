@@ -17,47 +17,58 @@ namespace SWS.ApiCore.Controllers
         }
         [Authorize(Roles = "2")]
         [HttpPost("Start")]
-        public async Task<IActionResult> StartCycleCountReport(int userId)
+        public async Task<IActionResult> StartCycleCountReport()
         {
-            var result = await _cycleCountService.StartCycleCountAsync(userId);
+            var result = await _cycleCountService.StartCycleCountAsync();
             if (!result.IsSuccess)
             {
-                return BadRequest();
+                return BadRequest(result);
             }
-            return Ok();
+            return Ok(result);
         }
         [Authorize(Roles = "2,3")]
         [HttpPut("{cycleCountDetailId:int}/update")]
-        public async Task<IActionResult> UpdateCycleCountRecordedQuantity(int cycleCountDetailId, int recordedQuantity)
+        public async Task<IActionResult> UpdateCycleCountRecordedQuantity(int cycleCountId, int productId, int countedQuantity)
         {
-            var result = await _cycleCountService.UpdateCountedQuantityAsync(cycleCountDetailId, recordedQuantity);
+            var result = await _cycleCountService.UpdateCountedQuantityAsync(cycleCountId, productId, countedQuantity);
             if (!result.IsSuccess)
             {
-                return BadRequest();
+                return BadRequest(result);
             }
-            return Ok();
+            return Ok(result);
+        }
+        [Authorize(Roles = "2,3")]
+        [HttpPut("{cycleCountDetailName}/update")]
+        public async Task<IActionResult> UpdateCycleCountRecordedQuantity(string cycleCountName, int productId, int countedQuantity)
+        {
+            var result = await _cycleCountService.UpdateCountedQuantityAsync(cycleCountName, productId, countedQuantity);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
         [Authorize(Roles ="2")]
         [HttpPost("Finalize/{cycleCountId:int}")]
-        public async Task<IActionResult> FinalizeCycleCountAsync(int cycleCountId, int userId)
+        public async Task<IActionResult> FinalizeCycleCountAsync(int cycleCountId)
         {
-            var result = await _cycleCountService.FinalizeCycleCountAsync(cycleCountId, userId);
+            var result = await _cycleCountService.FinalizeCycleCountAsync(cycleCountId);
             if (!result.IsSuccess)
             {
-                return BadRequest();
+                return BadRequest(result);
             }
-            return Ok();
+            return Ok(result);
         }
         [Authorize(Roles = "2")]
         [HttpPost("Finalize/{cycleCountName}")]
-        public async Task<IActionResult> FinalizeCycleCountAsync(string cycleCountName, int userId)
+        public async Task<IActionResult> FinalizeCycleCountAsync(string cycleCountName)
         {
-            var result = await _cycleCountService.FinalizeCycleCountAsync(cycleCountName, userId);
+            var result = await _cycleCountService.FinalizeCycleCountAsync(cycleCountName);
             if (!result.IsSuccess)
             {
-                return BadRequest();
+                return BadRequest(result);
             }
-            return Ok();
+            return Ok(result);
         }
     }
 }

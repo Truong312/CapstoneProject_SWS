@@ -38,5 +38,17 @@ namespace SWS.BusinessObjects.Enums
         Damaged = 3,
         InTransit = 4
     }
-
+    public enum ActionType//for actionLog
+    {
+        Create =1,
+        Update=2,
+        Delete=3,
+        Login=4,
+        Logout=5
+    }
+    public enum TransactionType//for transactionLog
+    {
+        Export=1,
+        Import=2
+    }
 }

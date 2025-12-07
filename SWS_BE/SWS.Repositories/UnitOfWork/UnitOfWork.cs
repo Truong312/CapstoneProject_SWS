@@ -15,6 +15,9 @@ using SWS.Repositories.Repositories.LocationRepo;
 using SWS.Repositories.Repositories.InventoryRepo;
 using SWS.Repositories.Repositories.CycleCountRepo;
 using SWS.Repositories.Repositories.CycleCountDetailRepo;
+using SWS.Repositories.Repositories.ActionLogRepo;
+using SWS.Repositories.Repositories.TransactionLogRepo;
+
 namespace SWS.Repositories.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
@@ -36,8 +39,6 @@ namespace SWS.Repositories.UnitOfWork
         private IReturnReasonRepository? _returnReasonRepository;
         private IReturnStatusRepository? _returnStatusRepository;
         private IReturnOrderQueryRepository? _returnOrderQueryRepository;
-
-        // ➕ Return (command) — mới thêm
         private IReturnOrderCommandRepository? _returnOrderCommandRepository;
 
         // Export
@@ -46,6 +47,9 @@ namespace SWS.Repositories.UnitOfWork
 
         private ICycleCountRepository? _cycleCountRepository;
         private ICycleCountDetailRepository? _cycleCountDetailRepository;
+        private IActionLogRepository? _actionLogRepository;
+        private ITransactionLogRepository? _transactionLogRepository;
+
         private IInventoryDashboardRepository? _inventoryDashboardRepository;
 
         public UnitOfWork(SmartWarehouseDbContext context)
@@ -62,8 +66,10 @@ namespace SWS.Repositories.UnitOfWork
 
         public IProductRepository Products =>
             _productRepository ??= new ProductRepository(_context);
+        
         public ILocationRepository Locations =>
-    _locationRepository ??= new LocationRepository(_context);
+            _locationRepository ??= new LocationRepository(_context);
+        
         public IExportOrderRepository ExportOrders =>
             _exportOrderRepository ??= new ExportOrderRepository(_context);
 
@@ -92,11 +98,20 @@ namespace SWS.Repositories.UnitOfWork
         public IReturnOrderCommandRepository ReturnOrdersCommand =>
             _returnOrderCommandRepository ??= new ReturnOrderCommandRepository(_context);
 
-        public ICycleCountRepository CycleCounts => _cycleCountRepository ??= new CycleCountRepository(_context);
+        public ICycleCountRepository CycleCounts => 
+            _cycleCountRepository ??= new CycleCountRepository(_context);
 
-        public ICycleCountDetailRepository CycleCountDetails => _cycleCountDetailRepository ??= new CycleCountDetailRepository(_context);
+        public ICycleCountDetailRepository CycleCountDetails => 
+            _cycleCountDetailRepository ??= new CycleCountDetailRepository(_context);
 
-        public IInventoryRepository Inventories => _inventoryRepository ??= new InventoryRepository(_context);
+        public IInventoryRepository Inventories => 
+            _inventoryRepository ??= new InventoryRepository(_context);
+        
+        public IActionLogRepository ActionLogs => 
+            _actionLogRepository ??= new ActionLogRepository(_context);
+        
+        public ITransactionLogRepository TransactionLogs => 
+            _transactionLogRepository ??= new TransactionLogRepository(_context);
 
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
 

@@ -21,5 +21,15 @@ namespace SWS.Repositories.Repositories.CycleCountDetailRepo
         {
             return await _context.CycleCountDetails.Where(c => c.CycleCountId == cycleCountId).ToListAsync();
         }
+
+        public async Task<CycleCountDetail> GetByCycleCountIdAndProductId(int cycleCountId, int productId)
+        {
+            return await GetSingleAsync(c => c.CycleCountId == cycleCountId && c.ProductId == productId);
+        }
+        public async Task<CycleCountDetail> GetByCycleCountNameAndProductId(string cycleCountName, int productId)
+        {
+            var cycle = await _context.CycleCounts.FirstAsync(c => c.CycleName == cycleCountName);
+            return await GetSingleAsync(c => c.CycleCountId == cycle.CycleCountId && c.ProductId == productId);
+        }
     }
 }
