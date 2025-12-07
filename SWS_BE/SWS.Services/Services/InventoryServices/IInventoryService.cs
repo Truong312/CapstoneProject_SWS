@@ -18,5 +18,8 @@ namespace SWS.Services.Services.InventoryServices
         Task<ResultModel> AddInventoryAsync(AddInventory addInventory);
         Task<ResultModel> UpdateInventoryAsync(int inventoryId, UpdateInventory updateInventory);
         Task<ResultModel> DeleteInventoryAsync(int inventoryId);
+        Task<InventoryStatusSummaryDto> GetInventoryStatusSummaryAsync();
+
+        Task<List<ProductInventoryDto>> GetAllProductInventoryAsync();
     }
 }

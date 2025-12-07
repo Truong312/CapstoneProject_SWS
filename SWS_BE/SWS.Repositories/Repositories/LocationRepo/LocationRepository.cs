@@ -52,5 +52,36 @@ namespace SWS.Repositories.Repositories.LocationRepo
                 .ThenBy(l => l.ColumnNumber)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<Location>> GetAllLocationsAsync()
+       => await _context.Locations.Include(x => x.Inventories).ThenInclude(p => p.Product).ToListAsync();
+
+        public async Task<Location?> GetLocationByIdAsync(int id)
+            => await _context.Locations.Include(x => x.Inventories).ThenInclude(p => p.Product)
+                                       .FirstOrDefaultAsync(x => x.LocationId == id);
+
+        public async Task<IEnumerable<Inventory>> GetProductLocationsAsync(int productId)
+            => await _context.Inventories.Include(l => l.Location)
+                                         .Include(p => p.Product)
+                                         .Where(x => x.ProductId == productId)
+                                         .ToListAsync();
+
+        public async Task AddInventoryAsync(Inventory inventory)
+            => await _context.Inventories.AddAsync(inventory);
+
+        public async Task<bool> UpdateInventoryQuantityAsync(int inventoryId, int quantity)
+        {
+            var item = await _context.Inventories.FindAsync(inventoryId);
+            if (item == null) return false;
+            item.QuantityAvailable = quantity;
+            return true;
+        }
+
+        public async Task<bool> RemoveInventoryAsync(int inventoryId)
+        {
+            var inv = await _context.Inventories.FindAsync(inventoryId);
+            if (inv == null) return false;
+            _context.Inventories.Remove(inv);
+            return true;
+        }
     }
 }

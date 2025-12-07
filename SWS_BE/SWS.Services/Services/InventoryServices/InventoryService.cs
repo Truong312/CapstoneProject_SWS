@@ -255,5 +255,13 @@ namespace SWS.Services.Services.InventoryServices
                 };
             }
         }
+        public async Task<InventoryStatusSummaryDto> GetInventoryStatusSummaryAsync()
+        {
+            return await _unitOfWork.Inventories.GetStockByStatusAsync();
+        }
+        public async Task<List<ProductInventoryDto>> GetAllProductInventoryAsync()
+        {
+            return await _unitOfWork.Inventories.GetAllProductInventoryAsync();
+        }
     }
 }

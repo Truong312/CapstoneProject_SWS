@@ -42,6 +42,7 @@ namespace SWS.Repositories.UnitOfWork
         IExportDetailRepository ExportDetails { get; }
         ICycleCountRepository CycleCounts { get; }
         ICycleCountDetailRepository CycleCountDetails { get; }
+        IInventoryDashboardRepository InventoryDashboard { get; }
         Task<int> SaveChangesAsync();
     }
 }

@@ -142,14 +142,14 @@ export const productApi = {
   getNearExpired: async (): Promise<ProductNearExpired[]> => {
     const { data } = await apiClient.get('/product/near-expired');
     // Backend returns array directly without ApiResponse wrapper
-    return data;
+    return data.data;
   },
 
   // Get expired products
   getExpired: async (): Promise<ProductExpiry[]> => {
     const { data } = await apiClient.get('/product/expired');
     // Backend returns array directly without ApiResponse wrapper
-    return data;
+    return data.data;
   },
 
   // Search products

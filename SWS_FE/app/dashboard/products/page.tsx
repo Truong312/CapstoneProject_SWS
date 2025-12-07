@@ -37,7 +37,7 @@ export default function ProductsPage() {
         productApi.getNearExpired(),
         productApi.getExpired(),
       ])
-
+  console.log("Near Expired Data:", nearExpiredData);
       // Backend returns array directly without ApiResponse wrapper
       setNearExpiredProducts(nearExpiredData || [])
       setExpiredProducts(expiredData || [])

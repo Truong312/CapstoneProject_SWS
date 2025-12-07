@@ -91,6 +91,8 @@ builder.Services.AddScoped<IImportOrderQueryRepository, ImportOrderQueryReposito
 builder.Services.AddScoped<IImportOrderCommandRepository, ImportOrderCommandRepository>();
 builder.Services.AddScoped<IImportOrderQueryService, ImportOrderQueryService>();
 builder.Services.AddScoped<IImportOrderCommandService, ImportOrderCommandService>();
+builder.Services.AddScoped<IInventoryDashboardService, InventoryDashboardService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 // ========== Authorization Policies (dựa trên Role) ==========
 builder.Services.AddAuthorization(options =>

@@ -46,7 +46,7 @@ namespace SWS.Repositories.UnitOfWork
 
         private ICycleCountRepository? _cycleCountRepository;
         private ICycleCountDetailRepository? _cycleCountDetailRepository;
-
+        private IInventoryDashboardRepository? _inventoryDashboardRepository;
 
         public UnitOfWork(SmartWarehouseDbContext context)
         {
@@ -86,7 +86,8 @@ namespace SWS.Repositories.UnitOfWork
 
         public IReturnOrderQueryRepository ReturnOrdersQuery =>
             _returnOrderQueryRepository ??= new ReturnOrderQueryRepository(_context);
-
+        public IInventoryDashboardRepository InventoryDashboard => 
+            _inventoryDashboardRepository ??= new InventoryDashboardRepository(_context);
         // ➕ Return (command) — dùng cho Review
         public IReturnOrderCommandRepository ReturnOrdersCommand =>
             _returnOrderCommandRepository ??= new ReturnOrderCommandRepository(_context);

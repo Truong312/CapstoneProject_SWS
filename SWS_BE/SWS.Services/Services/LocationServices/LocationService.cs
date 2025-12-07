@@ -247,5 +247,59 @@ namespace SWS.Services.Services.LocationServices
                 };
             }
         }
+        public async Task<IEnumerable<Location>> GetLocations()
+      => await _unitOfWork.Locations.GetAllLocationsAsync();
+
+        public async Task<Location?> GetLocationDetail(int id)
+            => await _unitOfWork.Locations.GetLocationByIdAsync(id);
+
+        public async Task<IEnumerable<Inventory>> GetProductPlacement(int productId)
+            => await _unitOfWork.Locations.GetProductLocationsAsync(productId);
+
+        public async Task<bool> AddInventory(Inventory inventory)
+        {
+            await _unitOfWork.Locations.AddInventoryAsync(inventory);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateInventory(int inventoryId, int newQuantity)
+        {
+            var rs = await _unitOfWork.Locations.UpdateInventoryQuantityAsync(inventoryId, newQuantity);
+            if (!rs) return false;
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RemoveInventory(int inventoryId)
+        {
+            var rs = await _unitOfWork.Locations.RemoveInventoryAsync(inventoryId);
+            if (!rs) return false;
+            await _unitOfWork.SaveChangesAsync();
+            return true;
+        }
+        public async Task<Location?> SuggestLocation(int productId, int requiredQuantity)
+        {
+            var locations = await _unitOfWork.Locations.GetAllLocationsAsync();
+
+            // 1. Ưu tiên kệ đã có sản phẩm cùng loại
+            var sameShelf = locations
+                .SelectMany(l => l.Inventories, (l, inv) => new { l, inv })
+                .Where(x => x.inv.ProductId == productId && x.inv.QuantityAvailable + requiredQuantity <= 100) // giả sử max 100
+                .OrderBy(x => x.l.RowNumber).ThenBy(x => x.l.ColumnNumber)
+                .Select(x => x.l)
+                .FirstOrDefault();
+
+            if (sameShelf != null) return sameShelf;
+
+            // 2. Tìm kệ chưa Full
+            var emptyShelf = locations
+                .Where(x => x.IsFull == false || x.Inventories.Sum(p => p.QuantityAvailable) + requiredQuantity <= 100)
+                .OrderBy(x => x.RowNumber).ThenBy(x => x.ColumnNumber)
+                .FirstOrDefault();
+
+            return emptyShelf;
+        }
+
     }
 }

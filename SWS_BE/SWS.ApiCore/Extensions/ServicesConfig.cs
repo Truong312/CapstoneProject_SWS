@@ -15,6 +15,7 @@ using SWS.Services.Services.WarehouseAuthentication;
 using SWS.Services.Services.WhisperServices;
 using SWS.Services.Services.ConvertSqlRawServices;
 using SWS.Services.Services.WarehouseLayoutServices;
+using SWS.Services.Services.LocationServices;
 namespace SWS.ApiCore.Extensions;
 
 public static class ServicesConfig
@@ -46,6 +47,7 @@ public static class ServicesConfig
         services.AddScoped<ITextToSqlService, TextToSqlService_Gemini>();
         services.AddScoped<IWhisperService, WhisperService>();
         services.AddScoped<IWarehouseLayoutService, WarehouseLayoutService>();
+        services.AddScoped<ILocationService, LocationService>();
         #endregion
 
         #region Helpers
