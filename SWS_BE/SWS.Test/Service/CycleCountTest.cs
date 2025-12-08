@@ -10,6 +10,7 @@ using SWS.Repositories.Repositories.ProductRepo;
 using SWS.Repositories.UnitOfWork;
 using SWS.Services.ApiModels.Commons;
 using SWS.Services.Services.CycleCountServices;
+using SWS.Services.Services.LogServices;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,7 +25,8 @@ namespace SWS.Tests.Services
         private Mock<ICycleCountDetailRepository> _detailRepo;
         private Mock<IProductRepository> _productRepo;
         private Mock<IInventoryRepository> _inventoryRepo;
-
+        private Mock<IHttpContextAccessor> _httpContextAccessor;
+        private Mock<IActionLogService> _actionLogService;
         private CycleCountService _service;
 
         [SetUp]
@@ -35,13 +37,15 @@ namespace SWS.Tests.Services
             _detailRepo = new Mock<ICycleCountDetailRepository>();
             _productRepo = new Mock<IProductRepository>();
             _inventoryRepo = new Mock<IInventoryRepository>();
+            _actionLogService = new Mock<IActionLogService>();
+            _httpContextAccessor = new Mock<IHttpContextAccessor>();
 
             _uow.Setup(u => u.CycleCounts).Returns(_cycleRepo.Object);
             _uow.Setup(u => u.CycleCountDetails).Returns(_detailRepo.Object);
             _uow.Setup(u => u.Products).Returns(_productRepo.Object);
             _uow.Setup(u => u.Inventories).Returns(_inventoryRepo.Object);
 
-            _service = new CycleCountService(_uow.Object);
+            _service = new CycleCountService(_uow.Object, _httpContextAccessor.Object, _actionLogService.Object);
         }
 
 
@@ -63,7 +67,7 @@ namespace SWS.Tests.Services
                       .Callback<CycleCount>(c => c.CycleCountId = 123)
                       .Returns(Task.CompletedTask);
 
-            var result = await _service.StartCycleCountAsync(userId);
+            var result = await _service.StartCycleCountAsync();
 
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status201Created));
@@ -81,7 +85,7 @@ namespace SWS.Tests.Services
 
             _detailRepo.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(detail);
 
-            var result = await _service.UpdateCountedQuantityAsync(10, 99);
+            var result = await _service.UpdateCountedQuantityAsync(detail.DetailId, 1, 99);
 
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(detail.CountedQuantity, Is.EqualTo(99));
@@ -94,7 +98,7 @@ namespace SWS.Tests.Services
         {
             _detailRepo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((CycleCountDetail?)null);
 
-            var result = await _service.UpdateCountedQuantityAsync(999, 20);
+            var result = await _service.UpdateCountedQuantityAsync(999, 1, 20);
 
             Assert.That(result.IsSuccess, Is.False);
             Assert.That(result.Message, Does.Contain("Không tìm thấy cycle count detail"));
@@ -106,7 +110,7 @@ namespace SWS.Tests.Services
         {
             _cycleRepo.Setup(r => r.GetByIdAsync(123)).ReturnsAsync((CycleCount?)null);
 
-            var result = await _service.FinalizeCycleCountAsync(123, 10);
+            var result = await _service.FinalizeCycleCountAsync(123);
 
             Assert.That(result.IsSuccess, Is.False);
             Assert.That(result.StatusCode, Is.EqualTo(StatusCodes.Status404NotFound));
@@ -130,7 +134,7 @@ namespace SWS.Tests.Services
             _productRepo.Setup(r => r.GetByIdAsync(1))
                         .ReturnsAsync(new Product { ProductId = 1, SerialNumber = "ABC001" });
 
-            var result = await _service.FinalizeCycleCountAsync(5, 10);
+            var result = await _service.FinalizeCycleCountAsync(5);
 
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(cycle.Status, Is.EqualTo(StatusEnums.Completed.ToString()));
@@ -157,7 +161,7 @@ namespace SWS.Tests.Services
             _productRepo.Setup(r => r.GetByIdAsync(2))
                         .ReturnsAsync((Product?)null);
 
-            var result = await _service.FinalizeCycleCountAsync(5, 10);
+            var result = await _service.FinalizeCycleCountAsync(5);
 
             Assert.That(result.IsSuccess, Is.False);
             Assert.That(result.Message, Does.Contain("Lỗi xảy ra khi tìm product"));

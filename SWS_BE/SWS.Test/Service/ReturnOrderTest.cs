@@ -133,11 +133,11 @@ namespace SWS.Test.Service
                 Decision = "approve"
             };
 
-            var result = await _rservice.ReviewAsync(99, req);
+            var result = await _rservice.ReviewAsync(1, req);
 
             Assert.That(result.ReturnOrderId, Is.EqualTo(10));
             Assert.That(result.Status, Is.EqualTo(ReturnStatuses.Approved));
-            Assert.That(order.ReviewedBy, Is.EqualTo(99));
+            Assert.That(order.ReviewedBy, Is.EqualTo(1));
 
             _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Exactly(2));
             _returnCmdMock.Verify(r =>

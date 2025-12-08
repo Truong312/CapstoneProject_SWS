@@ -554,7 +554,7 @@ namespace SWS.Services.Services.ExportOrderServices
                         StatusCode = StatusCodes.Status400BadRequest
                     };
                 }
-                if (endDate <= now) endDate = now;
+                if (endDate > now) endDate = now;
                 var exportOrders = await _unitOfWork.ExportOrders.GetExportOrderByDate(startDate, endDate);
                 var result = exportOrders.Select(e => new ExportOrderResponse
                 {

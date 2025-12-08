@@ -7,6 +7,7 @@ using SWS.Repositories.Repositories.UserRepo;
 using SWS.Repositories.UnitOfWork;
 using SWS.Services.ApiModels.WarehouseUserModel;
 using SWS.Services.Helpers;
+using SWS.Services.Services.LogServices;
 using SWS.Services.Services.WarehouseAuthentication;
 
 
@@ -20,6 +21,7 @@ namespace SWS.Test.Service
         private Mock<IGoogleLoginService> _mockGoogleLogin;
         private Mock<IMapper> _mockMapper;
         private IConfiguration _configuration;
+        private Mock<IActionLogService> _actionLogService;
 
         private WarehouseAuthenticationService _service;
 
@@ -30,6 +32,7 @@ namespace SWS.Test.Service
             _mockUserRepo = new Mock<IUserRepository>();
             _mockGoogleLogin = new Mock<IGoogleLoginService>();
             _mockMapper = new Mock<IMapper>();
+            _actionLogService = new Mock<IActionLogService>();
 
             _mockUnitOfWork.Setup(u => u.Users).Returns(_mockUserRepo.Object);
             _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
@@ -51,7 +54,8 @@ namespace SWS.Test.Service
                 _mockUnitOfWork.Object,
                 _configuration,
                 _mockGoogleLogin.Object,
-                _mockMapper.Object
+                _mockMapper.Object,
+                _actionLogService.Object
             );
         }
 
@@ -88,8 +92,8 @@ namespace SWS.Test.Service
         public async Task ChangePasswordAsync_OldPasswordCorrect_ReturnsSuccess()
         {
             var userId = 1;
-            var oldPassword = "OldPassword123!";
-            var newPassword = "NewPassword456!";
+            var oldPassword = "123";
+            var newPassword = "456";
             var hashedOldPassword = PasswordHelper.HashPassword(oldPassword);
 
             var user = new User
@@ -136,12 +140,12 @@ namespace SWS.Test.Service
             var user = new User
             {
                 UserId = userId,
-                Password = PasswordHelper.HashPassword("CorrectOldPassword")
+                Password = PasswordHelper.HashPassword("123")
             };
 
             _mockUserRepo.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
 
-            var result = await _service.ChangePasswordAsync(userId, "WrongPassword", "NewPassword");
+            var result = await _service.ChangePasswordAsync(userId, "1234", "NewPassword");
 
             Assert.IsFalse(result.IsSuccess);
             Assert.AreEqual("Mật khẩu cũ không chính xác", result.Message);
