@@ -70,9 +70,6 @@ export default function ImportOrdersPage() {
 
   useEffect(() => {
     fetchProviders()
-  }, [])
-
-  useEffect(() => {
     fetchOrders()
   }, [currentPage, pageSize])
 
@@ -89,12 +86,15 @@ export default function ImportOrdersPage() {
 
   const fetchProviders = async () => {
     try {
-      const response = await getProviders()
-      if (response.isSuccess && response.data) {
-        setProviders(response.data)
-      }
-    } catch (error) {
+      const data = await getProviders()
+      setProviders(data)
+    } catch (error: any) {
       console.error('Failed to fetch providers:', error)
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể tải danh sách nhà cung cấp',
+      })
     }
   }
 
@@ -270,14 +270,7 @@ export default function ImportOrdersPage() {
   const columns: DataTableColumn<ImportOrderListItem>[] = [
     {
       key: 'select',
-      header: () => (
-        <Checkbox
-          checked={selectedOrders.length === orders.length && orders.length > 0}
-          onCheckedChange={(checked) => {
-            setSelectedOrders(checked ? orders.map(o => o.importOrderId) : [])
-          }}
-        />
-      ),
+      header: '',
       cell: (order: ImportOrderListItem) => (
         <Checkbox
           checked={selectedOrders.includes(order.importOrderId)}
@@ -427,8 +420,8 @@ export default function ImportOrdersPage() {
                 options={[
                   { value: 'all', label: 'Tất cả nhà cung cấp' },
                   ...providers.map((provider) => ({
-                    value: provider.providerId.toString(),
-                    label: provider.providerName,
+                    value: provider.partnerId.toString(),
+                    label: provider.name,
                   })),
                 ]}
                 value={providerFilter}
@@ -513,8 +506,7 @@ export default function ImportOrdersPage() {
             label: 'Xóa',
             icon: <Trash2 className="h-4 w-4 mr-1" />,
             onClick: (order: ImportOrderListItem) => handleDelete(order.importOrderId),
-            variant: 'ghost',
-            className: 'text-red-600 hover:text-red-700',
+            variant: 'destructive' as const,
           },
         ]}
         onRowClick={(order: ImportOrderListItem) =>

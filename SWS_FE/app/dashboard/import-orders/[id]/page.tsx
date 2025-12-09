@@ -24,22 +24,23 @@ import {
 } from '@/components/ui/table'
 import { ArrowLeft, Check, X, FileCheck, Download, Edit, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useAuthStore } from '@/lib/auth'
 import {
   getImportOrderDetail,
   approveImportOrder,
   rejectImportOrder,
-  completeImportOrder,
   exportImportOrderToPDF,
   deleteImportOrder,
 } from '@/services/api/import-orders.api'
 import type { ImportOrderDetail } from '@/lib/types'
 
-type ActionType = 'approve' | 'reject' | 'complete' | null
+type ActionType = 'approve' | 'reject' | null
 
 export default function ImportOrderDetailPage() {
   const router = useRouter()
   const params = useParams()
   const { toast } = useToast()
+  const { user } = useAuthStore()
   const importOrderId = Number(params.id)
 
   const [order, setOrder] = useState<ImportOrderDetail | null>(null)
@@ -49,6 +50,9 @@ export default function ImportOrderDetailPage() {
   const [actionNote, setActionNote] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+
+  // Check if user is manager (roleId = 2)
+  const isManager = user?.role === 2
 
   useEffect(() => {
     fetchOrderDetail()
@@ -92,9 +96,6 @@ export default function ImportOrderDetailPage() {
           response = await rejectImportOrder(importOrderId, { 
             reason: actionNote || 'Không phù hợp',
           })
-          break
-        case 'complete':
-          response = await completeImportOrder(importOrderId, { note: actionNote })
           break
       }
 
@@ -212,8 +213,6 @@ export default function ImportOrderDetailPage() {
         return 'Duyệt đơn'
       case 'reject':
         return 'Từ chối'
-      case 'complete':
-        return 'Hoàn thành'
       default:
         return ''
     }
@@ -341,8 +340,8 @@ export default function ImportOrderDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
-      {order.status === 'Pending' && (
+      {/* Action Buttons - Only show for Manager (roleId = 2) */}
+      {isManager && order.status === 'Pending' && (
         <Card className="border-yellow-200 bg-yellow-50">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
@@ -367,26 +366,6 @@ export default function ImportOrderDetailPage() {
                   Duyệt đơn
                 </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {order.status === 'Approved' && (
-        <Card className="border-blue-200 bg-blue-50">
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-blue-800">Đơn hàng đã được duyệt</p>
-                <p className="text-sm text-blue-600">Nhấn "Hoàn thành" khi đã nhập hàng vào kho</p>
-              </div>
-              <Button
-                className="bg-blue-600 hover:bg-blue-700"
-                onClick={() => openActionDialog('complete')}
-              >
-                <FileCheck className="mr-2 h-4 w-4" />
-                Hoàn thành
-              </Button>
             </div>
           </CardContent>
         </Card>

@@ -162,15 +162,10 @@ export interface UpdateExportDetailRequest {
   quantity: number;
 }
 
-// Provider for Import Orders
+// Provider for Import Orders - From /api/business-partners/providers
 export interface Provider {
-  providerId: number;
-  providerName: string;
-  providerCode?: string;
-  contactPerson?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
+  partnerId: number;
+  name: string;
 }
 
 // Import Order Status Statistics

@@ -55,11 +55,13 @@ export async function getImportOrderDetail(
 
 /**
  * Create new import order
+ * POST /api/import-orders
+ * Returns: { importOrderId, invoiceNumber }
  */
 export async function createImportOrder(
   data: CreateImportOrderRequest
-): Promise<ApiResponse<CreateImportOrderResponse>> {
-  const response = await apiClient.post<ApiResponse<CreateImportOrderResponse>>(
+): Promise<CreateImportOrderResponse> {
+  const response = await apiClient.post<CreateImportOrderResponse>(
     '/import-orders',
     data
   );
@@ -93,45 +95,34 @@ export async function deleteImportOrder(
 }
 
 /**
- * Approve import order
+ * Review import order (Approve or Reject)
+ * PUT /api/import-orders/{id}/review
  */
+export async function reviewImportOrder(
+  importOrderId: number,
+  approve: boolean,
+  notes?: string
+): Promise<ApiResponse<any>> {
+  const response = await apiClient.put<ApiResponse<any>>(
+    `/import-orders/${importOrderId}/review`,
+    { approve, notes }
+  );
+  return response.data;
+}
+
+// Legacy functions for backward compatibility
 export async function approveImportOrder(
   importOrderId: number,
   data?: ApproveImportOrderRequest
 ): Promise<ApiResponse<ApprovalResponse>> {
-  const response = await apiClient.post<ApiResponse<ApprovalResponse>>(
-    `/import-orders/${importOrderId}/approve`,
-    data || {}
-  );
-  return response.data;
+  return reviewImportOrder(importOrderId, true, data?.note);
 }
 
-/**
- * Reject import order
- */
 export async function rejectImportOrder(
   importOrderId: number,
   data: RejectImportOrderRequest
 ): Promise<ApiResponse<ApprovalResponse>> {
-  const response = await apiClient.post<ApiResponse<ApprovalResponse>>(
-    `/import-orders/${importOrderId}/reject`,
-    data
-  );
-  return response.data;
-}
-
-/**
- * Complete import order (mark as received)
- */
-export async function completeImportOrder(
-  importOrderId: number,
-  data: CompleteImportOrderRequest
-): Promise<ApiResponse<ApprovalResponse>> {
-  const response = await apiClient.post<ApiResponse<ApprovalResponse>>(
-    `/import-orders/${importOrderId}/complete`,
-    data
-  );
-  return response.data;
+  return reviewImportOrder(importOrderId, false, data.reason);
 }
 
 /**
@@ -146,13 +137,11 @@ export async function getImportOrderStatuses(
 }
 
 /**
- * Get providers list for dropdown
+ * Get providers list from business partners
+ * GET /api/business-partners/providers
  */
-export async function getProviders(
-  query?: string
-): Promise<ApiResponse<Provider[]>> {
-  const url = `/import-orders/providers${query ? `?q=${query}` : ''}`;
-  const response = await apiClient.get<ApiResponse<Provider[]>>(url);
+export async function getProviders(): Promise<Provider[]> {
+  const response = await apiClient.get<Provider[]>('/business-partners/providers');
   return response.data;
 }
 
