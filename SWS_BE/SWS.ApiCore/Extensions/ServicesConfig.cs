@@ -18,6 +18,8 @@ using SWS.Services.Services.ConvertSqlRawServices;
 using SWS.Services.Services.WarehouseLayoutServices;
 using SWS.Services.Services.LogServices;
 using SWS.Services.Services.WarehouseUserServices;
+using SWS.Repositories.Repositories.BusinessPartners;
+using SWS.Services.Services;
 
 using SWS.Services.Services.LocationServices;
 namespace SWS.ApiCore.Extensions;
@@ -57,6 +59,8 @@ public static class ServicesConfig
         services.AddScoped<ITransactionLogService, TransactionLogService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository>();
+        services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
         #endregion
 
         #region Helpers

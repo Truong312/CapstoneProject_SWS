@@ -1,5 +1,6 @@
 using AutoMapper;
 using SWS.BusinessObjects.Dtos;
+using SWS.BusinessObjects.DTOs;
 using SWS.BusinessObjects.Models;
 using SWS.Services.ApiModels;
 
@@ -9,6 +10,7 @@ namespace SWS.Services.Mappings
     {
         public MappingProfile()
         {
+            CreateMap<BusinessPartner, BusinessPartnerDto>();
             #region AccountServices
             #endregion
 
