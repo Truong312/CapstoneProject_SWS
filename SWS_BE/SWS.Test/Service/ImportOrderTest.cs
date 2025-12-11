@@ -9,6 +9,7 @@ using SWS.Repositories.Repositories.ProductRepo;
 using SWS.Repositories.UnitOfWork;
 using SWS.Services.ApiModels;
 using SWS.Services.ApiModels.ExportOrderModel;
+using SWS.Services.ApiModels.ImportOrders;
 using SWS.Services.ImportOrders;
 using SWS.Services.Services.ExportOrderServices;
 using System.Collections.Generic;
@@ -121,6 +122,94 @@ namespace SWS.Test.Service
             Assert.IsNotNull(result.InvoiceNumber);
 
             TestContext.Out.WriteLine($"New Order ID = {result.ImportOrderId}");
+        }
+
+
+        [Test]
+        public async Task ReviewAsync_Approve_ReturnsCompletedMessage()
+        {
+            // Arrange
+            int importOrderId = 1;
+            int reviewerId = 10;
+            var req = new ReviewImportOrderRequest
+            {
+                Approve = true,
+                Note = "Everything OK"
+            };
+
+            _mockImportCommandRepo
+                .Setup(r => r.ReviewAsync(importOrderId, reviewerId, true, "Everything OK", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _cservice.ReviewAsync(importOrderId, reviewerId, req);
+
+            // Assert
+            Assert.IsTrue(result.IsSuccess);
+            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual("Duyệt phiếu nhập (COMPLETED) và cập nhật tồn kho thành công.", result.Message);
+            Assert.IsTrue(result.Data);
+        }
+
+
+
+        [Test]
+        public async Task ReviewAsync_Reject_ReturnsCanceledMessage()
+        {
+            // Arrange
+            int importOrderId = 2;
+            int reviewerId = 11;
+            var req = new ReviewImportOrderRequest
+            {
+                Approve = false,
+                Note = "Invalid documents"
+            };
+
+            _mockImportCommandRepo
+                .Setup(r => r.ReviewAsync(importOrderId, reviewerId, false, "Invalid documents", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _cservice.ReviewAsync(importOrderId, reviewerId, req);
+
+            // Assert
+            Assert.IsTrue(result.IsSuccess);
+            Assert.AreEqual(200, result.StatusCode);
+            Assert.AreEqual("Đã hủy phiếu nhập (CANCELED).", result.Message);
+            Assert.IsTrue(result.Data);
+        }
+
+
+
+        [Test]
+        public async Task ReviewAsync_Exception_ReturnsError()
+        {
+            // Arrange
+            int importOrderId = 3;
+            int reviewerId = 12;
+            var req = new ReviewImportOrderRequest
+            {
+                Approve = true,
+                Note = "Error test"
+            };
+
+            _mockImportCommandRepo
+                .Setup(r => r.ReviewAsync(
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("DB Error"));
+
+            // Act
+            var result = await _cservice.ReviewAsync(importOrderId, reviewerId, req);
+
+            // Assert
+            Assert.IsFalse(result.IsSuccess);
+            Assert.AreEqual(400, result.StatusCode);
+            Assert.AreEqual("DB Error", result.Message);
+            Assert.IsFalse(result.Data);
         }
 
     }
