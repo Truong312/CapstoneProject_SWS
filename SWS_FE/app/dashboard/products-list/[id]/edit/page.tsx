@@ -46,7 +46,7 @@ export default function EditProductPage() {
     try {
       setIsFetching(true)
       const response = await productApi.getById(productId)
-      
+
       if (response.isSuccess && response.data) {
         const product = response.data
         setFormData({
@@ -137,13 +137,13 @@ export default function EditProductPage() {
       // Step 1: Nếu có ảnh mới, upload lên Cloudinary
       if (imageFile) {
         setIsUploading(true)
-        
+
         // Upload ảnh mới
         const uploadResponse = await uploadFile(imageFile, 'products')
-        
+
         if (uploadResponse.isSuccess && uploadResponse.data) {
           imageUrl = uploadResponse.data.secureUrl
-          
+
           // Xóa ảnh cũ nếu có
           if (oldImageUrl) {
             const oldPublicId = extractPublicIdFromUrl(oldImageUrl)
@@ -286,7 +286,7 @@ export default function EditProductPage() {
                   name="purchasedPrice"
                   type="number"
                   min="0"
-                  step="1000"
+                  step="100"
                   placeholder="1000000"
                   value={formData.purchasedPrice}
                   onChange={handleChange}
@@ -300,7 +300,7 @@ export default function EditProductPage() {
                   name="unitPrice"
                   type="number"
                   min="0"
-                  step="1000"
+                  step="100"
                   placeholder="1500000"
                   value={formData.unitPrice}
                   onChange={handleChange}

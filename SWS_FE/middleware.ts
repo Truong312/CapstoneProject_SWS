@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Routes công khai - không cần authentication
-const PUBLIC_ROUTES = ['/login', '/register', '/unauthorized']
+const PUBLIC_ROUTES = ['/', '/login', '/register', '/unauthorized']
 
 // Routes cần authentication  
 const PROTECTED_ROUTES = [
   '/dashboard',
-  '/dashboard/inventory', 
+  '/dashboard/inventory',
   '/dashboard/products',
   '/dashboard/orders',
   '/dashboard/reports',
@@ -33,13 +33,13 @@ function addSecurityHeaders(response: NextResponse): void {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
+
   const token = request.cookies.get('token')?.value
   const userRole = request.cookies.get('userRole')?.value
-  
+
   // Kiểm tra trạng thái đăng nhập
   const isLoggedIn = !!token
-  
+
   // Cho phép truy cập trang unauthorized (luôn cho phép, không kiểm tra auth)
   // Điều này đảm bảo user luôn thấy trang unauthorized khi gặp lỗi 401 từ API
   if (pathname === '/unauthorized') {
@@ -47,18 +47,21 @@ export function middleware(request: NextRequest) {
     addSecurityHeaders(response)
     return response
   }
-  
-  // Nếu đã login và truy cập public route (trừ unauthorized) -> redirect về dashboard
+
+  // Nếu đã login và truy cập public route (trừ unauthorized) -> redirect về dashboard dựa trên role
   if (PUBLIC_ROUTES.includes(pathname) && isLoggedIn && pathname !== '/unauthorized') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    // Admin (role = 1) -> /dashboard
+    // Manager (role = 2) và Staff (role = 3) -> /dashboard/ai-search
+    const defaultRoute = userRole === '1' ? '/dashboard' : '/dashboard/ai-search'
+    return NextResponse.redirect(new URL(defaultRoute, request.url))
   }
-  
+
   // Nếu chưa login và truy cập protected route -> redirect về unauthorized
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route))
   if (isProtectedRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
-  
+
   // Kiểm tra quyền admin cho admin-only routes
   const isAdminRoute = ADMIN_ONLY_ROUTES.some(route => pathname.startsWith(route))
   if (isAdminRoute) {
@@ -70,11 +73,11 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
   }
-  
+
   // Thêm security headers cho tất cả responses
   const response = NextResponse.next()
   addSecurityHeaders(response)
-  
+
   return response
 }
 

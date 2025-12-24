@@ -4,12 +4,12 @@ import { ReactNode } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
-import { 
-  LayoutDashboard as Home, 
-  Package, 
-  ShoppingCart, 
-  Box, 
-  Settings, 
+import {
+  LayoutDashboard as Home,
+  Package,
+  ShoppingCart,
+  Box,
+  Settings,
   LogOut,
   Menu,
   Bell,
@@ -35,12 +35,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { HeaderSearch } from '@/components/header-search'
+import { UserRole, getRoleName } from '@/lib/types/user.types'
 
 const navGroups = [
   {
     title: 'Tổng quan',
     items: [
-      { href: '/dashboard', icon: Home, label: 'Dashboard' },
+      { href: '/dashboard', icon: Home, label: 'Dashboard', requiredRole: UserRole.Admin },
       { href: '/dashboard/ai-search', icon: Sparkles, label: 'AI Search' },
       { href: '/dashboard/virtual-warehouse', icon: Warehouse, label: 'Kho hàng ảo' },
     ]
@@ -87,9 +88,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-purple-600 to-purple-700 transition-all duration-300 ${
-          sidebarOpen ? 'w-64' : 'w-20'
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-purple-600 to-purple-700 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'
+          }`}
       >
         {/* Logo */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-purple-500/30">
@@ -116,46 +116,57 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Navigation */}
         <nav className="flex-1 px-2 py-4 space-y-4 overflow-y-auto">
-          {navGroups.map((group) => (
-            <div key={group.title}>
-              {sidebarOpen && (
-                <h3 className="px-3 mb-2 text-xs font-semibold text-purple-200 uppercase tracking-wider">
-                  {group.title}
-                </h3>
-              )}
-              <div className="space-y-1">
-                {group.items.map((item) => {
-                  const isActive = pathname === item.href
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                        isActive
-                          ? 'bg-white/20 text-white shadow-lg'
-                          : 'text-purple-100 hover:bg-white/10 hover:text-white'
-                      }`}
-                      title={!sidebarOpen ? item.label : undefined}
-                    >
-                      <item.icon className="w-5 h-5 flex-shrink-0" />
-                      {sidebarOpen && <span>{item.label}</span>}
-                    </Link>
-                  )
-                })}
+          {navGroups.map((group) => {
+            // Filter items based on user role
+            const visibleItems = group.items.filter((item: any) => {
+              // If item has no requiredRole, show it to everyone
+              if (!item.requiredRole) return true;
+              // If item has requiredRole, only show if user's role matches
+              return user?.role === item.requiredRole;
+            });
+
+            // Don't render group if no visible items
+            if (visibleItems.length === 0) return null;
+
+            return (
+              <div key={group.title}>
+                {sidebarOpen && (
+                  <h3 className="px-3 mb-2 text-xs font-semibold text-purple-200 uppercase tracking-wider">
+                    {group.title}
+                  </h3>
+                )}
+                <div className="space-y-1">
+                  {visibleItems.map((item: any) => {
+                    const isActive = pathname === item.href
+                    return (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive
+                            ? 'bg-white/20 text-white shadow-lg'
+                            : 'text-purple-100 hover:bg-white/10 hover:text-white'
+                          }`}
+                        title={!sidebarOpen ? item.label : undefined}
+                      >
+                        <item.icon className="w-5 h-5 flex-shrink-0" />
+                        {sidebarOpen && <span>{item.label}</span>}
+                      </Link>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </nav>
 
         {/* Settings & Logout */}
         <div className="border-t border-purple-500/30 p-2">
           <Link
             href="/dashboard/settings"
-            className={`flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 mb-1 ${
-              pathname === '/dashboard/settings'
+            className={`flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 mb-1 ${pathname === '/dashboard/settings'
                 ? 'bg-white/20 text-white shadow-lg'
                 : 'text-purple-100 hover:bg-white/10 hover:text-white'
-            }`}
+              }`}
           >
             <Settings className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span>Settings</span>}
@@ -172,9 +183,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Main Content */}
       <div
-        className={`transition-all duration-300 ${
-          sidebarOpen ? 'ml-64' : 'ml-20'
-        }`}
+        className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'
+          }`}
       >
         {/* Header */}
         <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
@@ -204,7 +214,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         {user?.fullName || 'User'}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {user?.role === 1 ? 'Staff/Admin' : 'User'}
+                        {user?.role !== undefined ? getRoleName(user.role) : 'User'}
                       </p>
                     </div>
                   </Button>

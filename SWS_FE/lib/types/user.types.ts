@@ -42,21 +42,39 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
-// Role enum
+// Role enum - matching database values
 export enum UserRole {
   User = 0,
-  Staff = 1,
+  Admin = 1,
+  Manager = 2,
+  Staff = 3,
 }
 
 // Role helper functions
 export const isStaffOrAdmin = (role: UserRole): boolean => {
+  return role >= UserRole.Admin;
+};
+
+export const isAdmin = (role: UserRole): boolean => {
+  return role === UserRole.Admin;
+};
+
+export const isManager = (role: UserRole): boolean => {
+  return role === UserRole.Manager;
+};
+
+export const isStaff = (role: UserRole): boolean => {
   return role === UserRole.Staff;
 };
 
 export const getRoleName = (role: UserRole): string => {
   switch (role) {
+    case UserRole.Admin:
+      return 'Admin';
+    case UserRole.Manager:
+      return 'Manager';
     case UserRole.Staff:
-      return 'Staff/Admin';
+      return 'Staff';
     case UserRole.User:
       return 'User';
     default:

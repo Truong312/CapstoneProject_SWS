@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
+import { UserRole } from '@/lib/types/user.types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -44,6 +46,7 @@ import {
 } from '@/lib/types/dashboard.types'
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { user } = useAuthStore()
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -62,8 +65,11 @@ export default function DashboardPage() {
   // Period selection
   const [periodType, setPeriodType] = useState<'month' | 'quarter'>('month')
 
+  // Current time for footer (client-side only to avoid hydration error)
+  const [currentTime, setCurrentTime] = useState<string>('')
+
   // Load all dashboard data
-  const loadDashboardData = async () => {
+  const loadDashboardData = async (showToast = false) => {
     try {
       setRefreshing(true)
 
@@ -112,10 +118,13 @@ export default function DashboardPage() {
       if (expiry7Res.isSuccess) setExpiryData7(expiry7Res.data)
       if (deadStockRes.isSuccess) setDeadStock(deadStockRes.data)
 
-      toast({
-        title: 'Tải dữ liệu thành công',
-        description: 'Dashboard đã được cập nhật với dữ liệu mới nhất',
-      })
+      // Only show success toast on manual refresh
+      if (showToast) {
+        toast({
+          title: 'Tải dữ liệu thành công',
+          description: 'Dashboard đã được cập nhật với dữ liệu mới nhất',
+        })
+      }
     } catch (error: any) {
       console.error('Error loading dashboard:', error)
       toast({
@@ -129,14 +138,31 @@ export default function DashboardPage() {
     }
   }
 
+  // Check user role on mount - redirect if not Admin
+  useEffect(() => {
+    if (user && user.role !== UserRole.Admin) {
+      router.push('/unauthorized')
+    }
+  }, [user, router])
+
+  // Set current time on client-side only
+  useEffect(() => {
+    setCurrentTime(new Date().toLocaleString('vi-VN', {
+      dateStyle: 'full',
+      timeStyle: 'short',
+    }))
+  }, [])
+
   // Load data on mount and when period type changes
   useEffect(() => {
-    loadDashboardData()
+    if (user?.role === UserRole.Admin) {
+      loadDashboardData()
+    }
   }, [periodType])
 
   // Handle refresh
   const handleRefresh = () => {
-    loadDashboardData()
+    loadDashboardData(true) // Show toast on manual refresh
   }
 
   // Handle export (placeholder)
@@ -324,11 +350,7 @@ export default function DashboardPage() {
 
       {/* Footer Info */}
       <div className="rounded-lg border bg-gray-50 p-4 text-center text-sm text-gray-500">
-        Dashboard được cập nhật lúc:{' '}
-        {new Date().toLocaleString('vi-VN', {
-          dateStyle: 'full',
-          timeStyle: 'short',
-        })}
+        Dashboard được cập nhật lúc: {currentTime || 'Đang tải...'}
       </div>
     </div>
   )

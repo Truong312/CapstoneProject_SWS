@@ -1,16 +1,20 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShieldAlert, Home, Lock, AlertTriangle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function UnauthorizedPage() {
   const router = useRouter();
+  const [currentTime, setCurrentTime] = useState<string>('');
 
   useEffect(() => {
     // Clear 401 error flag khi vào trang này
     sessionStorage.removeItem('401_error');
+
+    // Set current time on client-side only
+    setCurrentTime(new Date().toLocaleString('vi-VN'));
   }, []);
 
   const handleGoHome = () => {
@@ -21,7 +25,7 @@ export default function UnauthorizedPage() {
     <div className="min-h-screen w-full bg-gradient-to-br from-violet-50 via-purple-50 to-pink-50">
       {/* Container layout ngang */}
       <div className="min-h-screen grid lg:grid-cols-2 gap-0">
-        
+
         {/* Bên trái - Illustration/Visual */}
         <div className="relative bg-gradient-to-br from-violet-600 via-purple-600 to-pink-600 flex items-center justify-center p-8 lg:p-12">
           {/* Animated background shapes */}
@@ -45,7 +49,7 @@ export default function UnauthorizedPage() {
             <h1 className="text-8xl lg:text-9xl font-black text-white mb-4 drop-shadow-lg tracking-tight">
               401
             </h1>
-            
+
             <div className="flex items-center justify-center gap-3 text-white/90 mb-6">
               <Lock className="w-6 h-6" />
               <span className="text-xl lg:text-2xl font-bold">Unauthorized Access</span>
@@ -61,18 +65,18 @@ export default function UnauthorizedPage() {
         {/* Bên phải - Content & Actions */}
         <div className="flex items-center justify-center p-6 lg:p-12 bg-white/50 backdrop-blur-sm">
           <div className="w-full max-w-lg space-y-8">
-            
+
             {/* Header */}
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-full text-sm font-medium">
                 <AlertTriangle className="w-4 h-4" />
                 <span>Không có quyền truy cập</span>
               </div>
-              
+
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
                 Bạn không có quyền truy cập trang này
               </h2>
-              
+
               <p className="text-gray-600 text-base lg:text-lg leading-relaxed">
                 Trang này yêu cầu bạn phải đăng nhập hoặc cần tài khoản có quyền cao hơn để tiếp tục.
               </p>
@@ -116,7 +120,7 @@ export default function UnauthorizedPage() {
                 <Home className="w-5 h-5 mr-2" />
                 Trở về trang chủ
               </Button>
-              
+
               <Button
                 onClick={() => router.push('/login')}
                 size="lg"
@@ -133,7 +137,7 @@ export default function UnauthorizedPage() {
               <p className="text-xs lg:text-sm text-gray-400 text-center">
                 Mã lỗi: <span className="font-mono font-semibold">401 - Unauthorized</span>
                 <span className="mx-2">•</span>
-                <span>{new Date().toLocaleString('vi-VN')}</span>
+                <span>{currentTime || 'Đang tải...'}</span>
               </p>
             </div>
 

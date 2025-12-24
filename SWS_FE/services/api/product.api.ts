@@ -67,27 +67,15 @@ export const productApi = {
   },
 
   // Get product by ID
-  getById: async (id: number): Promise<Product> => {
-    const response = await apiClient.get(`/product/${id}`);
-    
-    // Backend returns data directly without ApiResponse wrapper
-    if (response.status >= 200 && response.status < 300) {
-      return {
-        isSuccess: true,
-        responseCode: null,
-        statusCode: response.status,
-        data: response.data,
-        message: 'Lấy thông tin sản phẩm thành công'
-      };
-    }
-    
-    return response.data;
+  getById: async (id: number): Promise<ApiResponse<Product>> => {
+    const { data } = await apiClient.get(`/product/${id}`);
+    return data;
   },
 
   // Create new product
   create: async (request: CreateProductRequest): Promise<ApiResponse<{ productId: number }>> => {
     const response = await apiClient.post('/product', request);
-    
+
     // Backend returns 2xx status on success (e.g., 200, 201, 204)
     if (response.status >= 200 && response.status < 300) {
       return {
@@ -98,14 +86,14 @@ export const productApi = {
         message: response.data?.message || 'Tạo sản phẩm thành công'
       };
     }
-    
+
     return response.data;
   },
 
   // Update product
   update: async (id: number, request: UpdateProductRequest): Promise<ApiResponse<void>> => {
     const response = await apiClient.put(`/product/${id}`, request);
-    
+
     // Backend returns 2xx status on success
     if (response.status >= 200 && response.status < 300) {
       return {
@@ -116,14 +104,14 @@ export const productApi = {
         message: response.data?.message || 'Cập nhật sản phẩm thành công'
       };
     }
-    
+
     return response.data;
   },
 
   // Delete product
   delete: async (id: number): Promise<ApiResponse<void>> => {
     const response = await apiClient.delete(`/product/${id}`);
-    
+
     // Backend returns 2xx status on success
     if (response.status >= 200 && response.status < 300) {
       return {
@@ -134,7 +122,7 @@ export const productApi = {
         message: response.data?.message || 'Xóa sản phẩm thành công'
       };
     }
-    
+
     return response.data;
   },
 
@@ -238,9 +226,9 @@ export const inventoryApi = {
   },
 
   // Get stock movements history
-  getStockMovements: async (params?: { 
-    productId?: number; 
-    from?: string; 
+  getStockMovements: async (params?: {
+    productId?: number;
+    from?: string;
     to?: string;
     page?: number;
     pageSize?: number;
