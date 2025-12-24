@@ -129,8 +129,7 @@ namespace SWS.Services.Services.ProductServices
         /// <summary>
         /// Thêm mới sản phẩm
         /// </summary>
-        public async Task<ResultModel> AddProductAsync(CreateProductRequest request
-        )
+        public async Task<ResultModel> AddProductAsync(CreateProductRequest request)
         {
             try
             {
