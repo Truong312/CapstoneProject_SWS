@@ -169,9 +169,9 @@ namespace SWS.Test.Service
         }
 
         [Test]
-        public async Task AddProductAsync_Error()
+        public async Task AddProductAsync_WhenExceptionThrown_ReturnsError()
         {
-            // Arrange
+            
             var request = new CreateProductRequest
             {
                 SerialNumber = "SN-ERROR",
