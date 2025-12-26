@@ -9,21 +9,25 @@ namespace SWS.Test.GoogleSheet
         private readonly SheetsService _service;
         private readonly string _spreadsheetId;
 
-        public GoogleSheetService(string credentialPath, string spreadsheetId)
+        public GoogleSheetService(string spreadsheetId)
         {
-            // Load credentials
-            GoogleCredential credential = GoogleCredential
-                .FromFile(credentialPath)
-                .CreateScoped(SheetsService.Scope.Spreadsheets);
+            var credentialPath =
+                Environment.GetEnvironmentVariable("GOOGLE_SHEET_CREDENTIALS");
 
-            // Initialize SheetsService
+            if (string.IsNullOrEmpty(credentialPath))
+                throw new Exception("GOOGLE_SHEET_CREDENTIALS env var not set");
+
+            GoogleCredential credential =
+                GoogleCredential
+                    .FromFile(credentialPath)
+                    .CreateScoped(SheetsService.Scope.SpreadsheetsReadonly);
+
             _service = new SheetsService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = credential,
-                ApplicationName = "AutomationTest"
+                ApplicationName = "SWS Automation Test"
             });
 
-            // Save spreadsheet id
             _spreadsheetId = spreadsheetId;
         }
 

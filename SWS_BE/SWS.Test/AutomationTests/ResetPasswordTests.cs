@@ -24,8 +24,8 @@ namespace SWS.Test.AutomationTests
         public static IEnumerable<TestCase> GetTestCases()
         {
             var service = new GoogleSheetService(
-                "Config/credentials.json",
                 "1SSGPplUNAbgzIG8okaG_9iHcYQ4_gkfIxnfU5Ejr2B0");
+
 
             var sheet = service.ReadSheet("resetPassword");
 

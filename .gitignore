@@ -417,3 +417,10 @@ SWS_FE/.next/*
 .DS_Store
 */.DS_Store
 SWS_FE/.vscode/*
+
+
+# Google credentials (REAL)
+credentials.json
+Config/credentials.json
+SWS_BE/SWS.Test/Config/credentials.json
+
