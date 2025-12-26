@@ -202,7 +202,7 @@ namespace SWS.Test.Service
             // Arrange
             var now = DateOnly.FromDateTime(DateTime.Now);
             var startDate = now.AddDays(-10);
-            var endDate = now.AddDays(-12); 
+            var endDate = now.AddDays(-12);
 
             var fakeOrders = new List<ExportOrder>
     {

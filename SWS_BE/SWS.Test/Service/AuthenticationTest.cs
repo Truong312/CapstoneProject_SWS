@@ -42,7 +42,7 @@ namespace SWS.Test.Service
                 {
                     {"Jwt:Issuer", "TestIssuer"},
                     {"Jwt:Audience", "TestAudience"},
-                    {"Jwt:Key", "ThisIsASecretKeyForTesting12345!"}, 
+                    {"Jwt:Key", "ThisIsASecretKeyForTesting12345!"},
                     {"Jwt:AccessTokenExpirationMinutes", "60"}
                 };
 

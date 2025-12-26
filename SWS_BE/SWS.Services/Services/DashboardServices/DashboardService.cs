@@ -18,9 +18,6 @@ namespace SWS.Services.Services.DashboardServices
             _unitOfWork = unitOfWork;
         }
 
-        // ============================================
-        // 1. TÀI CHÍNH & HIỆU QUẢ
-        // ============================================
 
         public async Task<ResultModel<List<TrendAnalysisResponse>>> GetTrendAnalysisAsync(DateOnly startDate, DateOnly endDate)
         {
