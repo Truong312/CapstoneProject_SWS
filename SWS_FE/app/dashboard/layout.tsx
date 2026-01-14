@@ -43,7 +43,7 @@ const navGroups = [
     items: [
       { href: '/dashboard', icon: Home, label: 'Dashboard', requiredRole: UserRole.Admin },
       { href: '/dashboard/ai-search', icon: Sparkles, label: 'AI Search' },
-      { href: '/dashboard/virtual-warehouse', icon: Warehouse, label: 'Kho hàng ảo' },
+      
     ]
   },
   {

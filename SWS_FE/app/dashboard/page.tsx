@@ -158,7 +158,7 @@ export default function DashboardPage() {
     if (user?.role === UserRole.Admin) {
       loadDashboardData()
     }
-  }, [periodType])
+  }, [periodType, user])
 
   // Handle refresh
   const handleRefresh = () => {
