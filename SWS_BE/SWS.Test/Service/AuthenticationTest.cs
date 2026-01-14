@@ -65,7 +65,7 @@ namespace SWS.Test.Service
             var request = new RegisterWarehouseRequest
             {
                 FullName = "Test User",
-                Email = "test@example.com",
+                Email = "test",
                 Password = "Password123!",
                 Phone = "0123456789",
                 Address = "123 Test Street",
@@ -85,6 +85,60 @@ namespace SWS.Test.Service
             Assert.AreEqual("Đăng ký thành công", result.Message);
             Assert.IsNotNull(result.Data);
         }
+
+        [Test]
+        public async Task RegisterAsync_fail()
+        {
+            var request = new RegisterWarehouseRequest
+            {
+                FullName = "Test User",
+                Email = "test",
+                Password = "Password123!",
+                Phone = "1",
+                Address = "123 Test Street",
+                Role = 5
+            };
+
+            _mockUserRepo.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User)null);
+            _mockUserRepo.Setup(r => r.AddAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
+            _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+            var result = await _service.RegisterAsync(request);
+
+            TestContext.Out.WriteLine($"Result: IsSuccess={result.IsSuccess}, Message={result.Message}");
+
+            // Assert
+            Assert.IsTrue(result.IsSuccess);
+            Assert.AreEqual("Đăng ký thành công", result.Message);
+            Assert.IsNotNull(result.Data);
+        }
+
+        //[Test]
+        //public async Task RegisterAsync_Fail()
+        //{
+        //    var request = new RegisterWarehouseRequest
+        //    {
+        //        FullName = "Test User",
+        //        Email = "test",
+        //        Password = "123",
+        //        Phone = "0123456789",
+        //        Address = "123 Test Street",
+        //        Role = 1
+        //    };
+
+        //    _mockUserRepo.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User)null);
+        //    _mockUserRepo.Setup(r => r.AddAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
+        //    _mockUnitOfWork.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+        //    var result = await _service.RegisterAsync(request);
+
+        //    TestContext.Out.WriteLine($"Result: IsSuccess={result.IsSuccess}, Message={result.Message}");
+
+        //    // Assert
+        //    Assert.IsTrue(result.IsSuccess);
+        //    Assert.AreEqual("Đăng ký thành công", result.Message);
+        //    Assert.IsNotNull(result.Data);
+        //}
 
 
 
