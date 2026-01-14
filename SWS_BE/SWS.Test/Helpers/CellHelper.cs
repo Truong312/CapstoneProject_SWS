@@ -14,5 +14,6 @@ namespace SWS.Test.Helpers
             if (col >= sheet[row].Count) return string.Empty;
             return sheet[row][col]?.ToString()?.Trim() ?? string.Empty;
         }
+        
     }
 }
