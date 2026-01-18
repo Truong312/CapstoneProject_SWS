@@ -32,6 +32,23 @@ namespace SWS.Services.Mappings
                 .ForMember(dest => dest.Token, opt => opt.Ignore())
                 .ForMember(dest => dest.IsNewUser, opt => opt.Ignore());
             #endregion
+
+            #region User Management
+            // Map User entity to UserDto
+            CreateMap<User, SWS.BusinessObjects.Dtos.UserDto>()
+                .ForMember(dest => dest.RoleName, opt => opt.Ignore());
+
+            // Map CreateUserRequest to User entity
+            CreateMap<CreateUserRequest, User>()
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.Password, opt => opt.Ignore()); // Password will be hashed separately
+
+            // Map UpdateUserRequest to User entity
+            CreateMap<UpdateUserRequest, User>()
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.Email, opt => opt.Ignore())
+                .ForMember(dest => dest.Password, opt => opt.Ignore());
+            #endregion
         }
     }
 }

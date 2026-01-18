@@ -42,12 +42,57 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
-// Role enum - matching database values
+// User Management API Types
+export interface UserDto {
+  userId: number;
+  email: string;
+  fullName: string;
+  phone: string | null;
+  address: string | null;
+  role: number;
+  roleName: string;
+}
+
+export interface CreateUserRequest {
+  email: string;
+  password: string;
+  fullName: string;
+  phone?: string;
+  address?: string;
+  role: number;
+}
+
+export interface UpdateUserRequest {
+  fullName: string;
+  phone?: string;
+  address?: string;
+  role: number;
+}
+
+export interface UserPagedRequestDto {
+  pageIndex?: number;
+  pageSize?: number;
+  search?: string;
+  roleFilter?: number;
+  sortBy?: string;
+  sortDesc?: boolean;
+}
+
+export interface PagedResponse<T> {
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  items: T[];
+}
+
+// Role enum - matching API values (1=Admin, 2=Manager, 3=Staff, 4=Provider)
 export enum UserRole {
   User = 0,
   Admin = 1,
   Manager = 2,
   Staff = 3,
+  Provider = 4,
 }
 
 // Role helper functions
@@ -67,17 +112,35 @@ export const isStaff = (role: UserRole): boolean => {
   return role === UserRole.Staff;
 };
 
-export const getRoleName = (role: UserRole): string => {
+export const isProvider = (role: UserRole): boolean => {
+  return role === UserRole.Provider;
+};
+
+export const getRoleName = (role: UserRole | number): string => {
   switch (role) {
     case UserRole.Admin:
+    case 1:
       return 'Admin';
     case UserRole.Manager:
+    case 2:
       return 'Manager';
     case UserRole.Staff:
-      return 'Staff';
+    case 3:
+      return 'Warehouse Staff';
+    case UserRole.Provider:
+    case 4:
+      return 'Provider/Supplier';
     case UserRole.User:
+    case 0:
       return 'User';
     default:
       return 'Unknown';
   }
 };
+
+export const getRoleOptions = () => [
+  { value: 1, label: 'Admin' },
+  { value: 2, label: 'Manager' },
+  { value: 3, label: 'Warehouse Staff' },
+  { value: 4, label: 'Provider/Supplier' },
+];

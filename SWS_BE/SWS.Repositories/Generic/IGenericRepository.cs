@@ -8,6 +8,11 @@ namespace SWS.Repositories.Generic
         Task<T?> GetByIdAsync(object id);
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
         Task<T?> GetSingleAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
+        Task<(IEnumerable<T> items, int totalCount)> GetPagedAsync(
+            int pageIndex, 
+            int pageSize, 
+            Expression<Func<T, bool>>? predicate = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null);
 
         Task AddAsync(T entity);
         Task AddRangeAsync(IEnumerable<T> entities);

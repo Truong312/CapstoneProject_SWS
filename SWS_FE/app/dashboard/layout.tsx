@@ -15,6 +15,7 @@ import {
   Bell,
   Search,
   User,
+  Users,
   Warehouse,
   Palette,
   ArrowDownToLine,
@@ -36,6 +37,8 @@ import {
 import { useState } from 'react'
 import { HeaderSearch } from '@/components/header-search'
 import { UserRole, getRoleName } from '@/lib/types/user.types'
+import { Toaster } from '@/components/ui/sonner'
+
 
 const navGroups = [
   {
@@ -59,6 +62,17 @@ const navGroups = [
       { href: '/dashboard/import-orders', icon: ArrowDownToLine, label: 'Đơn Nhập' },
       { href: '/dashboard/export-orders', icon: ArrowUpFromLine, label: 'Đơn Xuất' },
       { href: '/dashboard/returns', icon: RotateCcw, label: 'Trả Hàng' },
+    ]
+  },
+  {
+    title: 'Quản lý Hệ thống',
+    items: [
+      {
+        href: '/dashboard/user-management',
+        icon: Users,
+        label: 'Quản lý Người dùng',
+        requiredRole: [UserRole.Admin, UserRole.Manager]
+      },
     ]
   },
   {
@@ -120,7 +134,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             const visibleItems = group.items.filter((item: any) => {
               // If item has no requiredRole, show it to everyone
               if (!item.requiredRole) return true;
-              // If item has requiredRole, only show if user's role matches
+
+              // If requiredRole is an array, check if user's role is in the array
+              if (Array.isArray(item.requiredRole)) {
+                return item.requiredRole.includes(user?.role);
+              }
+
+              // If requiredRole is a single value, check if user's role matches
               return user?.role === item.requiredRole;
             });
 
@@ -142,8 +162,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         key={item.label}
                         href={item.href}
                         className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive
-                            ? 'bg-white/20 text-white shadow-lg'
-                            : 'text-purple-100 hover:bg-white/10 hover:text-white'
+                          ? 'bg-white/20 text-white shadow-lg'
+                          : 'text-purple-100 hover:bg-white/10 hover:text-white'
                           }`}
                         title={!sidebarOpen ? item.label : undefined}
                       >
@@ -163,8 +183,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <Link
             href="/dashboard/settings"
             className={`flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 mb-1 ${pathname === '/dashboard/settings'
-                ? 'bg-white/20 text-white shadow-lg'
-                : 'text-purple-100 hover:bg-white/10 hover:text-white'
+              ? 'bg-white/20 text-white shadow-lg'
+              : 'text-purple-100 hover:bg-white/10 hover:text-white'
               }`}
           >
             <Settings className="w-5 h-5 flex-shrink-0" />
@@ -245,6 +265,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {children}
         </main>
       </div>
+      <Toaster />
     </div>
   )
 }
