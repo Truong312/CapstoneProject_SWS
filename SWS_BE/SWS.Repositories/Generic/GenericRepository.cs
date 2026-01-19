@@ -71,5 +71,33 @@ namespace SWS.Repositories.Generic
             }
             return await query.FirstOrDefaultAsync(predicate);
         }
+
+        public async Task<(IEnumerable<T> items, int totalCount)> GetPagedAsync(
+            int pageIndex, 
+            int pageSize, 
+            Expression<Func<T, bool>>? predicate = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null)
+        {
+            IQueryable<T> query = Context.Set<T>();
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
+            var items = await query
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
     }
 }

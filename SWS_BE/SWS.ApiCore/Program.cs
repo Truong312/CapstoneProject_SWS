@@ -75,6 +75,10 @@ builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection(
 // ================== DI (Unit of Work & Repos/Services) ==================
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+// User Management
+builder.Services.AddScoped<SWS.Repositories.Repositories.UserRepo.IUserRepository, SWS.Repositories.Repositories.UserRepo.UserRepository>();
+builder.Services.AddScoped<SWS.Services.Services.UserServices.IUserService, SWS.Services.Services.UserServices.UserService>();
+
 // Return: Lookups + Query
 builder.Services.AddScoped<IReturnReasonRepository, ReturnReasonRepository>();
 builder.Services.AddScoped<IReturnStatusRepository, ReturnStatusRepository>();
